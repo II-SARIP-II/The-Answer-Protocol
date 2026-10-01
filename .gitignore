@@ -1,0 +1,8 @@
+bin/
+	server
+	client_CLI
+	client_GUI
+
+*.out
+
+.vscode
