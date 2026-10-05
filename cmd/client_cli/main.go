@@ -6,8 +6,7 @@ import (
 )
 
 func main() {
-	error := cli.Run("localhost:4242")
-	if error != nil {
+	if error := cli.Run("localhost:4242"); error != nil {
 		log.Fatal(error)
 	}
 }
