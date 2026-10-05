@@ -1,8 +1,8 @@
 bin/
-	server
-	client_CLI
-	client_GUI
+/server
+/client_cli
+/client_gui
 
 *.out
-
-.vscode
+.vscode/
+.idea/
