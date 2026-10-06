@@ -73,7 +73,6 @@ const (
 	MsgSendFailed         = "SEND_FAILED"
 )
 
-
 // • fmt.Sprintf : Génère et retourne un type string. Retour : La chaîne de caractères finale.
 func FormatCmd(commandName, arguments string) string {
 	if arguments == "" {
