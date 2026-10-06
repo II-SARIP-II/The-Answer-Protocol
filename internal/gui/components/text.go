@@ -44,7 +44,7 @@ func init() {
 	}
 }
 
-func DrawText(screen *ebiten.Image, msg string, x, y float64, size float64, clr color.Color, fontType string) {
+func DrawText(screen *ebiten.Image, msg string, x float64, y float64, size float64, clr color.Color, fontType string) {
 	var source *text.GoTextFaceSource
 
 	switch fontType {

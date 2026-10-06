@@ -39,9 +39,9 @@ func NewGame(winWidth int, winHeight int) *Game {
 }
 
 func (g *Game) Update() error {
-	for _, btn := range g.buttons {
-		btn.Update()
-	}
+    components.UpdatePanels(
+        g.centerRight,
+    )
 	return nil
 }
 func (g *Game) Draw(screen *ebiten.Image) {
@@ -72,7 +72,7 @@ func Run() error {
 	windowWidth := 1480
 	windowHeight := 1090
 	ebiten.SetWindowSize(windowWidth, windowHeight)
-	ebiten.SetWindowTitle("Final Test")
+	ebiten.SetWindowTitle("The Answer Protocol")
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	newGame := NewGame(windowWidth, windowHeight)
 	return ebiten.RunGame(newGame)
