@@ -8,7 +8,7 @@ import (
 
 func CreatePlayerPanel(topH, centerH, colLeftW float32) *components.Panel {
 	return &components.Panel{
-		Name:        "NAME",
+		Name:        "Player",
 		X:           0,
 		Y:           topH,
 		W:           colLeftW,
