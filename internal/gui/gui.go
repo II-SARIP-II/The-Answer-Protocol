@@ -1,8 +1,6 @@
 package gui
 
 import (
-	"image/color"
-
 	"github.com/hajimehoshi/ebiten/v2"
 
 	"tap/internal/gui/components"
@@ -18,7 +16,6 @@ type Game struct {
     bottomCenterRight *components.Panel
     bottomRight       *components.Panel
     buttons           []*components.Button
-    lastMessage       string
 }
 
 func NewGame(winWidth int, winHeight int) *Game {
@@ -32,7 +29,6 @@ func NewGame(winWidth int, winHeight int) *Game {
         bottomCenterLeft:  bcl,
         bottomCenterRight: bcr,
         bottomRight:       br,
-        lastMessage:       "Game Started",
     }
 
     return g
@@ -60,8 +56,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
     for _, btn := range g.buttons {
         btn.Draw(screen)
     }
-
-    components.DrawText(screen, g.lastMessage, 10, 10, 24, color.White, "title")
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {

@@ -13,8 +13,8 @@ func InitPanels(winWidth, winHeight int) (*components.Panel, *components.Panel, 
     centerH := h * 0.55
     bottomH := h - topH - centerH
 
-    colLeftW := w * 0.32
-    colMidW := w * 0.48
+    colLeftW := w * 0.30
+    colMidW := w * 0.40
     colRightW := w - colLeftW - colMidW
 
     t_panel := panels.CreateTopPanel(w, topH)

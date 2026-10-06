@@ -10,9 +10,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
-//go:embed assets/Title.ttf
-var fontTitle []byte
-
 //go:embed assets/Feather.ttf
 var fontFeather []byte
 
@@ -20,18 +17,12 @@ var fontFeather []byte
 var fontDefault []byte
 
 var (
-	TitleSource   *text.GoTextFaceSource
 	FeatherSource *text.GoTextFaceSource
 	DefaultSource *text.GoTextFaceSource
 )
 
 func init() {
 	var err error
-
-	TitleSource, err = text.NewGoTextFaceSource(bytes.NewReader(fontTitle))
-	if err != nil {
-		log.Fatalf("Error while loading Title font: %v", err)
-	}
 
 	FeatherSource, err = text.NewGoTextFaceSource(bytes.NewReader(fontFeather))
 	if err != nil {
@@ -48,8 +39,6 @@ func DrawText(screen *ebiten.Image, msg string, x float64, y float64, size float
 	var source *text.GoTextFaceSource
 
 	switch fontType {
-	case "title":
-		source = TitleSource
 	case "feather":
 		source = FeatherSource
 	default:

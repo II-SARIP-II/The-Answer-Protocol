@@ -24,11 +24,11 @@ func (p *Panel) Update() {
 }
 
 func PrintTitle(screen *ebiten.Image, x float32, y float32, w float32, h float32, name string) {
-    size := float32(20.0)
+    size := float32(25.0)
     startX := x + (w / 2.0) - (float32(len(name)) * size * 0.5 / 2.0)
-    startY := y + size
+    startY := y + size/2
     color := color.RGBA{R: 50, G: 50, B: 50, A: 255}
-    fontType := "Default"
+    fontType := "feather"
     DrawText(screen, name, float64(startX), float64(startY), float64(size), color, fontType)
 }
 
