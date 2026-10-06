@@ -8,110 +8,96 @@ import (
 	"net"
 	"strings"
 	"sync"
+	"tap/internal/protocol"
 	"time"
 )
 
-// mot clé var pourdéclarer un bloc de declaration de variables globales
+// mot clé var pour déclarer un bloc de déclaration de variables globales
 var (
 	mu      sync.Mutex
 	players = make(map[string]net.Conn)
 )
 
-// function pour démarrer le serveur
+// fonction pour démarrer le serveur
 func Start(port string) error {
-	// la function Listen ouvre un socket sur le port indiqué et renvoie un objet ln ainsi qu éventuellement un message d erreur.
+	// la fonction Listen ouvre un socket sur le port indiqué et renvoie un listener ln ainsi qu'éventuellement une erreur
 	ln, err := net.Listen("tcp", port)
 	if err != nil {
-		// à la différence de log (texte libre), revoie des logs structurés en json
+		// logs structurés avec slog
 		slog.Error("Cannot open port", "port", port, "err", err)
-		// On renvoie directement err sans fmt.Errorf car slog.Error a déjà enregistré tous les détails
 		return err
 	}
-	// on anticipe la fermeture du socket juste avant le retour
-
 	defer ln.Close()
-	// On utilise slog plutôt que fmt.Println car le sujet impose des logs structurés (horodatage et niveaux INFO/WARN/ERROR)
+
 	slog.Info("TAP server started", "port", port)
-	// on met en route une boucle infinie
+
 	for {
-		// on tente le three-way handshake avec le client. On récupère un objet conn et éventuellement une erreur
+		// on attend une connexion client
 		conn, err := ln.Accept()
 		if err != nil {
-			// si l'erreur est une ErrClosed
+			// si le listener a été fermé proprement
 			if errors.Is(err, net.ErrClosed) {
-				// on arrête tout proprement
 				slog.Info("Listener closed, server shutting down cleanly")
 				return nil
 			}
-			// si l'erreur est de type net.Error et qu'elle est teporaire 9ok = True)
-			netErr, ok := err.(net.Error)
-			if ok && netErr.Timeout() {
-				// on attend et on réessaye jusqu'à ce que cela fonctionne
+
+			// gestion d'erreur réseau temporaire
+			var netErr net.Error
+			if errors.As(err, &netErr) && netErr.Timeout() {
 				slog.Warn("Temporary network error on Accept(), pausing 10ms...", "err", err)
 				time.Sleep(10 * time.Millisecond)
 				continue
 			}
-			// si c ést une autre erreur on la retourne.
-			// idem pourquoi pas un fmt.Println?
+
 			slog.Error("Fatal error on Accept()", "err", err)
 			return err
 		}
-		// on lance avec go une goroutine pour le client
+
+		// on lance une goroutine pour chaque client
 		go handleConnection(conn)
 	}
 }
 
 func handleConnection(conn net.Conn) {
-	// on anticipe la fermeture de la socket juste après le return
 	defer conn.Close()
-	// message de log formaté dans le terminal
-	slog.Info("Connected client.")
-	// ecrit dans la socket réseau du client
-	fmt.Fprintf(conn, "OK hello proto=1\n")
+	slog.Info("Client connected", "addr", conn.RemoteAddr().String())
 
-	// initialise un nouveau scanner
-	client_scanner := bufio.NewScanner(conn)
-	// si le scanner n'a rien à scanner
-	if !client_scanner.Scan() {
+	// envoi du message d'accueil RFC
+	fmt.Fprint(conn, protocol.MsgHello)
+
+	clientScanner := bufio.NewScanner(conn)
+	if !clientScanner.Scan() {
 		return
 	}
 
-	// recuperation de ce qui se trouve dans le buffer
-	line := client_scanner.Text()
-	// decoupage de la ligne en 2 parties (permet de gérer les espaces éventuels dans le username)
+	line := clientScanner.Text()
 	parts := strings.SplitN(line, " ", 2)
-	// si pb dans la synatxe avec gestion casse insensible
-	if len(parts) != 2 || strings.ToUpper(parts[0]) != "CONNECT" {
-		fmt.Fprintf(conn, "ERR 400 BAD_REQUEST\n")
+	if len(parts) != 2 || strings.ToUpper(parts[0]) != protocol.CmdConnect {
+		fmt.Fprint(conn, protocol.FormatErr(protocol.CodeBadRequest, protocol.MsgBadRequest))
 		return
 	}
-	// on enlève les espaces
+
 	username := strings.TrimSpace(parts[1])
-	// gesion chîne vide
 	if username == "" {
-		fmt.Fprintf(conn, "ERR 400 BAD_REQUEST\n")
+		fmt.Fprint(conn, protocol.FormatErr(protocol.CodeBadRequest, protocol.MsgBadRequest))
 		return
 	}
 
-	// mutex pour protéger lécriture dans la map globale des players
+	// vérification doublon sous verrou
 	mu.Lock()
-	// vérification doublon username
 	if _, exists := players[username]; exists {
-		fmt.Fprintf(conn, "ERR 201 NAME_IN_USE\n")
-		// déverouillage du mutex si erreur avant de return
 		mu.Unlock()
+		fmt.Fprint(conn, protocol.FormatErr(protocol.CodeNameInUse, protocol.MsgNameInUse))
 		return
 	}
-	// ajout du user dans la map
 	players[username] = conn
-
-	// déverouillage du mutex
 	mu.Unlock()
-	// affichage client et log serveur
-	fmt.Fprintf(conn, "OK connected\n")
-	slog.Info("Player anthenticated", "username", username)
 
-	// on anticipe la deconnexion du player. Apès defer, fonction anonyme dont on lance l'exécution avec  ()
+	// confirmation de connexion
+	fmt.Fprint(conn, protocol.MsgConnected)
+	slog.Info("Player authenticated", "username", username)
+
+	// nettoyage automatique du joueur lors de la déconnexion
 	defer func() {
 		mu.Lock()
 		delete(players, username)
@@ -119,27 +105,26 @@ func handleConnection(conn net.Conn) {
 		mu.Unlock()
 	}()
 
-	// boucle infinie qui s'arrêtera lors de la déconnexion(en veille donc ne consomme pas de CPU), lorsque la fonction Scan retournera False
-	// exécution des defer et fermeture propre. La go routine se ferme automatiquement. Rien à gérer !
-	for client_scanner.Scan() {
-		command := strings.TrimSpace(client_scanner.Text())
-
+	// boucle de réception des commandes de jeu
+	for clientScanner.Scan() {
+		command := strings.TrimSpace(clientScanner.Text())
 		if command == "" {
 			continue
 		}
 
-		slog.Info("Command received","username", username,  "cmd", command)
+		slog.Info("Command received", "username", username, "cmd", command)
 
-		if strings.ToUpper(command) == "QUIT" {
-			fmt.Fprintf(conn, "OK bye\n")
+		if strings.ToUpper(command) == protocol.CmdQuit {
+			fmt.Fprint(conn, protocol.MsgBye)
 			break
 		}
-		fmt.Fprintf(conn, "OK received (TODO) %s\n", command)
+
+		fmt.Fprint(conn, protocol.FormatOK(fmt.Sprintf("received (TODO): %s", command)))
 	}
-	if err := client_scanner.Err(); err != nil {
-		slog.Warn("Client connexion error", "username", username, "error", err)
+
+	if err := clientScanner.Err(); err != nil {
+		slog.Warn("Client connection error", "username", username, "error", err)
 	} else {
 		slog.Info("Client cleanly disconnected", "username", username)
 	}
 }
-
