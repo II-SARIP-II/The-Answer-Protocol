@@ -45,6 +45,9 @@ func Run(addr string) error {
 	if serverScanner.Scan() {
 		response := serverScanner.Text()
 		fmt.Println("Server:", response)
+		if strings.HasPrefix(response, protocol.PrefixERR) {
+			return nil
+		}
 	}
 
 	fmt.Println("You can now enter commands (or QUIT to exit):")

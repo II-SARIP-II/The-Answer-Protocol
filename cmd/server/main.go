@@ -1,12 +1,13 @@
 package main
 
 import (
-	"log"
 	"tap/internal/server"
+	"os"
+
 )
 
 func main() {
 	if error := server.Start(":4242"); error != nil {
-		log.Fatal(error)
+		os.Exit(1)
 	}
 }

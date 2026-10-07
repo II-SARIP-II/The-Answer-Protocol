@@ -46,7 +46,7 @@ const (
 const (
 	CodeNameInUse          = 201
 	CodeNoExit             = 301
-	CodeUnknownCommand	   = 400
+	CodeBadRequest         = 400
 	CodeNotInGroup         = 401
 	CodeAlreadyInGroup     = 402
 	CodeItemNotFound       = 404
@@ -54,8 +54,6 @@ const (
 	CodeNPCNotFound        = 404
 	CodeNPCNotHostile      = 405
 	CodeNoQuestAvailable   = 406
-	CodeAlreadyAuthenticated = 407
-	CodeNotAuthenticated 	= 408
 	CodeConnectionFailed   = 900
 	CodeSendFailed         = 901
 )
@@ -63,7 +61,7 @@ const (
 const (
 	MsgNameInUse          = "NAME_IN_USE"
 	MsgNoExit             = "NO_EXIT"
-	MsgUnknownCommand	  = "UNKNOWN_COMMAND"
+	MsgBadRequest         = "BAD_REQUEST"
 	MsgNotInGroup         = "NOT_IN_GROUP"
 	MsgAlreadyInGroup     = "ALREADY_IN_GROUP"
 	MsgItemNotFound       = "ITEM_NOT_FOUND"
@@ -71,10 +69,14 @@ const (
 	MsgNPCNotFound        = "NPC_NOT_FOUND"
 	MsgNPCNotHostile      = "NPC_NOT_HOSTILE"
 	MsgNoQuestAvailable   = "NO_QUEST_AVAILABLE"
-	MsgAlreadyAuthenticated = "ALREADY_AUTHENTICATED"
-	MsgNotAuthenticated		= "NOT_AUTHENTICATED"
 	MsgConnectionFailed   = "CONNECTION_FAILED"
 	MsgSendFailed         = "SEND_FAILED"
+
+	// code 400 BAD_REQUEST
+	MsgArgsError            = "ARGS_ERROR"
+	MsgUnknownCommand       = "UNKNOWN_COMMAND"
+	MsgNotAuthenticated     = "NOT_AUTHENTICATED"
+	MsgAlreadyAuthenticated = "ALREADY_AUTHENTICATED"
 )
 
 func FormatCmd(commandName, arguments string) string {
@@ -100,8 +102,8 @@ func FormatEvt(eventType, eventData string) string {
 }
 
 type State int
+
 const (
-	// est un identificateur pré-déclaré qui agit comme un compteur automatique
 	StateDisconnected State = iota
 	StateConnected
 	StateAuthenticated
@@ -122,5 +124,3 @@ func (s State) String() string {
 		return "UNKNOWN"
 	}
 }
-
-

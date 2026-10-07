@@ -1,6 +1,7 @@
 package server
 
-import(
+import (
+	"log/slog"
 	"strings"
 	"tap/internal/protocol"
 )
@@ -10,26 +11,32 @@ func (p *Player) HandleCommand(rawLine string) {
 	command := strings.ToUpper(parts[0])
 	args := ""
 	if len(parts) > 1 {
-		args := strings.TrimSpace(parts[1])
+		args = strings.TrimSpace(parts[1])
 	}
 
+	slog.Info("Command received",
+		"player", p.Username,
+		"command", command,
+		"parameters", args,
+	)
+
 	if p.State != protocol.StateAuthenticated {
-		p.sendErr(protocol.CodeNotAuthenticated, protocol.MsgNotAuthenticated)
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgNotAuthenticated)
 		return
 	}
 
 	switch command {
 
 	case protocol.CmdLook:
-		p.handleLook()
+		p.handleLook(args)
 	case protocol.CmdMove:
 		p.handleMove(args)
 	case protocol.CmdQuit:
-		p.handleQuit()
+		p.handleQuit(args)
 	case protocol.CmdChat:
 		p.handleChat(args)
 	case protocol.CmdWho:
-		p.handleWho()
+		p.handleWho(args)
 	case protocol.CmdGroup:
 		p.handleGroup(args)
 	case protocol.CmdTake:
@@ -37,42 +44,20 @@ func (p *Player) HandleCommand(rawLine string) {
 	case protocol.CmdDrop:
 		p.handleDrop(args)
 	case protocol.CmdInventory:
-		p.handleInventory()
+		p.handleInventory(args)
 	case protocol.CmdTalk:
 		p.handleTalk(args)
 	case protocol.CmdAttack:
 		p.handleAttack(args)
 	case protocol.CmdStatus:
-		p.handleStatus()
+		p.handleStatus(args)
 	case protocol.CmdQuest:
 		p.handleQuest(args)
 	case protocol.CmdQuests:
-		p.handleQuests()
+		p.handleQuests(args)
 	case protocol.CmdConnect:
-		p.SendErr(protocol.CodeAlreadyAuthenticated, protocol.MsgAlreadyAuthenticated)
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgAlreadyAuthenticated)
 	default:
-		p.SendErr(protocol.CodeUnknownCommand, protocol.MsgUnknownCommand)
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgUnknownCommand)
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
