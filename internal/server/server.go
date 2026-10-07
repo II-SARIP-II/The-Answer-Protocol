@@ -15,7 +15,7 @@ import (
 // mot clé var pour déclarer un bloc de déclaration de variables globales
 var (
 	mu      sync.Mutex
-	players = make(map[string]net.Conn)
+	players = make(map[string]*Player)
 )
 
 // fonction pour démarrer le serveur
@@ -60,10 +60,11 @@ func Start(port string) error {
 
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
-	slog.Info("Client connected", "addr", conn.RemoteAddr().String())
 
-	// envoi du message d'accueil RFC
-	fmt.Fprint(conn, protocol.MsgHello)
+	state := protocol.StateConnected
+	slog.Info("Player connected", "addr", conn.RemoteAddr().String(), "state", state)
+
+		fmt.Fprint(conn, protocol.MsgHello)
 
 	clientScanner := bufio.NewScanner(conn)
 	if !clientScanner.Scan() {
@@ -90,18 +91,24 @@ func handleConnection(conn net.Conn) {
 		fmt.Fprint(conn, protocol.FormatErr(protocol.CodeNameInUse, protocol.MsgNameInUse))
 		return
 	}
-	players[username] = conn
+	player := &Player {
+		Username: username,
+		Conn: conn,
+		State: protocol.StateAuthenticated,
+	}
+	players[username] = player
 	mu.Unlock()
 
-	// confirmation de connexion
+	player.State = protocol.StateAuthenticated
 	fmt.Fprint(conn, protocol.MsgConnected)
-	slog.Info("Player authenticated", "username", username)
+	slog.Info("Player authenticated", "addr",conn.RemoteAddr().String(), "state", player.State)
 
 	// nettoyage automatique du joueur lors de la déconnexion
 	defer func() {
 		mu.Lock()
+		player.State = protocol.StateTerminated
 		delete(players, username)
-		slog.Info("Player disconnected", "username", username)
+		slog.Info("Player disconnected", "username", username, "addr", conn.RemoteAddr().String(), "state", state)
 		mu.Unlock()
 	}()
 
@@ -112,19 +119,32 @@ func handleConnection(conn net.Conn) {
 			continue
 		}
 
-		slog.Info("Command received", "username", username, "cmd", command)
+		slog.Info("Command received", "username", player.Username, "cmd", command)
 
-		if strings.ToUpper(command) == protocol.CmdQuit {
-			fmt.Fprint(conn, protocol.MsgBye)
+		player.HandleCommand(command)
+
+		if player.State == protocol.StateTerminated {
 			break
 		}
 
-		fmt.Fprint(conn, protocol.FormatOK(fmt.Sprintf("received (TODO): %s", command)))
-	}
+	// 	if strings.ToUpper(command) == protocol.CmdQuit {
+	// 		fmt.Fprint(conn, protocol.MsgBye)
+	// 		break
+	// 	}
 
-	if err := clientScanner.Err(); err != nil {
-		slog.Warn("Client connection error", "username", username, "error", err)
-	} else {
-		slog.Info("Client cleanly disconnected", "username", username)
+	// 	cmdParts := strings.SplitN(command, " ", 2)
+	// 	if strings.ToUpper(cmdParts[0]) == protocol.CmdConnect {
+	// 		fmt.Fprint(conn, protocol.FormatErr(protocol.CodeAlreadyAuthenticated, protocol.MsgAlreadyAuthenticated))
+	// 		continue
+	// 	}
+
+	// 	fmt.Fprint(conn, protocol.FormatOK(fmt.Sprintf("received (TODO): %s", command)))
+	// }
+
+	// if err := clientScanner.Err(); err != nil {
+	// 	slog.Warn("Client connection error", "username", username, "error", err)
+	// } else {
+	// 	slog.Info("Client cleanly disconnected", "username", username)
+	// }
 	}
 }

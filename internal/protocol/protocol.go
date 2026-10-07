@@ -46,7 +46,7 @@ const (
 const (
 	CodeNameInUse          = 201
 	CodeNoExit             = 301
-	CodeBadRequest         = 400
+	CodeUnknownCommand	   = 400
 	CodeNotInGroup         = 401
 	CodeAlreadyInGroup     = 402
 	CodeItemNotFound       = 404
@@ -54,6 +54,8 @@ const (
 	CodeNPCNotFound        = 404
 	CodeNPCNotHostile      = 405
 	CodeNoQuestAvailable   = 406
+	CodeAlreadyAuthenticated = 407
+	CodeNotAuthenticated 	= 408
 	CodeConnectionFailed   = 900
 	CodeSendFailed         = 901
 )
@@ -61,7 +63,7 @@ const (
 const (
 	MsgNameInUse          = "NAME_IN_USE"
 	MsgNoExit             = "NO_EXIT"
-	MsgBadRequest         = "BAD_REQUEST"
+	MsgUnknownCommand	  = "UNKNOWN_COMMAND"
 	MsgNotInGroup         = "NOT_IN_GROUP"
 	MsgAlreadyInGroup     = "ALREADY_IN_GROUP"
 	MsgItemNotFound       = "ITEM_NOT_FOUND"
@@ -69,11 +71,12 @@ const (
 	MsgNPCNotFound        = "NPC_NOT_FOUND"
 	MsgNPCNotHostile      = "NPC_NOT_HOSTILE"
 	MsgNoQuestAvailable   = "NO_QUEST_AVAILABLE"
+	MsgAlreadyAuthenticated = "ALREADY_AUTHENTICATED"
+	MsgNotAuthenticated		= "NOT_AUTHENTICATED"
 	MsgConnectionFailed   = "CONNECTION_FAILED"
 	MsgSendFailed         = "SEND_FAILED"
 )
 
-// • fmt.Sprintf : Génère et retourne un type string. Retour : La chaîne de caractères finale.
 func FormatCmd(commandName, arguments string) string {
 	if arguments == "" {
 		return fmt.Sprintf("%s\n", commandName)
@@ -95,3 +98,29 @@ func FormatErr(errorCode int, errorMessage string) string {
 func FormatEvt(eventType, eventData string) string {
 	return fmt.Sprintf("EVT %s %s\n", eventType, eventData)
 }
+
+type State int
+const (
+	// est un identificateur pré-déclaré qui agit comme un compteur automatique
+	StateDisconnected State = iota
+	StateConnected
+	StateAuthenticated
+	StateTerminated
+)
+
+func (s State) String() string {
+	switch s {
+	case StateDisconnected:
+		return "DISCONNECTED"
+	case StateConnected:
+		return "CONNECTED"
+	case StateAuthenticated:
+		return "AUTHENTICATED"
+	case StateTerminated:
+		return "TERMINATED"
+	default:
+		return "UNKNOWN"
+	}
+}
+
+
