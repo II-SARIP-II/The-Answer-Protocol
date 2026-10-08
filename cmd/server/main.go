@@ -1,9 +1,8 @@
 package main
 
 import (
-	"tap/internal/server"
 	"os"
-
+	"tap/internal/server"
 )
 
 func main() {

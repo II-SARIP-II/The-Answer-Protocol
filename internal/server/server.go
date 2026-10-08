@@ -49,11 +49,11 @@ func Start(port string) error {
 			return err
 		}
 
-		go handleConnection(conn)
+		go handleClientSession(conn)
 	}
 }
 
-func handleConnection(conn net.Conn) {
+func handleClientSession(conn net.Conn) {
 	defer conn.Close()
 
 	state := protocol.StateConnected
@@ -66,14 +66,14 @@ func handleConnection(conn net.Conn) {
 		return
 	}
 
-	player, err := handleConnect(conn, clientScanner.Text())
+	player, err := authenticate(conn, clientScanner.Text())
 	if err != nil {
 		return
 	}
 
 	player.State = protocol.StateAuthenticated
 	fmt.Fprint(conn, protocol.MsgConnected)
-	slog.Info("Client authenticated", "addr", conn.RemoteAddr().String(), "state", player.State)
+	slog.Info("Client authenticated", "username", player.Username, "addr", conn.RemoteAddr().String(), "state", player.State)
 
 	defer func() {
 		mu.Lock()
@@ -96,36 +96,36 @@ func handleConnection(conn net.Conn) {
 		}
 	}
 	if error := clientScanner.Err(); error != nil {
-		slog. Warn("Client connection error", "username", player.Username, "error", error)
+		slog.Warn("Client connection error", "username", player.Username, "error", error)
 	}
 }
 
-func handleConnect(conn net.Conn, command string) (*Player, error) {
+func authenticate(conn net.Conn, command string) (*Player, error) {
 	parts := strings.SplitN(command, " ", 2)
 	if len(parts) != 2 || strings.ToUpper(parts[0]) != protocol.CmdConnect {
 		fmt.Fprint(conn, protocol.FormatErr(protocol.CodeBadRequest, protocol.MsgUnknownCommand))
-		slog.Warn("Authentication failed", "addr", conn.RemoteAddr().String(), "code", protocol.CodeBadRequest,"msg", protocol.MsgUnknownCommand)
+		slog.Warn("Authentication failed", "addr", conn.RemoteAddr().String(), "code", protocol.CodeBadRequest, "msg", protocol.MsgUnknownCommand)
 		return nil, errors.New("Authentication failed: invalid command")
 	}
 
 	username := strings.TrimSpace(parts[1])
 	if username == "" {
-		fmt.Fprint(conn, protocol.FormatErr(protocol.CodeBadRequest, protocol.MsgUnknownCommand))
-		slog.Warn("Authentication failed: empty username", "addr", conn.RemoteAddr().String(), "code", protocol.CodeBadRequest,"msg", protocol.MsgUnknownCommand)
+		fmt.Fprint(conn, protocol.FormatErr(protocol.CodeBadRequest, protocol.MsgArgsError))
+		slog.Warn("Authentication failed: empty username", "addr", conn.RemoteAddr().String(), "code", protocol.CodeBadRequest, "msg", protocol.MsgArgsError)
 		return nil, errors.New("username is empty.")
 	}
 
 	if strings.Contains(username, " ") {
 		fmt.Fprint(conn, protocol.FormatErr(protocol.CodeBadRequest, protocol.MsgArgsError))
-		slog.Warn("Authentication failed: space in username", "addr", conn.RemoteAddr().String(), "code", protocol.CodeBadRequest,"msg", protocol.MsgArgsError)
+		slog.Warn("Authentication failed: space in username", "addr", conn.RemoteAddr().String(), "code", protocol.CodeBadRequest, "msg", protocol.MsgArgsError)
 		return nil, errors.New("space in username.")
 	}
 
 	mu.Lock()
 	if _, exists := players[username]; exists {
 		mu.Unlock()
-		fmt.Fprint(conn , protocol.FormatErr(protocol.CodeNameInUse, protocol.MsgNameInUse))
-		slog.Warn("Authentication failed", "adress", conn.RemoteAddr().String(), "code", protocol.CodeNameInUse,"msg", protocol.MsgNameInUse)
+		fmt.Fprint(conn, protocol.FormatErr(protocol.CodeNameInUse, protocol.MsgNameInUse))
+		slog.Warn("Authentication failed", "addr", conn.RemoteAddr().String(), "code", protocol.CodeNameInUse, "msg", protocol.MsgNameInUse)
 
 		return nil, errors.New("name in use")
 	}
