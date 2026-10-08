@@ -69,7 +69,8 @@ func (b *Button) Draw(screen *ebiten.Image) {
 	if b.IsHovered {
 		borderWidth = 2
 	}
-	DrawStrokeRect(screen, b.X, b.Y, b.W, b.H, borderWidth, b.BorderColor)
+	var hole []Hole = []Hole{}
+	DrawStrokeRect(screen, b.X, b.Y, b.W, b.H, borderWidth, b.BorderColor, hole)
 
 	textX := int(b.X) + int(b.W)/2 - (len(b.Label)*10)/2
 	textY := int(b.Y) + int(b.H)/2 - 6

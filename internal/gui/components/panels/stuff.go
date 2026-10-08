@@ -10,6 +10,7 @@ func CreateStuffPanel(topH, centerH, bottomH, colLeftW float32) *components.Pane
 	return &components.Panel{
 		Name:			"STUFF",
 		DisplayName:	true,
+		ToDraw:			true,
 		X:				colLeftW * 0.5,
 		Y:				topH + centerH,
 		W:				colLeftW * 0.5,

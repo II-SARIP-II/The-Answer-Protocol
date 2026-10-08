@@ -10,6 +10,7 @@ func CreateStatsPanel(topH, centerH, bottomH, colLeftW float32) *components.Pane
 	return &components.Panel{
 		Name:			"STATS",
 		DisplayName:	true,
+		ToDraw:			true,
 		X:				0,
 		Y:				topH + centerH,
 		W:				colLeftW * 0.5,

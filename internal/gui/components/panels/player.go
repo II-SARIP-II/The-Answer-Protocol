@@ -10,6 +10,7 @@ func CreatePlayerPanel(topH, centerH, colLeftW float32) *components.Panel {
 	return &components.Panel{
 		Name:			"Player",
 		DisplayName:	true,
+		ToDraw:			true,
 		X:				0,
 		Y:				topH,
 		W:				colLeftW,

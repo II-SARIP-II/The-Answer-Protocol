@@ -11,10 +11,17 @@ type Widget interface {
 	Draw(screen *ebiten.Image)
 }
 
+type Hole struct {
+	Wall	int
+	Pos		float32
+}
+
 type Panel struct {
 	Name        string
 	DisplayName	bool
+	ToDraw		bool
 	X, Y, W, H  float32
+	BorderHoles	[]Hole
 	Content     []Widget
 	BgColor     color.Color
 	BorderColor color.Color
@@ -44,12 +51,14 @@ func (p *Panel) Draw(screen *ebiten.Image) {
 	if p == nil {
 		return
 	}
-	DrawFilledRect(screen, p.X, p.Y, p.W, p.H, p.BgColor)
-	DrawStrokeRect(screen, p.X, p.Y, p.W, p.H, 1, p.BorderColor)
-	if p.DisplayName {
-		PrintTitle(screen, p.X, p.Y, p.W, p.H, p.Name, p.TextSize)
-	}
+	if p.ToDraw {
+		DrawFilledRect(screen, p.X, p.Y, p.W, p.H, p.BgColor)
+		DrawStrokeRect(screen, p.X, p.Y, p.W, p.H, 1, p.BorderColor, p.BorderHoles)
 
+		if p.DisplayName {
+			PrintTitle(screen, p.X, p.Y, p.W, p.H, p.Name, p.TextSize)
+		}
+	}	
 	for _, widget := range p.Content {
 		if widget != nil {
 			widget.Draw(screen)

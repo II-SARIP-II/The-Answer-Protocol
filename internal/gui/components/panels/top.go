@@ -10,6 +10,7 @@ func CreateTopPanel(w, topH float32) *components.Panel {
 	return &components.Panel{
 		Name:			"Top Panel",
 		DisplayName:	true,
+		ToDraw:			true,
 		X:				0,
 		Y:				0,
 		W:				w,

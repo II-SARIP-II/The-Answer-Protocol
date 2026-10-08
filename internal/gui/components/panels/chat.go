@@ -10,6 +10,7 @@ func CreateChatPanel(topH, centerH, bottomH, colLeftW, colMidW float32) *compone
 	return &components.Panel{
 		Name:			"Team Chat",
 		DisplayName:	true,
+		ToDraw:			true,
 		X:				colLeftW,
 		Y:				topH + centerH,
 		W:				colMidW,

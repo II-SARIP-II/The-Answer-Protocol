@@ -7,8 +7,8 @@
       "w": 4,
       "h": 3,
       "exits": {
-        "east": { "target": "room2", "door_pos": 2 },
-        "south": { "target": "room1", "door_pos": 2 }
+        "east": { "target": "room2", "door_pos": 2, "wall": 1 },
+        "south": { "target": "room1", "door_pos": 2, "wall": 2 }
       },
       "items": [],
       "npcs": ["undercover_agent"]
@@ -20,7 +20,7 @@
       "w": 4,
       "h": 3,
       "exits": {
-        "north": { "target": "room0", "door_pos": 2 }
+        "north": { "target": "room0", "door_pos": 2, "wall": 0 }
       },
       "items": ["Colt 1911"],
       "npcs": []
@@ -32,9 +32,9 @@
       "w": 4,
       "h": 7,
       "exits": {
-        "east": { "target": "room3", "door_pos": 2 },
-        "south": { "target": "room5", "door_pos": 2 },
-        "west": { "target": "room0", "door_pos": 2 }
+        "east": { "target": "room3", "door_pos": 2, "wall": 1 },
+        "south": { "target": "room5", "door_pos": 2, "wall": 2 },
+        "west": { "target": "room0", "door_pos": 2, "wall": 3 }
       },
       "items": [],
       "npcs": ["receptionist"]
@@ -46,8 +46,8 @@
       "w": 4,
       "h": 3,
       "exits": {
-        "south": { "target": "room4", "door_pos": 3 },
-        "west": { "target": "room2", "door_pos": 2 }
+        "south": { "target": "room4", "door_pos": 3, "wall": 2 },
+        "west": { "target": "room2", "door_pos": 2, "wall": 3 }
       },
       "items": [],
       "npcs": ["chef"]
@@ -59,8 +59,8 @@
       "w": 4,
       "h": 7,
       "exits": {
-        "north": { "target": "room3", "door_pos": 3 },
-        "west": { "target": "room5", "door_pos": 6 }
+        "north": { "target": "room3", "door_pos": 3, "wall": 0 },
+        "west": { "target": "room5", "door_pos": 5, "wall": 3 }
       },
       "items": [],
       "npcs": []
@@ -72,9 +72,9 @@
       "w": 8,
       "h": 2,
       "exits": {
-        "north": { "target": "room2", "door_pos": 6 },
-        "east": { "target": "room4", "door_pos": 2 },
-        "south": { "target": "room6", "door_pos": 1 }
+        "north": { "target": "room2", "door_pos": 6, "wall": 0 },
+        "east": { "target": "room4", "door_pos": 1, "wall": 1 },
+        "south": { "target": "room6", "door_pos": 1, "wall": 2 }
       },
       "items": [],
       "npcs": ["bodyguard_1"]
@@ -86,8 +86,8 @@
       "w": 3,
       "h": 7,
       "exits": {
-        "north": { "target": "room5", "door_pos": 1 },
-        "east": { "target": "room7", "door_pos": 5 }
+        "north": { "target": "room5", "door_pos": 1, "wall": 0 },
+        "east": { "target": "room7", "door_pos": 5, "wall": 1 }
       },
       "items": [],
       "npcs": []
@@ -99,8 +99,8 @@
       "w": 4,
       "h": 3,
       "exits": {
-        "north": { "target": "room8", "door_pos": 3 },
-        "west": { "target": "room6", "door_pos": 1 }
+        "north": { "target": "room8", "door_pos": 3, "wall": 0 },
+        "west": { "target": "room6", "door_pos": 1, "wall": 3 }
       },
       "items": [],
       "npcs": ["bodyguard_2"]
@@ -112,8 +112,8 @@
       "w": 4,
       "h": 1,
       "exits": {
-        "east": { "target": "room9", "door_pos": 1 },
-        "south": { "target": "room7", "door_pos": 1 }
+        "east": { "target": "room9", "door_pos": 0, "wall": 1 },
+        "south": { "target": "room7", "door_pos": 1, "wall": 2 }
       },
       "items": [],
       "npcs": []
@@ -125,7 +125,7 @@
       "w": 3,
       "h": 4,
       "exits": {
-        "west": { "target": "room8", "door_pos": 2 }
+        "west": { "target": "room8", "door_pos": 1, "wall": 3 }
       },
       "items": [],
       "npcs": ["target"]

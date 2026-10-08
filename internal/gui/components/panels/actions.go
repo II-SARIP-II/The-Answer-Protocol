@@ -70,6 +70,7 @@ func CreateActionsPanel(topH, centerH, colLeftW, colMidW, colRightW float32) *co
 	return &components.Panel{
 		Name:			"ACTIONS",
 		DisplayName:	true,
+		ToDraw:			true,
 		X:				crX,
 		Y:				crY,
 		W:				crW,

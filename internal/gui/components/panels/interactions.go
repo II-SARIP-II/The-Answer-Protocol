@@ -10,6 +10,7 @@ func CreateInteractionsPanel(topH, centerH, bottomH, colLeftW, colMidW, colRight
 	return &components.Panel{
 		Name:			"Game Interactions",
 		DisplayName:	true,
+		ToDraw:			true,
 		X:				colLeftW + colMidW,
 		Y:				topH + centerH,
 		W:				colRightW,
