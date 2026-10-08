@@ -12,20 +12,20 @@ type Widget interface {
 }
 
 type Hole struct {
-	Wall	int
-	Pos		float32
+	Wall int
+	Pos  float32
 }
 
 type Panel struct {
 	Name        string
-	DisplayName	bool
-	ToDraw		bool
+	DisplayName bool
+	ToDraw      bool
 	X, Y, W, H  float32
-	BorderHoles	[]Hole
+	BorderHoles []Hole
 	Content     []Widget
 	BgColor     color.Color
 	BorderColor color.Color
-	TextSize	float32
+	TextSize    float32
 }
 
 func (p *Panel) Update() {
@@ -58,7 +58,7 @@ func (p *Panel) Draw(screen *ebiten.Image) {
 		if p.DisplayName {
 			PrintTitle(screen, p.X, p.Y, p.W, p.H, p.Name, p.TextSize)
 		}
-	}	
+	}
 	for _, widget := range p.Content {
 		if widget != nil {
 			widget.Draw(screen)

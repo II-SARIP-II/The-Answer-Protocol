@@ -24,8 +24,8 @@ func CreateMapPanel(topH, centerH, colLeftW, colMidW float32, data world.GameDat
 		rh := float32(roomData.H) * scale
 		for _, exitData := range roomData.Exits {
 			holes = append(holes, components.Hole{
-				Wall:	exitData.Wall,
-				Pos:	float32(exitData.DoorPos) * scale,
+				Wall: exitData.Wall,
+				Pos:  float32(exitData.DoorPos) * scale,
 			})
 		}
 
@@ -33,34 +33,34 @@ func CreateMapPanel(topH, centerH, colLeftW, colMidW float32, data world.GameDat
 			ToDraw = true
 		}
 		roomWidget := &components.Panel{
-			Name:			roomData.Name,
-			DisplayName:	true,
-			ToDraw:			ToDraw,
-			X:				rx,
-			Y:				ry,
-			W:				rw,
-			H:				rh,
-			Content:		nil,
-			BorderHoles:	holes,
-			BgColor:		color.RGBA{R: 200, G: 200, B: 200, A: 255},
-			BorderColor:	color.RGBA{R: 30, G: 30, B: 30, A: 255},
-			TextSize:		float32(10.0),
+			Name:        roomData.Name,
+			DisplayName: true,
+			ToDraw:      ToDraw,
+			X:           rx,
+			Y:           ry,
+			W:           rw,
+			H:           rh,
+			Content:     nil,
+			BorderHoles: holes,
+			BgColor:     color.RGBA{R: 200, G: 200, B: 200, A: 255},
+			BorderColor: color.RGBA{R: 30, G: 30, B: 30, A: 255},
+			TextSize:    float32(10.0),
 		}
 
 		content = append(content, roomWidget)
 	}
 
 	return &components.Panel{
-		Name:			"MAP",
-		DisplayName:	true,
-		ToDraw:			true,
-		X:				colLeftW,
-		Y:				topH,
-		W:				colMidW,
-		H:				centerH,
-		Content:		content,
-		BgColor:		color.RGBA{R: 120, G: 120, B: 120, A: 255},
-		BorderColor:	color.RGBA{R: 50, G: 50, B: 50, A: 255},
-		TextSize:		float32(25.0),
+		Name:        "MAP",
+		DisplayName: true,
+		ToDraw:      true,
+		X:           colLeftW,
+		Y:           topH,
+		W:           colMidW,
+		H:           centerH,
+		Content:     content,
+		BgColor:     color.RGBA{R: 120, G: 120, B: 120, A: 255},
+		BorderColor: color.RGBA{R: 50, G: 50, B: 50, A: 255},
+		TextSize:    float32(25.0),
 	}
 }

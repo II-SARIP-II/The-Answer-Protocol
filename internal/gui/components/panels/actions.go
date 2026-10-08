@@ -22,7 +22,7 @@ func CreateActionsPanel(topH, centerH, colLeftW, colMidW, colRightW float32) *co
 		"GROUP":  Group,
 		"QUIT":   Quit,
 	}
-	
+
 	actionLabels := []string{
 		"LOOK", "MOVE",
 		"TAKE", "DROP",
@@ -68,17 +68,17 @@ func CreateActionsPanel(topH, centerH, colLeftW, colMidW, colRightW float32) *co
 	}
 
 	return &components.Panel{
-		Name:			"ACTIONS",
-		DisplayName:	true,
-		ToDraw:			true,
-		X:				crX,
-		Y:				crY,
-		W:				crW,
-		H:				crH,
-		Content:		content,
-		BgColor:		color.RGBA{R: 160, G: 160, B: 160, A: 255},
-		BorderColor:	color.RGBA{R: 50, G: 50, B: 50, A: 255},
-		TextSize:		float32(25.0),
+		Name:        "ACTIONS",
+		DisplayName: true,
+		ToDraw:      true,
+		X:           crX,
+		Y:           crY,
+		W:           crW,
+		H:           crH,
+		Content:     content,
+		BgColor:     color.RGBA{R: 160, G: 160, B: 160, A: 255},
+		BorderColor: color.RGBA{R: 50, G: 50, B: 50, A: 255},
+		TextSize:    float32(25.0),
 	}
 }
 

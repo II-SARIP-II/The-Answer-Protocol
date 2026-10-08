@@ -7,27 +7,27 @@ import (
 )
 
 type Exit struct {
-	Target	string	`json:"target"`
-	DoorPos	int		`json:"door_pos"`
-	Wall	int		`json:"wall"`
+	Target  string `json:"target"`
+	DoorPos int    `json:"door_pos"`
+	Wall    int    `json:"wall"`
 }
 
 type Room struct {
-	Name	string			`json:"name"`
-	X		int				`json:"x"`
-	Y		int				`json:"y"`
-	W		int				`json:"w"`
-	H		int				`json:"h"`
-	Exits	map[string]Exit	`json:"exits"`
-	Items	[]string		`json:"items"`
-	NPCs	[]string		`json:"npcs"`
+	Name  string          `json:"name"`
+	X     int             `json:"x"`
+	Y     int             `json:"y"`
+	W     int             `json:"w"`
+	H     int             `json:"h"`
+	Exits map[string]Exit `json:"exits"`
+	Items []string        `json:"items"`
+	NPCs  []string        `json:"npcs"`
 }
 
 type NPC struct {
-	Role	string	`json:"role"`
-	Name	string	`json:"name"`
-	Life	int		`json:"life"`
-	Item	*string `json:"item"`
+	Role string  `json:"role"`
+	Name string  `json:"name"`
+	Life int     `json:"life"`
+	Item *string `json:"item"`
 }
 
 type Item struct {
