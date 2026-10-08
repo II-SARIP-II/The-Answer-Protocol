@@ -8,12 +8,15 @@ import (
 
 func CreateStuffPanel(topH, centerH, bottomH, colLeftW float32) *components.Panel {
 	return &components.Panel{
-		Name:        "STUFF",
-		X:           colLeftW * 0.5,
-		Y:           topH + centerH,
-		W:           colLeftW * 0.5,
-		H:           bottomH,
-		BgColor:     color.RGBA{R: 160, G: 160, B: 160, A: 255},
-		BorderColor: color.RGBA{R: 50, G: 50, B: 50, A: 255},
+		Name:			"STUFF",
+		DisplayName:	true,
+		X:				colLeftW * 0.5,
+		Y:				topH + centerH,
+		W:				colLeftW * 0.5,
+		H:				bottomH,
+		Content:		[]components.Widget{},
+		BgColor:		color.RGBA{R: 160, G: 160, B: 160, A: 255},
+		BorderColor:	color.RGBA{R: 50, G: 50, B: 50, A: 255},
+		TextSize:		float32(25.0),
 	}
 }

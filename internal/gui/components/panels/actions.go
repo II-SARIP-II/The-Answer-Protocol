@@ -48,7 +48,8 @@ func CreateActionsPanel(topH, centerH, colLeftW, colMidW, colRightW float32) *co
 	btnW := (crW - (paddingX * 2) - gapX) / float32(cols)
 	btnH := (crH - paddingY - float32(20) - (gapY * float32(rows-1))) / float32(rows)
 
-	var actionButtons []*components.Button
+	var content []components.Widget
+
 	for i, label := range actionLabels {
 		col := i % cols
 		row := i / cols
@@ -63,18 +64,20 @@ func CreateActionsPanel(topH, centerH, colLeftW, colMidW, colRightW float32) *co
 
 		btn := components.NewButton(label, bx, by, btnW, btnH, actionFunc)
 
-		actionButtons = append(actionButtons, btn)
+		content = append(content, btn)
 	}
 
 	return &components.Panel{
-		Name:        "ACTIONS",
-		X:           crX,
-		Y:           crY,
-		W:           crW,
-		H:           crH,
-		Buttons:     actionButtons,
-		BgColor:     color.RGBA{R: 160, G: 160, B: 160, A: 255},
-		BorderColor: color.RGBA{R: 50, G: 50, B: 50, A: 255},
+		Name:			"ACTIONS",
+		DisplayName:	true,
+		X:				crX,
+		Y:				crY,
+		W:				crW,
+		H:				crH,
+		Content:		content,
+		BgColor:		color.RGBA{R: 160, G: 160, B: 160, A: 255},
+		BorderColor:	color.RGBA{R: 50, G: 50, B: 50, A: 255},
+		TextSize:		float32(25.0),
 	}
 }
 

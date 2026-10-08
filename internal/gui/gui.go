@@ -4,6 +4,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 
 	"tap/internal/gui/components"
+	"tap/internal/world"
 )
 
 type Game struct {
@@ -18,8 +19,8 @@ type Game struct {
     buttons           []*components.Button
 }
 
-func NewGame(winWidth int, winHeight int) *Game {
-    t, cl, cm, cr, bl, bcl, bcr, br := InitPanels(winWidth, winHeight)
+func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
+    t, cl, cm, cr, bl, bcl, bcr, br := InitPanels(winWidth, winHeight, data)
     g := &Game{
         top:               t,
         centerLeft:        cl,
@@ -65,9 +66,10 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func Run() error {
 	windowWidth := 1480
 	windowHeight := 1090
+    data := world.ReadJson()
 	ebiten.SetWindowSize(windowWidth, windowHeight)
 	ebiten.SetWindowTitle("The Answer Protocol")
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
-	newGame := NewGame(windowWidth, windowHeight)
+	newGame := NewGame(windowWidth, windowHeight, data)
 	return ebiten.RunGame(newGame)
 }

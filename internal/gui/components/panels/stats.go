@@ -8,12 +8,15 @@ import (
 
 func CreateStatsPanel(topH, centerH, bottomH, colLeftW float32) *components.Panel {
 	return &components.Panel{
-		Name:        "STATS",
-		X:           0,
-		Y:           topH + centerH,
-		W:           colLeftW * 0.5,
-		H:           bottomH,
-		BgColor:     color.RGBA{R: 160, G: 160, B: 160, A: 255},
-		BorderColor: color.RGBA{R: 50, G: 50, B: 50, A: 255},
+		Name:			"STATS",
+		DisplayName:	true,
+		X:				0,
+		Y:				topH + centerH,
+		W:				colLeftW * 0.5,
+		H:				bottomH,
+		Content:		[]components.Widget{},
+		BgColor:		color.RGBA{R: 160, G: 160, B: 160, A: 255},
+		BorderColor:	color.RGBA{R: 50, G: 50, B: 50, A: 255},
+		TextSize:		float32(25.0),
 	}
 }
