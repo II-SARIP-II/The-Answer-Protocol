@@ -72,16 +72,9 @@ func Run(addr string) error {
 		}
 		if strings.ToUpper(input) == protocol.CmdQuit {
 			fmt.Fprint(conn, protocol.FormatCmd(protocol.CmdQuit, ""))
-			if serverScanner.Scan() {
-				fmt.Println("Server:", serverScanner.Text())
-			}
 			break
 		}
 		fmt.Fprintf(conn, "%s\n", input)
-
-		if serverScanner.Scan() {
-			fmt.Println("Server:", serverScanner.Text())
-		}
 	}
 	if err := stdinScanner.Err(); err != nil {
 		return fmt.Errorf("Error reading standard input: %w", err)
