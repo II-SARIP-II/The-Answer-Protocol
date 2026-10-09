@@ -26,14 +26,14 @@ func (p *Player) handleWho(args string) {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
 		return
 	}
-	mu.Lock()
-	usernamesList := make([]string, 0, len(players))
-	for username := range players {
+	p.server.mu.Lock()
+	usernamesList := make([]string, 0, len(p.server.players))
+	for username := range p.server.players {
 		usernamesList = append(usernamesList, username)
 	}
 	// TODO ajouter la vraie liste de la current room
-	playersNumber := len(players)
-	mu.Unlock()
+	playersNumber := len(p.server.players)
+	p.server.mu.Unlock()
 
 	response := whoResponse{
 		Room:   usernamesList,
@@ -90,11 +90,11 @@ func (p *Player) handleChat(args string) {
 	switch scope {
 	case protocol.ChatGlobal:
 		p.SendOK("")
-		mu.Lock()
-		for _, dest := range players {
+		p.server.mu.Lock()
+		for _, dest := range p.server.players {
 			dest.SendEvt("GLOBAL CHAT", eventData)
 		}
-		mu.Unlock()
+		p.server.mu.Unlock()
 
 	case protocol.ChatGroup:
 		// TODO à compléter si player appartient à un groupe
@@ -102,13 +102,13 @@ func (p *Player) handleChat(args string) {
 
 	case protocol.ChatRoom:
 		p.SendOK("")
-		mu.Lock()
-		for _, dest := range players {
+		p.server.mu.Lock()
+		for _, dest := range p.server.players {
 			if dest.CurrentRoom == p.CurrentRoom {
 				dest.SendEvt("ROOM CHAT", eventData)
 			}
 		}
-		mu.Unlock()
+		p.server.mu.Unlock()
 
 	default:
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
