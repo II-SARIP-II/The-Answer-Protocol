@@ -4,61 +4,6 @@ import (
 	"tap/internal/protocol"
 )
 
-func (p *Player) handleLook(args string) {
-	// TODO
-	if args != "" {
-		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
-		return
-	}
-	p.SendOK("Received LOOK. (TODO)")
-}
-
-func (p *Player) handleMove(args string) {
-	// TODO
-	if args == "" {
-		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
-		return
-	}
-	p.SendOK("Received LOOK. (TODO)")
-}
-
-func (p *Player) handleQuit(args string) {
-	// TODO
-	if args != "" {
-		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
-		return
-		}
-	p.State = protocol.StateTerminated
-	p.SendOK("Received QUIT.")
-}
-
-func (p *Player) handleChat(args string) {
-	// TODO
-	if args == "" {
-		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
-		return
-	}
-	p.SendOK("Received CHAT. (TODO)")
-}
-
-func (p *Player) handleWho(args string) {
-	// TODO
-	if args != "" {
-		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
-		return
-	}
-	p.SendOK("Received WHO. (TODO)")
-}
-
-func (p *Player) handleGroup(args string) {
-	// TODO
-	if args == "" {
-		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
-		return
-	}
-	p.SendOK("Received GROUP. (TODO)")
-}
-
 func (p *Player) handleTake(args string) {
 	// TODO
 	if args == "" {
