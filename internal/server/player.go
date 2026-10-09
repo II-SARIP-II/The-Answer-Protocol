@@ -8,6 +8,7 @@ import (
 )
 
 type Player struct {
+	server 		*Server
 	Username    string
 	Conn        net.Conn
 	State       protocol.State
