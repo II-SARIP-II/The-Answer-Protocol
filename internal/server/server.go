@@ -151,7 +151,7 @@ func (s *Server) authenticate(conn net.Conn, command string) (*Player, error) {
 		return nil, errors.New("name in use")
 	}
 	player := &Player{
-		server:   s,
+		Server:   s,
 		Username: username,
 		Conn:     conn,
 		State:    protocol.StateAuthenticated,
