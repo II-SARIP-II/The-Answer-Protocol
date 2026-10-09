@@ -1,14 +1,14 @@
 package main
 
 import (
+	"log/slog"
 	"os"
 	"tap/internal/server"
-	"log/slog"
 )
 
 func main() {
 	serv, err := server.NewServer("data/world.json")
-	if err != nil{
+	if err != nil {
 		slog.Error("Failed to initialize server", "error", err)
 		os.Exit(1)
 	}
