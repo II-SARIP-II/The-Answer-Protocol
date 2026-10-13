@@ -44,7 +44,7 @@ lint-strict:
 	@go vet ./...
 	@if command -v golangci-lint >/dev/null 2>&1; then \
 		echo "Running golangci-lint..."; \
-		golangci-lint run ./...; \
+		GOTOOLCHAIN=go1.23.6 golangci-lint run ./...; \
 	else \
 		echo "golangci-lint is not installed (run 'go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest' to install it)"; \
 	fi
