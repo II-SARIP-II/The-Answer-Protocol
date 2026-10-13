@@ -1,58 +1,77 @@
 package gui
 
 import (
-	"bufio"
-	"fmt"
-	"net"
-	"os"
-	"strings"
-	"tap/internal/protocol"
+	ebiten "github.com/hajimehoshi/ebiten/v2"
+
+	"tap/internal/gui/components"
+	"tap/internal/world"
 )
 
-func Run(addr string, username string) error {
-	// Dial = ouverture d'une socket à une adresse et sur un port donnés
-	conn, err := net.Dial("tcp", addr)
-	if err != nil {
-		return fmt.Errorf("Cannot connect to the TAP server on %s: %w", addr, err)
-	}
-	defer conn.Close()
-	// pour l instant affichage terminal, à remplacer si tu veux par des fenêtres popup
-	fmt.Println("Successfully connected to the TAP server.")
+type Game struct {
+	top               *components.Panel
+	centerLeft        *components.Panel
+	centerMid         *components.Panel
+	centerRight       *components.Panel
+	bottomLeft        *components.Panel
+	bottomCenterLeft  *components.Panel
+	bottomCenterRight *components.Panel
+	bottomRight       *components.Panel
+}
 
-	// on crée un scanner pour lire les messages que le serveur écrit dans la socket
-	serverScanner := bufio.NewScanner(conn)
-	if serverScanner.Scan() {
-		fmt.Println("Server:", serverScanner.Text())
-	}
-
-	fmt.Fprint(conn, protocol.FormatCmd(protocol.CmdConnect, username))
-
-	// Validation de l'authentification : OK connected ou ERR
-	if serverScanner.Scan() {
-		response := serverScanner.Text()
-		// pour l instant affichage terminal, à remplacer si tu veux par des fenêtres popup
-		fmt.Println("Server:", response)
-		if strings.HasPrefix(response, protocol.PrefixERR) {
-			return fmt.Errorf("authentication failed: %s", response)
-		}
+func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
+	t, cl, cm, cr, bl, bcl, bcr, br := InitPanels(winWidth, winHeight, data)
+	g := &Game{
+		top:               t,
+		centerLeft:        cl,
+		centerMid:         cm,
+		centerRight:       cr,
+		bottomLeft:        bl,
+		bottomCenterLeft:  bcl,
+		bottomCenterRight: bcr,
+		bottomRight:       br,
 	}
 
-	// Goroutine en arrière-plan qui écoute les messages du serveur
-	go func() {
-		for serverScanner.Scan() {
-			response := serverScanner.Text()
-			// pour l instant affichage terminal, à remplacer si tu veux par des fenêtres popup
-			fmt.Println("Server:", response)
-			// TODO: mise à jour fenêtre gui
-		}
-		os.Exit(0)
-	}()
+	return g
+}
 
-	// TODO: La boucle graphique de ta fenêtre prend le relais ici.
-	// Pour envoyer une commande lors d'un clic de bouton :
-	// fmt.Fprintf(conn, "%s\n", "MOVE north") ou fmt.Fprintf(conn, "%s\n", "LOOK")
-	// Pour éviter les string en dur, tu peux utiliser les constantes de protocol.go
-	// (par exemple protocol.CmdMove au lieu de "MOVE")
-
+func (g *Game) Update() error {
+	components.UpdatePanels(
+		g.top,
+		g.centerLeft,
+		g.centerMid,
+		g.centerRight,
+		g.bottomLeft,
+		g.bottomCenterLeft,
+		g.bottomCenterRight,
+		g.bottomRight,
+	)
 	return nil
+}
+func (g *Game) Draw(screen *ebiten.Image) {
+	components.DrawPanels(
+		screen,
+		g.top,
+		g.centerLeft,
+		g.centerMid,
+		g.centerRight,
+		g.bottomLeft,
+		g.bottomCenterLeft,
+		g.bottomCenterRight,
+		g.bottomRight,
+	)
+}
+
+func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
+	return 1480, 1090
+}
+
+func Run() error {
+	windowWidth := 1480
+	windowHeight := 1090
+	data := world.ReadJson()
+	ebiten.SetWindowSize(windowWidth, windowHeight)
+	ebiten.SetWindowTitle("The Answer Protocol")
+	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
+	newGame := NewGame(windowWidth, windowHeight, data)
+	return ebiten.RunGame(newGame)
 }
