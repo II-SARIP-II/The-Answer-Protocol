@@ -18,7 +18,7 @@ type Button struct {
 	PressedColor color.RGBA
 	BorderColor  color.RGBA
 
-	OnClick func()
+	OnClick func(text string)
 }
 
 func NewButton(label string, x, y, w, h float32, onClick func()) *Button {
@@ -32,7 +32,6 @@ func NewButton(label string, x, y, w, h float32, onClick func()) *Button {
 		HoverColor:   color.RGBA{R: 70, G: 95, B: 135, A: 255},
 		PressedColor: color.RGBA{R: 25, G: 35, B: 50, A: 255},
 		BorderColor:  color.RGBA{R: 120, G: 160, B: 215, A: 255},
-		OnClick:      onClick,
 	}
 }
 
@@ -47,7 +46,7 @@ func (b *Button) Update() {
 
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 			if b.OnClick != nil {
-				b.OnClick()
+				b.OnClick(b.Label)
 			}
 		}
 	} else {

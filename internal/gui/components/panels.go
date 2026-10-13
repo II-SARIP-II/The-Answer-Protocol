@@ -28,6 +28,18 @@ func (p *Panel) GetChat() *ChatWidget {
 	return nil
 }
 
+func (p *Panel) GetButton() *Button {
+	if p == nil {
+		return nil
+	}
+	for _, widget := range p.Content {
+		if btn, ok := widget.(*Button); ok {
+			return btn
+		}
+	}
+	return nil
+}
+
 type Panel struct {
 	Name        string
 	DisplayName bool

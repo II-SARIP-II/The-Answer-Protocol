@@ -11,18 +11,20 @@ import (
 const MaxCharacterPerLine = 38
 
 type ChatWidget struct {
-	X, Y, W, H float32
-	Lines      []string
-	TextSize   float32
-	Color      color.Color
-	Spacing    float64
-	InputTitle string
-	Text       string
-	Runes      []rune
-	HasFocus   bool
+	X, Y, W, H	float32
+	Lines		[]string
+	TextSize	float32
+	Color		color.Color
+	Spacing		float64
+	InputTitle	string
+	Text		string
+	Runes		[]rune
+	HasFocus	bool
+	OnSubmit	func(text string)
 }
 
 func NewChatWidget(x, y, w, h, textSize float32, col color.Color, inputTitle string) *ChatWidget {
+	
 	return &ChatWidget{
 		X:          x,
 		Y:          y,
@@ -74,9 +76,16 @@ func (c *ChatWidget) Update() {
 
 	if repeatingKeyPressed(ebiten.KeyEnter) || repeatingKeyPressed(ebiten.KeyNumpadEnter) {
 		if len(c.Text) > 0 {
-			c.AddLine(c.InputTitle + c.Text)
-			c.Text = ""
-		}
+            // print in the chat visualisation
+            c.AddLine(c.InputTitle + c.Text)
+
+            // send to the server
+            if c.OnSubmit != nil {
+                c.OnSubmit(c.Text)
+            }
+
+            c.Text = ""
+        }
 	}
 
 	if repeatingKeyPressed(ebiten.KeyBackspace) {
