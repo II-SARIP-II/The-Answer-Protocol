@@ -10,7 +10,7 @@ func CreatePlayerPanel(topH, centerH, colLeftW float32) *components.Panel {
 	return &components.Panel{
 		Name:        "Player",
 		DisplayName: true,
-		TextColor:		color.RGBA{R: 50, G: 50, B: 50, A: 255},
+		TextColor:   color.RGBA{R: 50, G: 50, B: 50, A: 255},
 		ToDraw:      true,
 		X:           0,
 		Y:           topH,

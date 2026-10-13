@@ -17,21 +17,21 @@ type Hole struct {
 }
 
 func (p *Panel) GetChat() *ChatWidget {
-    if p == nil {
-        return nil
-    }
-    for _, widget := range p.Content {
-        if chat, ok := widget.(*ChatWidget); ok {
-            return chat
-        }
-    }
-    return nil
+	if p == nil {
+		return nil
+	}
+	for _, widget := range p.Content {
+		if chat, ok := widget.(*ChatWidget); ok {
+			return chat
+		}
+	}
+	return nil
 }
 
 type Panel struct {
 	Name        string
 	DisplayName bool
-	TextColor	color.Color
+	TextColor   color.Color
 	ToDraw      bool
 	X, Y, W, H  float32
 	BorderHoles []Hole

@@ -10,7 +10,7 @@ func CreateStuffPanel(topH, centerH, bottomH, colLeftW float32) *components.Pane
 	return &components.Panel{
 		Name:        "STUFF",
 		DisplayName: true,
-		TextColor:		color.RGBA{R: 50, G: 50, B: 50, A: 255},
+		TextColor:   color.RGBA{R: 50, G: 50, B: 50, A: 255},
 		ToDraw:      true,
 		X:           colLeftW * 0.5,
 		Y:           topH + centerH,

@@ -67,7 +67,7 @@ func (c *ChatWidget) Update() {
 	}
 
 	c.Runes = ebiten.AppendInputChars(c.Runes[:0])
-	
+
 	if len(c.Text) < 30 {
 		c.Text += string(c.Runes)
 	}
