@@ -19,8 +19,13 @@ jobs:
           go-version-file: 'go.mod'
           cache: false
 
-      - name: Download Go modules
-        run: go mod download
+      - name: Install Ebitengine dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev libxrandr-dev libxcursor-dev libxinerama-dev libxi-dev libasound2-dev
+
+      - name: Build packages and dependencies
+        run: go build -v ./...
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
