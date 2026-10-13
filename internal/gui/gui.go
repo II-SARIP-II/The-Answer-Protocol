@@ -1,6 +1,7 @@
 package gui
 
 import (
+
 	ebiten "github.com/hajimehoshi/ebiten/v2"
 
 	"tap/internal/gui/components"
@@ -68,10 +69,13 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func Run() error {
 	windowWidth := 1480
 	windowHeight := 1090
-	data := world.ReadJson()
+	data, err := world.ReadJson("data/world.json")
+	if err != nil {
+		return err
+	}
 	ebiten.SetWindowSize(windowWidth, windowHeight)
 	ebiten.SetWindowTitle("The Answer Protocol")
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
-	newGame := NewGame(windowWidth, windowHeight, data)
+	newGame := NewGame(windowWidth, windowHeight, *data)
 	return ebiten.RunGame(newGame)
 }
