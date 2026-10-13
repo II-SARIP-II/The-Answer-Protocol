@@ -6,8 +6,8 @@ import (
 	"image/color"
 	"log"
 
-	ebiten "github.com/hajimehoshi/ebiten/v2"
-	text "github.com/hajimehoshi/ebiten/v2/text/v2"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
 //go:embed assets/Feather.ttf
