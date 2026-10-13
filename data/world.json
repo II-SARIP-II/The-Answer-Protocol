@@ -1,0 +1,194 @@
+{
+  "rooms": {
+    "room0": {
+      "name": "Hotel Entrance",
+      "x": 1,
+      "y": 1,
+      "w": 4,
+      "h": 3,
+      "exits": {
+        "east": { "target": "room2", "door_pos": 2, "wall": 1 },
+        "south": { "target": "room1", "door_pos": 2, "wall": 2 }
+      },
+      "items": [],
+      "npcs": ["undercover_agent"]
+    },
+    "room1": {
+      "name": "Broom Closet",
+      "x": 1,
+      "y": 4,
+      "w": 4,
+      "h": 3,
+      "exits": {
+        "north": { "target": "room0", "door_pos": 2, "wall": 0 }
+      },
+      "items": ["Colt 1911"],
+      "npcs": []
+    },
+    "room2": {
+      "name": "Hotel Reception",
+      "x": 5,
+      "y": 1,
+      "w": 4,
+      "h": 7,
+      "exits": {
+        "east": { "target": "room3", "door_pos": 2, "wall": 1 },
+        "south": { "target": "room5", "door_pos": 2, "wall": 2 },
+        "west": { "target": "room0", "door_pos": 2, "wall": 3 }
+      },
+      "items": [],
+      "npcs": ["receptionist"]
+    },
+    "room3": {
+      "name": "Hotel Kitchen",
+      "x": 9,
+      "y": 1,
+      "w": 4,
+      "h": 3,
+      "exits": {
+        "south": { "target": "room4", "door_pos": 3, "wall": 2 },
+        "west": { "target": "room2", "door_pos": 2, "wall": 3 }
+      },
+      "items": [],
+      "npcs": ["chef"]
+    },
+    "room4": {
+      "name": "Dining Room",
+      "x": 9,
+      "y": 4,
+      "w": 4,
+      "h": 7,
+      "exits": {
+        "north": { "target": "room3", "door_pos": 3, "wall": 0 },
+        "west": { "target": "room5", "door_pos": 5, "wall": 3 }
+      },
+      "items": [],
+      "npcs": []
+    },
+    "room5": {
+      "name": "Corridor 1",
+      "x": 1,
+      "y": 8,
+      "w": 8,
+      "h": 2,
+      "exits": {
+        "north": { "target": "room2", "door_pos": 6, "wall": 0 },
+        "east": { "target": "room4", "door_pos": 1, "wall": 1 },
+        "south": { "target": "room6", "door_pos": 1, "wall": 2 }
+      },
+      "items": [],
+      "npcs": ["bodyguard_1"]
+    },
+    "room6": {
+      "name": "Corridor 2",
+      "x": 1,
+      "y": 10,
+      "w": 3,
+      "h": 7,
+      "exits": {
+        "north": { "target": "room5", "door_pos": 1, "wall": 0 },
+        "east": { "target": "room7", "door_pos": 5, "wall": 1 }
+      },
+      "items": [],
+      "npcs": []
+    },
+    "room7": {
+      "name": "VIP Room",
+      "x": 4,
+      "y": 14,
+      "w": 4,
+      "h": 3,
+      "exits": {
+        "north": { "target": "room8", "door_pos": 3, "wall": 0 },
+        "west": { "target": "room6", "door_pos": 1, "wall": 3 }
+      },
+      "items": [],
+      "npcs": ["bodyguard_2"]
+    },
+    "room8": {
+      "name": "Secret Corridor",
+      "x": 6,
+      "y": 13,
+      "w": 4,
+      "h": 1,
+      "exits": {
+        "east": { "target": "room9", "door_pos": 0, "wall": 1 },
+        "south": { "target": "room7", "door_pos": 1, "wall": 2 }
+      },
+      "items": [],
+      "npcs": []
+    },
+    "room9": {
+      "name": "Secret Room",
+      "x": 10,
+      "y": 12,
+      "w": 3,
+      "h": 4,
+      "exits": {
+        "west": { "target": "room8", "door_pos": 1, "wall": 3 }
+      },
+      "items": [],
+      "npcs": ["target"]
+    }
+  },
+  "npcs": {
+    "receptionist": {
+      "role": "dialogue",
+      "name": "The Receptionist",
+      "life": -1,
+      "item": null
+    },
+    "undercover_agent": {
+      "role": "quest-giver",
+      "name": "Agent Smith",
+      "life": -1,
+      "item": null
+    },
+    "target": {
+      "role": "target",
+      "name": "Mafia Boss",
+      "life": 50,
+      "item": "M16"
+    },
+    "bodyguard_1": {
+      "role": "enemy",
+      "name": "Big Biceps",
+      "life": 20,
+      "item": "Knife"
+    },
+    "bodyguard_2": {
+      "role": "enemy",
+      "name": "Big Guns",
+      "life": 10,
+      "item": "M16"
+    },
+    "chef": {
+      "role": "passiv enemy",
+      "name": "Kitchen Chef",
+      "life": 5,
+      "item": "Katana"
+    }
+  },
+  "items": {
+    "Colt 1911": {
+      "id": 1,
+      "damage": 4
+    },
+    "M16": {
+      "id": 2,
+      "damage": 7
+    },
+    "Knife": {
+      "id": 3,
+      "damage": 3
+    },
+    "Katana": {
+      "id": 4,
+      "damage": 9
+    }
+  },
+  "quests": [
+    "You are an agent of the MI6, and I'm your undercover assistant agent. Go in the closet and take the firearm that i let you. And then, come back and i'll tell you your assignement.",
+    "Your target is the Mafia Boss of Argentina, and he is in the Hotel now, you must find him and eliminate him, but attention, he might be accompanied by bodyguards. And then, come back to me"
+  ]
+}
