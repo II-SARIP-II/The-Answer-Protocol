@@ -69,4 +69,3 @@ func ReadJson(filepath string) (*GameData, error) {
 	}
 	return &data, nil
 }
-

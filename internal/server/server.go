@@ -16,8 +16,8 @@ import (
 type Server struct {
 	mu      sync.Mutex
 	players (map[string]*Player)
-	port 	string
-	world 	*world.GameData
+	port    string
+	world   *world.GameData
 }
 
 func NewServer(worldPath string) (*Server, error) {

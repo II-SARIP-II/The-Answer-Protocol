@@ -30,4 +30,3 @@ func (p *Player) handleQuit(args string) {
 	p.State = protocol.StateTerminated
 	p.SendOK("Received QUIT.")
 }
-

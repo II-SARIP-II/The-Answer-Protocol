@@ -74,7 +74,7 @@ func (p *Player) handleWho(args string) {
 	response := struct {
 		Room   []string `json:"room"`
 		Server int      `json:"Server"`
-}{
+	}{
 		Room:   usernamesList,
 		Server: playersNumber,
 	}
@@ -87,4 +87,3 @@ func (p *Player) handleWho(args string) {
 	p.SendOK(string(data))
 
 }
-

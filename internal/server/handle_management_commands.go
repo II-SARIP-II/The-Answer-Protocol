@@ -1,7 +1,7 @@
 package server
 
 import (
-		"tap/internal/protocol"
+	"tap/internal/protocol"
 )
 
 func (p *Player) handleGroup(args string) {
