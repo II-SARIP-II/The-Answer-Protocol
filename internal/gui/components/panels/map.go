@@ -35,6 +35,7 @@ func CreateMapPanel(topH, centerH, colLeftW, colMidW float32, data world.GameDat
 		roomWidget := &components.Panel{
 			Name:        roomData.Name,
 			DisplayName: true,
+			TextColor:		color.RGBA{R: 50, G: 50, B: 50, A: 255},
 			ToDraw:      ToDraw,
 			X:           rx,
 			Y:           ry,
@@ -53,6 +54,7 @@ func CreateMapPanel(topH, centerH, colLeftW, colMidW float32, data world.GameDat
 	return &components.Panel{
 		Name:        "MAP",
 		DisplayName: true,
+		TextColor:		color.RGBA{R: 50, G: 50, B: 50, A: 255},
 		ToDraw:      true,
 		X:           colLeftW,
 		Y:           topH,

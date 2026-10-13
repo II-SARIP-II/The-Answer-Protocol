@@ -10,6 +10,7 @@ func CreateStatsPanel(topH, centerH, bottomH, colLeftW float32) *components.Pane
 	return &components.Panel{
 		Name:        "STATS",
 		DisplayName: true,
+		TextColor:		color.RGBA{R: 50, G: 50, B: 50, A: 255},
 		ToDraw:      true,
 		X:           0,
 		Y:           topH + centerH,

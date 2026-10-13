@@ -16,7 +16,6 @@ type Game struct {
 	bottomCenterLeft  *components.Panel
 	bottomCenterRight *components.Panel
 	bottomRight       *components.Panel
-	buttons           []*components.Button
 }
 
 func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
@@ -37,7 +36,14 @@ func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 
 func (g *Game) Update() error {
 	components.UpdatePanels(
+		g.top,
+		g.centerLeft,
+		g.centerMid,
 		g.centerRight,
+		g.bottomLeft,
+		g.bottomCenterLeft,
+		g.bottomCenterRight,
+		g.bottomRight,
 	)
 	return nil
 }
@@ -53,10 +59,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		g.bottomCenterRight,
 		g.bottomRight,
 	)
-
-	for _, btn := range g.buttons {
-		btn.Draw(screen)
-	}
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {

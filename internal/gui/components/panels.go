@@ -16,9 +16,22 @@ type Hole struct {
 	Pos  float32
 }
 
+func (p *Panel) GetChat() *ChatWidget {
+    if p == nil {
+        return nil
+    }
+    for _, widget := range p.Content {
+        if chat, ok := widget.(*ChatWidget); ok {
+            return chat
+        }
+    }
+    return nil
+}
+
 type Panel struct {
 	Name        string
 	DisplayName bool
+	TextColor	color.Color
 	ToDraw      bool
 	X, Y, W, H  float32
 	BorderHoles []Hole
@@ -39,12 +52,11 @@ func (p *Panel) Update() {
 	}
 }
 
-func PrintTitle(screen *ebiten.Image, x float32, y float32, w float32, h float32, name string, size float32) {
+func PrintTitle(screen *ebiten.Image, x float32, y float32, w float32, h float32, name string, size float32, textColor color.Color) {
 	startX := x + (w / 2.0) - (float32(len(name)) * size * 0.5 / 2.0)
 	startY := y + size/2
-	col := color.RGBA{R: 50, G: 50, B: 50, A: 255}
 	fontType := "feather"
-	DrawText(screen, name, float64(startX), float64(startY), float64(size), col, fontType)
+	DrawText(screen, name, float64(startX), float64(startY), float64(size), textColor, fontType)
 }
 
 func (p *Panel) Draw(screen *ebiten.Image) {
@@ -56,7 +68,7 @@ func (p *Panel) Draw(screen *ebiten.Image) {
 		DrawStrokeRect(screen, p.X, p.Y, p.W, p.H, 1, p.BorderColor, p.BorderHoles)
 
 		if p.DisplayName {
-			PrintTitle(screen, p.X, p.Y, p.W, p.H, p.Name, p.TextSize)
+			PrintTitle(screen, p.X, p.Y, p.W, p.H, p.Name, p.TextSize, p.TextColor)
 		}
 	}
 	for _, widget := range p.Content {

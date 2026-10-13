@@ -70,6 +70,7 @@ func CreateActionsPanel(topH, centerH, colLeftW, colMidW, colRightW float32) *co
 	return &components.Panel{
 		Name:        "ACTIONS",
 		DisplayName: true,
+		TextColor:		color.RGBA{R: 50, G: 50, B: 50, A: 255},
 		ToDraw:      true,
 		X:           crX,
 		Y:           crY,
