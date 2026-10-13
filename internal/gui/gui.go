@@ -37,7 +37,7 @@ func Run(addr string, username string) error {
 		}
 	}
 
-	// Goroutine en arrière-plan qui écoute les messages du serveur (messages asynchrones: événement ou chat)
+	// Goroutine en arrière-plan qui écoute les messages du serveur
 	go func() {
 		for serverScanner.Scan() {
 			response := serverScanner.Text()
@@ -48,7 +48,11 @@ func Run(addr string, username string) error {
 		os.Exit(0)
 	}()
 
-	// boucle graphique...
+	// TODO: La boucle graphique de ta fenêtre prend le relais ici.
+	// Pour envoyer une commande lors d'un clic de bouton :
+	// fmt.Fprintf(conn, "%s\n", "MOVE north") ou fmt.Fprintf(conn, "%s\n", "LOOK")
+	// Pour éviter les string en dur, tu peux utiliser les constantes de protocol.go
+	// (par exemple protocol.CmdMove au lieu de "MOVE")
 
 	return nil
 }
