@@ -9,6 +9,7 @@ import (
 )
 
 const MaxCharacterPerLine = 38
+const MaxLines = 15
 
 type ChatWidget struct {
 	X, Y, W, H	float32
@@ -47,8 +48,8 @@ func (c *ChatWidget) AddLine(newLine string) {
 	}
 
 	c.Lines = append(c.Lines, newLine)
-	if len(c.Lines) > 5 {
-		c.Lines = c.Lines[len(c.Lines)-5:]
+	if len(c.Lines) > MaxLines {
+		c.Lines = c.Lines[len(c.Lines)-MaxLines:]
 	}
 }
 

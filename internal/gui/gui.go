@@ -26,7 +26,7 @@ type Game struct {
 func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 	name := "Pâris"
 	t, cl, cm, cr, bl, bcl, bcr, br := InitPanels(winWidth, winHeight, data)
-	conn, err := Connect("localhost:4242", "Edouard")
+	conn, err := Connect("localhost:4242", name)
 	messagesChan := make(chan string, 100)
 	go ListenServer(conn, messagesChan)
 	if err == nil {

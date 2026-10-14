@@ -21,7 +21,7 @@ type Button struct {
 	OnClick func(text string)
 }
 
-func NewButton(label string, x, y, w, h float32, onClick func()) *Button {
+func NewButton(label string, x, y, w, h float32) *Button {
 	return &Button{
 		X:            x,
 		Y:            y,
