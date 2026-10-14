@@ -20,8 +20,8 @@ func NewPlayer(username string, conn net.Conn) *Player {
 	return &Player{
 		Username:    username,
 		Conn:        conn,
-		State:       protocol.StateConnected,
-		CurrentRoom: "", //TODO initialiser à start_room
+		State:       protocol.StateAuthenticated,
+		CurrentRoom: "room0",
 	}
 }
 

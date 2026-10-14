@@ -1,7 +1,6 @@
 package gui
 
 import (
-
 	ebiten "github.com/hajimehoshi/ebiten/v2"
 
 	"tap/internal/gui/components"
