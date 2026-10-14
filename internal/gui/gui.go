@@ -19,8 +19,7 @@ type Game struct {
 	centerMid			*components.Panel
 	centerRight			*components.Panel
 	bottomLeft			*components.Panel
-	bottomCenterLeft	*components.Panel
-	bottomCenterRight	*components.Panel
+	bottomCenter	*components.Panel
 	bottomRight			*components.Panel
 	name 				string
 	conn				net.Conn
@@ -29,7 +28,7 @@ type Game struct {
 
 func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 	name := "Pâris"
-	t, cl, cm, cr, bl, bcl, bcr, br := InitPanels(winWidth, winHeight, data)
+	t, cl, cm, cr, bl, bc, br := InitPanels(winWidth, winHeight, data)
 	conn, err := Connect("localhost:4242", name)
 	messagesChan := make(chan string, 100)
 	go ListenServer(conn, messagesChan)
@@ -54,17 +53,16 @@ func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 	}
 
 	g := &Game{
-        top:               t,
-        centerLeft:        cl,
-        centerMid:         cm,
-        centerRight:       cr,
-        bottomLeft:        bl,
-        bottomCenterLeft:  bcl,
-        bottomCenterRight: bcr,
-        bottomRight:       br,
-		name: 				name,
-        conn:              conn,
-        messagesChan:      messagesChan,
+        top:			t,
+        centerLeft:		cl,
+        centerMid:		cm,
+        centerRight:	cr,
+        bottomLeft:		bl,
+        bottomCenter:	bc,
+        bottomRight:	br,
+		name:			name,
+        conn:			conn,
+        messagesChan:	messagesChan,
     }
 
 	return g
@@ -77,8 +75,7 @@ func (g *Game) Update() error {
         g.centerMid,
         g.centerRight,
         g.bottomLeft,
-        g.bottomCenterLeft,
-        g.bottomCenterRight,
+        g.bottomCenter,
         g.bottomRight,
     )
 
@@ -110,8 +107,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		g.centerMid,
 		g.centerRight,
 		g.bottomLeft,
-		g.bottomCenterLeft,
-		g.bottomCenterRight,
+		g.bottomCenter,
 		g.bottomRight,
 	)
 }
