@@ -3,7 +3,7 @@ package components
 import (
 	"image/color"
 
-	ebiten "github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Widget interface {
@@ -26,6 +26,19 @@ func (p *Panel) GetChat() *ChatWidget {
 		}
 	}
 	return nil
+}
+
+func (p *Panel) GetButtons() []*Button {
+	if p == nil {
+		return nil
+	}
+	var buttons []*Button
+	for _, widget := range p.Content {
+		if btn, ok := widget.(*Button); ok {
+			buttons = append(buttons, btn)
+		}
+	}
+	return buttons
 }
 
 type Panel struct {
@@ -55,7 +68,7 @@ func (p *Panel) Update() {
 func PrintTitle(screen *ebiten.Image, x float32, y float32, w float32, h float32, name string, size float32, textColor color.Color) {
 	startX := x + (w / 2.0) - (float32(len(name)) * size * 0.5 / 2.0)
 	startY := y + size/2
-	fontType := "feather"
+	fontType := "Title"
 	DrawText(screen, name, float64(startX), float64(startY), float64(size), textColor, fontType)
 }
 
