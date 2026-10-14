@@ -10,26 +10,26 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
-//go:embed assets/Feather.ttf
-var fontFeather []byte
+//go:embed assets/Title.ttf
+var fontTitle []byte
 
-//go:embed assets/Default.ttf
-var fontDefault []byte
+//go:embed assets/Text.ttf
+var fontText []byte
 
 var (
-	FeatherSource *text.GoTextFaceSource
-	DefaultSource *text.GoTextFaceSource
+	TitleSource *text.GoTextFaceSource
+	TextSource  *text.GoTextFaceSource
 )
 
 func init() {
 	var err error
 
-	FeatherSource, err = text.NewGoTextFaceSource(bytes.NewReader(fontFeather))
+	TitleSource, err = text.NewGoTextFaceSource(bytes.NewReader(fontTitle))
 	if err != nil {
-		log.Fatalf("Error while loading Feather font: %v", err)
+		log.Fatalf("Error while loading Title font: %v", err)
 	}
 
-	DefaultSource, err = text.NewGoTextFaceSource(bytes.NewReader(fontDefault))
+	TextSource, err = text.NewGoTextFaceSource(bytes.NewReader(fontText))
 	if err != nil {
 		log.Fatalf("Error while loading Default font: %v", err)
 	}
@@ -39,10 +39,10 @@ func DrawText(screen *ebiten.Image, msg string, x float64, y float64, size float
 	var source *text.GoTextFaceSource
 
 	switch fontType {
-	case "feather":
-		source = FeatherSource
+	case "title":
+		source = TitleSource
 	default:
-		source = DefaultSource
+		source = TextSource
 	}
 
 	face := &text.GoTextFace{

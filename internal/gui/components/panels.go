@@ -68,7 +68,7 @@ func (p *Panel) Update() {
 func PrintTitle(screen *ebiten.Image, x float32, y float32, w float32, h float32, name string, size float32, textColor color.Color) {
 	startX := x + (w / 2.0) - (float32(len(name)) * size * 0.5 / 2.0)
 	startY := y + size/2
-	fontType := "feather"
+	fontType := "Title"
 	DrawText(screen, name, float64(startX), float64(startY), float64(size), textColor, fontType)
 }
 

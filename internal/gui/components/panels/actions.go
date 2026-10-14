@@ -47,17 +47,17 @@ func CreateActionsPanel(topH, centerH, colLeftW, colMidW, colRightW float32) *co
 	}
 
 	return &components.Panel{
-		Name:        "ACTIONS",
+		Name:        "DIRECTIVE ACTIONS",
 		DisplayName: true,
-		TextColor:   color.RGBA{R: 50, G: 50, B: 50, A: 255},
+		TextColor:   color.RGBA{R: 0, G: 255, B: 200, A: 255},
 		ToDraw:      true,
 		X:           crX,
 		Y:           crY,
 		W:           crW,
 		H:           crH,
 		Content:     content,
-		BgColor:     color.RGBA{R: 160, G: 160, B: 160, A: 255},
-		BorderColor: color.RGBA{R: 50, G: 50, B: 50, A: 255},
-		TextSize:    float32(25.0),
+		BgColor:     color.RGBA{R: 10, G: 16, B: 26, A: 240}, // Fond sombre Cyber
+		BorderColor: color.RGBA{R: 0, G: 180, B: 220, A: 255},
+		TextSize:    float32(20.0),
 	}
 }

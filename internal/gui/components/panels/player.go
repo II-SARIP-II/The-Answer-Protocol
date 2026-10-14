@@ -19,7 +19,7 @@ func CreatePlayerPanel(topH, centerH, colLeftW float32) *components.Panel {
 		panelX+margin,
 		panelY+paddingTop,
 		colLeftW-(margin*2),
-		centerH-paddingTop,
+		centerH-paddingTop-margin,
 	)
 
 	if err != nil {
@@ -32,17 +32,17 @@ func CreatePlayerPanel(topH, centerH, colLeftW float32) *components.Panel {
 	}
 
 	return &components.Panel{
-		Name:        "Player",
+		Name:        "AGENT PROFILE",
 		DisplayName: true,
-		TextColor:   color.RGBA{R: 50, G: 50, B: 50, A: 255},
+		TextColor:   color.RGBA{R: 0, G: 255, B: 200, A: 255},
 		ToDraw:      true,
 		X:           panelX,
 		Y:           panelY,
 		W:           colLeftW,
 		H:           centerH,
 		Content:     widgetList,
-		BgColor:     color.RGBA{R: 160, G: 160, B: 160, A: 255},
-		BorderColor: color.RGBA{R: 50, G: 50, B: 50, A: 255},
-		TextSize:    float32(25.0),
+		BgColor:     color.RGBA{R: 10, G: 16, B: 26, A: 240},
+		BorderColor: color.RGBA{R: 0, G: 180, B: 220, A: 255},
+		TextSize:    float32(20.0),
 	}
 }

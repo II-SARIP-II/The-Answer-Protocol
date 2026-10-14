@@ -12,20 +12,19 @@ const MaxCharacterPerLine = 38
 const MaxLines = 15
 
 type ChatWidget struct {
-	X, Y, W, H	float32
-	Lines		[]string
-	TextSize	float32
-	Color		color.Color
-	Spacing		float64
-	InputTitle	string
-	Text		string
-	Runes		[]rune
-	HasFocus	bool
-	OnSubmit	func(text string)
+	X, Y, W, H float32
+	Lines      []string
+	TextSize   float32
+	Color      color.Color
+	Spacing    float64
+	InputTitle string
+	Text       string
+	Runes      []rune
+	HasFocus   bool
+	OnSubmit   func(text string)
 }
 
 func NewChatWidget(x, y, w, h, textSize float32, col color.Color, inputTitle string) *ChatWidget {
-	
 	return &ChatWidget{
 		X:          x,
 		Y:          y,
@@ -33,7 +32,7 @@ func NewChatWidget(x, y, w, h, textSize float32, col color.Color, inputTitle str
 		H:          h,
 		Lines:      []string{},
 		TextSize:   textSize,
-		Color:      col,
+		Color:      color.RGBA{R: 0, G: 255, B: 180, A: 255},
 		Spacing:    20.0,
 		InputTitle: inputTitle,
 		HasFocus:   false,
@@ -77,16 +76,14 @@ func (c *ChatWidget) Update() {
 
 	if repeatingKeyPressed(ebiten.KeyEnter) || repeatingKeyPressed(ebiten.KeyNumpadEnter) {
 		if len(c.Text) > 0 {
-            // print in the chat visualisation
-            c.AddLine(c.InputTitle + c.Text)
+			c.AddLine(c.InputTitle + c.Text)
 
-            // send to the server
-            if c.OnSubmit != nil {
-                c.OnSubmit(c.Text)
-            }
+			if c.OnSubmit != nil {
+				c.OnSubmit(c.Text)
+			}
 
-            c.Text = ""
-        }
+			c.Text = ""
+		}
 	}
 
 	if repeatingKeyPressed(ebiten.KeyBackspace) {
@@ -102,25 +99,26 @@ func (c *ChatWidget) Draw(screen *ebiten.Image) {
 
 	for i, line := range c.Lines {
 		lineY := float64(c.Y) + (float64(i) * c.Spacing)
-		DrawText(screen, line, float64(c.X), lineY, float64(c.TextSize), c.Color, "feather")
+		DrawText(screen, line, float64(c.X), lineY, float64(c.TextSize), c.Color, "Title")
 	}
 
 	boxY := c.Y + c.H - inputHeight - 5.0
 
-	borderColor := c.Color
+	borderColor := color.RGBA{R: 0, G: 120, B: 150, A: 255}
 	if c.HasFocus {
-		borderColor = color.RGBA{R: 255, G: 255, B: 255, A: 255}
+		borderColor = color.RGBA{R: 0, G: 255, B: 220, A: 255}
 	}
 
+	DrawFilledRect(screen, c.X, boxY, c.W, inputHeight, color.RGBA{R: 5, G: 15, B: 25, A: 200})
 	DrawStrokeRect(screen, c.X, boxY, c.W, inputHeight, 1.0, borderColor, []Hole{})
 
 	cursor := ""
 	if c.HasFocus {
-		cursor = "_"
+		cursor = "|"
 	}
 
 	displayText := c.InputTitle + c.Text + cursor
-	DrawText(screen, displayText, float64(c.X+8), float64(boxY+8), float64(c.TextSize), c.Color, "feather")
+	DrawText(screen, displayText, float64(c.X+8), float64(boxY+8), float64(c.TextSize), color.RGBA{R: 0, G: 255, B: 180, A: 255}, "Title")
 }
 
 func repeatingKeyPressed(key ebiten.Key) bool {
