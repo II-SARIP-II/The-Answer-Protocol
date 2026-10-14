@@ -8,17 +8,20 @@ import (
 )
 
 type Player struct {
-	Username string
-	Conn     net.Conn
-	State    protocol.State
+	Server      *Server
+	Username    string
+	Conn        net.Conn
+	State       protocol.State
+	CurrentRoom string
 	// TODO RoomID, HP, Inventory...
 }
 
 func NewPlayer(username string, conn net.Conn) *Player {
 	return &Player{
-		Username: username,
-		Conn:     conn,
-		State:    protocol.StateConnected,
+		Username:    username,
+		Conn:        conn,
+		State:       protocol.StateConnected,
+		CurrentRoom: "", //TODO initialiser à start_room
 	}
 }
 

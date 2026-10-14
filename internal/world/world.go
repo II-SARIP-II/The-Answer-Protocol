@@ -2,7 +2,7 @@ package world
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"os"
 )
 
@@ -42,16 +42,16 @@ type GameData struct {
 	Quests []string        `json:"quests"`
 }
 
-func ReadJson() GameData {
-	jsonFile, err := os.ReadFile("data/world.json")
+func ReadJson(filepath string) (*GameData, error) {
+	jsonFile, err := os.ReadFile(filepath)
 
 	if err != nil {
-		log.Fatalf("Erreur lors de la lecture du fichier : %v", err)
+		return nil, fmt.Errorf("Cannot read world file: %w", err)
 	}
 
 	var data GameData
 	if err := json.Unmarshal(jsonFile, &data); err != nil {
-		log.Fatalf("Json parsing error: %v", err)
+		return nil, fmt.Errorf("JSON parsing error: %w", err)
 	}
-	return data
+	return &data, nil
 }

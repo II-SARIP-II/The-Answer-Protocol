@@ -52,6 +52,18 @@ func Run(addr string) error {
 
 	fmt.Println("You can now enter commands (or QUIT to exit):")
 
+	// nécessaire d'ouvrir une go routine en arrière plan qui ecoute le serveru en continu
+	go func() {
+		for serverScanner.Scan() {
+			response := serverScanner.Text()
+			fmt.Println("Server:", response)
+		}
+		if err := stdinScanner.Err(); err != nil {
+			fmt.Println("Error reading standard input: %w", err)
+		}
+		os.Exit(0)
+	}()
+
 	for stdinScanner.Scan() {
 		input := strings.TrimSpace(stdinScanner.Text())
 
@@ -60,22 +72,15 @@ func Run(addr string) error {
 		}
 		if strings.ToUpper(input) == protocol.CmdQuit {
 			fmt.Fprint(conn, protocol.FormatCmd(protocol.CmdQuit, ""))
-			if serverScanner.Scan() {
-				fmt.Println("Server:", serverScanner.Text())
-			}
 			break
 		}
 		fmt.Fprintf(conn, "%s\n", input)
-
-		if serverScanner.Scan() {
-			fmt.Println("Server:", serverScanner.Text())
-		}
 	}
 	if err := stdinScanner.Err(); err != nil {
 		return fmt.Errorf("Error reading standard input: %w", err)
 	}
 	if err := serverScanner.Err(); err != nil {
-		fmt.Println("Connection to server lost:", err)
+		fmt.Println("Connection to server lost: %w", err)
 	}
 	return nil
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-
 	"tap/internal/gui"
 )
 
