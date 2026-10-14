@@ -44,6 +44,11 @@ const (
 )
 
 const (
+	EvtRoomLeave = "ROOM PRESENCE LEAVE"
+	EvtRoomEnter = "ROOM PRESENCE ENTER"
+)
+
+const (
 	CodeNameInUse          = 201
 	CodeNoExit             = 301
 	CodeBadRequest         = 400

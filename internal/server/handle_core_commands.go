@@ -2,6 +2,8 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 	"tap/internal/protocol"
 )
 
@@ -80,7 +82,37 @@ func (p *Player) handleMove(args string) {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
 		return
 	}
-	p.SendOK("Received LOOK. (TODO)")
+
+	room := p.Server.world.Rooms[p.CurrentRoom]
+	direction := strings.ToLower(strings.TrimSpace(args))
+	exit, exists := room.Exits[direction]
+	if !exists {
+		p.SendErr(protocol.CodeNoExit, protocol.MsgNoExit)
+		return
+	}
+
+	newRoom := exit.Target
+
+	p.Server.mu.Lock()
+
+	oldRoom := p.CurrentRoom
+
+	for _, otherPlayer := range p.Server.players {
+		if otherPlayer.Username != p.Username && otherPlayer.CurrentRoom == oldRoom {
+			otherPlayer.SendEvt(protocol.EvtRoomLeave, p.Username)
+		}
+	}
+
+	p.CurrentRoom = newRoom
+
+	for _, otherPlayer := range p.Server.players {
+		if otherPlayer.Username != p.Username && otherPlayer.CurrentRoom == newRoom {
+			otherPlayer.SendEvt(protocol.EvtRoomEnter, p.Username)
+		}
+	}
+	p.Server.mu.Unlock()
+
+	p.SendOK(fmt.Sprintf("room=%s", newRoom))
 }
 
 func (p *Player) handleQuit(args string) {

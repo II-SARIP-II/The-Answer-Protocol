@@ -25,11 +25,6 @@ func NewServer(worldPath string) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	//tests pour voir si on accéde bien aux champs des structures complétées à partir du world.json)
-	fmt.Printf("Items: %v\n", w.Items)
-	fmt.Printf("NPC1 Name: %s\n", w.NPCs["bodyguard_1"].Name)
-	fmt.Printf("NPC2 Name: %s\n", w.NPCs["bodyguard_2"].Name)
-	fmt.Printf("Exit Room4: %v\n", w.Rooms["room4"].Exits["north"].Target)
 
 	return &Server{
 		players: make(map[string]*Player),
