@@ -120,6 +120,7 @@ func (p *Player) handleQuit(args string) {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
 		return
 	}
+
+	p.SendOK(protocol.MsgBye)
 	p.State = protocol.StateTerminated
-	p.SendOK("Received QUIT.")
 }

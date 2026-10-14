@@ -91,10 +91,21 @@ func (s *Server) handleClientSession(conn net.Conn) {
 	fmt.Fprint(conn, protocol.MsgConnected)
 	slog.Info("Client authenticated", "username", player.Username, "addr", conn.RemoteAddr().String(), "state", player.State)
 
+	s.mu.Lock()
+	for _, otherPlayer := range s.players {
+		if otherPlayer.Username != player.Username {
+			otherPlayer.SendEvt(protocol.EvtGameEnter, player.Username)
+		}
+	}
+	s.mu.Unlock()
+
 	defer func() {
 		s.mu.Lock()
 		player.State = protocol.StateTerminated
 		delete(s.players, player.Username)
+		for _, otherPlayer := range s.players {
+			otherPlayer.SendEvt(protocol.EvtGameLeave, player.Username)
+		}
 		slog.Info("Client disconnected", "username", player.Username, "addr", conn.RemoteAddr().String(), "state", player.State)
 		s.mu.Unlock()
 	}()

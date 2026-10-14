@@ -40,18 +40,20 @@ const (
 
 	MsgHello     = "OK hello proto=1\n"
 	MsgConnected = "OK connected\n"
-	MsgBye       = "OK bye\n"
+	MsgBye       = "bye"
 )
 
 const (
-	EvtRoomLeave = "ROOM PRESENCE LEAVE"
-	EvtRoomEnter = "ROOM PRESENCE ENTER"
+	EvtGameEnter = "CONNECTED TO GAME"   // ajout
+	EvtGameLeave = "LEAVE GAME"          // ajout
+	EvtRoomEnter = "ROOM PRESENCE ENTER" // ajout
+	EvtRoomLeave = "ROOM PRESENCE LEAVE" // ajout
 )
 
 const (
 	CodeNameInUse          = 201
 	CodeNoExit             = 301
-	CodeBadRequest         = 400
+	CodeBadRequest         = 400 // ajout
 	CodeNotInGroup         = 401
 	CodeAlreadyInGroup     = 402
 	CodeItemNotFound       = 404
@@ -78,10 +80,10 @@ const (
 	MsgSendFailed         = "SEND_FAILED"
 
 	// code 400 BAD_REQUEST
-	MsgArgsError            = "ARGS_ERROR"
-	MsgUnknownCommand       = "UNKNOWN_COMMAND"
-	MsgNotAuthenticated     = "NOT_AUTHENTICATED"
-	MsgAlreadyAuthenticated = "ALREADY_AUTHENTICATED"
+	MsgArgsError            = "ARGS_ERROR"            // ajout
+	MsgUnknownCommand       = "UNKNOWN_COMMAND"       // ajout
+	MsgNotAuthenticated     = "NOT_AUTHENTICATED"     // ajout
+	MsgAlreadyAuthenticated = "ALREADY_AUTHENTICATED" // ajout
 )
 
 func FormatCmd(commandName, arguments string) string {
