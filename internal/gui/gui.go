@@ -1,11 +1,7 @@
 package gui
 
 import (
-	"errors"
-	"fmt"
-	"net"
-
-	"github.com/hajimehoshi/ebiten/v2"
+	ebiten "github.com/hajimehoshi/ebiten/v2"
 
 	"tap/internal/gui/components"
 	"tap/internal/world"

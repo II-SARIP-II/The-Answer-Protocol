@@ -56,10 +56,13 @@ func Run(addr string) error {
 	go func() {
 		for serverScanner.Scan() {
 			response := serverScanner.Text()
+			if response == "" {
+				continue
+			}
 			fmt.Println("Server:", response)
 		}
-		if err := stdinScanner.Err(); err != nil {
-			fmt.Println("Error reading standard input: %w", err)
+		if err := serverScanner.Err(); err != nil {
+			fmt.Printf("Error reading from server: %v\n", err)
 		}
 		os.Exit(0)
 	}()
@@ -72,7 +75,10 @@ func Run(addr string) error {
 		}
 		if strings.ToUpper(input) == protocol.CmdQuit {
 			fmt.Fprint(conn, protocol.FormatCmd(protocol.CmdQuit, ""))
-			break
+			// En langage Go, l'instruction select permet à une goroutine d'attendre
+			// et de gérer plusieurs opérations sur des channels simultanément
+			// ici on attend l affcihage de "bye"
+			select {}
 		}
 		fmt.Fprintf(conn, "%s\n", input)
 	}

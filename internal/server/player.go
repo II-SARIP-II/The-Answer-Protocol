@@ -13,6 +13,7 @@ type Player struct {
 	Conn        net.Conn
 	State       protocol.State
 	CurrentRoom string
+	Inventory   []string
 	// TODO RoomID, HP, Inventory...
 }
 
@@ -20,8 +21,9 @@ func NewPlayer(username string, conn net.Conn) *Player {
 	return &Player{
 		Username:    username,
 		Conn:        conn,
-		State:       protocol.StateConnected,
-		CurrentRoom: "", //TODO initialiser à start_room
+		State:       protocol.StateAuthenticated,
+		CurrentRoom: "room0",
+		Inventory:   make([]string, 0),
 	}
 }
 

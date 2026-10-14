@@ -10,7 +10,7 @@
         "east": { "target": "room2", "door_pos": 2, "wall": 1 },
         "south": { "target": "room1", "door_pos": 2, "wall": 2 }
       },
-      "items": [],
+      "items": ["item_test1", "item_test2"],
       "npcs": ["undercover_agent"]
     },
     "room1": {
