@@ -53,7 +53,7 @@ func CreateMapPanel(topH, centerH, colLeftW, colMidW float32, data world.GameDat
 	}
 
 	return &components.Panel{
-		Name:        "TACTICAL MAP // RADAR",
+		Name:        "Hotel MAP",
 		DisplayName: true,
 		TextColor:   color.RGBA{R: 0, G: 255, B: 200, A: 255},
 		ToDraw:      true,
