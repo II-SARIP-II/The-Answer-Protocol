@@ -7,8 +7,8 @@ import (
 	"strings"
 	"tap/internal/protocol"
 )
-// conn.Close() tjrs faire ca a la fin !!!
 
+// conn.Close() tjrs faire ca a la fin !!!
 
 func Connect(addr string, username string) (net.Conn, error) {
 	conn, err := net.Dial("tcp", addr)
@@ -34,21 +34,21 @@ func Connect(addr string, username string) (net.Conn, error) {
 	return conn, nil
 }
 
-func ListenServer(conn net.Conn, messagesChan chan string) {	
+func ListenServer(conn net.Conn, messagesChan chan string) {
 	serverScanner := bufio.NewScanner(conn)
 
-    for serverScanner.Scan() {
-        text := serverScanner.Text()
-        messagesChan <- text
-    }
+	for serverScanner.Scan() {
+		text := serverScanner.Text()
+		messagesChan <- text
+	}
 
-    if err := serverScanner.Err(); err != nil {
-        messagesChan <- "Connection lost: " + err.Error()
-    }
+	if err := serverScanner.Err(); err != nil {
+		messagesChan <- "Connection lost: " + err.Error()
+	}
 }
 
 func SendMessage(conn net.Conn, text string) {
-    if conn != nil {
-        fmt.Fprintf(conn, "%s\n", text)
-    }
+	if conn != nil {
+		fmt.Fprintf(conn, "%s\n", text)
+	}
 }

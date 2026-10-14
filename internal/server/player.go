@@ -2,9 +2,9 @@ package server
 
 import (
 	"fmt"
+	"log/slog"
 	"net"
 	"tap/internal/protocol"
-	"log/slog"
 )
 
 type Player struct {
