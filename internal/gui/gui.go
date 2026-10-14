@@ -1,6 +1,8 @@
 package gui
 
 import (
+	"errors"
+	"fmt"
 	"net"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -8,6 +10,8 @@ import (
 	"tap/internal/gui/components"
 	"tap/internal/world"
 )
+
+var ErrQuit = errors.New("game terminated by user")
 
 type Game struct {
 	top					*components.Panel
@@ -36,11 +40,16 @@ func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 	            SendMessage(conn, text)
 	        }
 	    }
-		if btn := cr.GetButton(); btn != nil {
-	        btn.OnClick = func(text string) {
-				chat.AddLine(name + " > " + text)
-	            SendMessage(conn, text)
-	        }
+		if buttons := cr.GetButtons(); buttons != nil {
+			for _, button := range buttons {
+				cmd := button.Label
+				button.OnClick = func() {
+					if chat != nil {
+                        chat.AddLine(name + " > " + cmd)
+                    }
+                    SendMessage(conn, cmd)
+				}
+			}
 	    }
 	}
 
@@ -78,12 +87,17 @@ func (g *Game) Update() error {
         case msg := <-g.messagesChan:
             if chat := g.bottomRight.GetChat(); chat != nil {
                 chat.AddLine("Server > " + msg)
+				fmt.Print(msg)
+				if msg == "OK Received QUIT." {
+					fmt.Print("QUIT")
+					return ErrQuit
+				}
             }
         default:
             goto Done
         }
     }
-Done:
+	Done:
 
     return nil
 }

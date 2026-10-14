@@ -28,16 +28,17 @@ func (p *Panel) GetChat() *ChatWidget {
 	return nil
 }
 
-func (p *Panel) GetButton() *Button {
+func (p *Panel) GetButtons() []*Button {
 	if p == nil {
 		return nil
 	}
+	var buttons []*Button
 	for _, widget := range p.Content {
 		if btn, ok := widget.(*Button); ok {
-			return btn
+			buttons = append(buttons, btn)
 		}
 	}
-	return nil
+	return buttons
 }
 
 type Panel struct {
