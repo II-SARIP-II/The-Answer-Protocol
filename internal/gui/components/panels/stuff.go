@@ -6,19 +6,19 @@ import (
 	"tap/internal/gui/components"
 )
 
-func CreateStuffPanel(topH, centerH, bottomH, colLeftW float32) *components.Panel {
+func CreateStatsPanel(topH, centerH, bottomH, colLeftW float32) *components.Panel {
 	return &components.Panel{
-		Name:        "STUFF",
+		Name:        "Stuff",
 		DisplayName: true,
-		TextColor:   color.RGBA{R: 50, G: 50, B: 50, A: 255},
+		TextColor:   color.RGBA{R: 200, G: 200, B: 200, A: 255},
 		ToDraw:      true,
-		X:           colLeftW * 0.5,
+		X:           0,
 		Y:           topH + centerH,
-		W:           colLeftW * 0.5,
+		W:           colLeftW,
 		H:           bottomH,
 		Content:     []components.Widget{},
-		BgColor:     color.RGBA{R: 160, G: 160, B: 160, A: 255},
-		BorderColor: color.RGBA{R: 50, G: 50, B: 50, A: 255},
+		BgColor:     color.RGBA{R: 50, G: 50, B: 50, A: 255},
+		BorderColor: color.RGBA{R: 160, G: 160, B: 160, A: 255},
 		TextSize:    float32(25.0),
 	}
 }

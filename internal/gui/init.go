@@ -6,7 +6,7 @@ import (
 	"tap/internal/world"
 )
 
-func InitPanels(winWidth int, winHeight int, data world.GameData) (*components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel) {
+func InitPanels(winWidth int, winHeight int, data world.GameData) (*components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel) {
 	w := float32(winWidth)
 	h := float32(winHeight)
 
@@ -23,9 +23,8 @@ func InitPanels(winWidth int, winHeight int, data world.GameData) (*components.P
 	cm_panel := panels.CreateMapPanel(topH, centerH, colLeftW, colMidW, data)
 	cr_panel := panels.CreateActionsPanel(topH, centerH, colLeftW, colMidW, colRightW)
 	bl_panel := panels.CreateStatsPanel(topH, centerH, bottomH, colLeftW)
-	bcl_panel := panels.CreateStuffPanel(topH, centerH, bottomH, colLeftW)
-	bcr_panel := panels.CreateChatPanel(topH, centerH, bottomH, colLeftW, colMidW)
+	bc_panel := panels.CreateChatPanel(topH, centerH, bottomH, colLeftW, colMidW)
 	br_panel := panels.CreateInteractionsPanel(topH, centerH, bottomH, colLeftW, colMidW, colRightW)
 
-	return t_panel, cl_panel, cm_panel, cr_panel, bl_panel, bcl_panel, bcr_panel, br_panel
+	return t_panel, cl_panel, cm_panel, cr_panel, bl_panel, bc_panel, br_panel
 }
