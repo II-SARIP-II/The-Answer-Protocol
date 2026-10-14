@@ -29,13 +29,14 @@ func CreateMapPanel(topH, centerH, colLeftW, colMidW float32, data world.GameDat
 			})
 		}
 
-		if roomData.Name == "Hotel Entrance" { // Change to Draw value to make appeare the room on the visualisation
+		if roomData.Name == "Hotel Entrance" {
 			ToDraw = true
 		}
+
 		roomWidget := &components.Panel{
 			Name:        roomData.Name,
 			DisplayName: true,
-			TextColor:   color.RGBA{R: 50, G: 50, B: 50, A: 255},
+			TextColor:   color.RGBA{R: 0, G: 255, B: 180, A: 255},
 			ToDraw:      ToDraw,
 			X:           rx,
 			Y:           ry,
@@ -43,8 +44,8 @@ func CreateMapPanel(topH, centerH, colLeftW, colMidW float32, data world.GameDat
 			H:           rh,
 			Content:     nil,
 			BorderHoles: holes,
-			BgColor:     color.RGBA{R: 200, G: 200, B: 200, A: 255},
-			BorderColor: color.RGBA{R: 30, G: 30, B: 30, A: 255},
+			BgColor:     color.RGBA{R: 15, G: 35, B: 45, A: 200},
+			BorderColor: color.RGBA{R: 0, G: 255, B: 180, A: 255},
 			TextSize:    float32(10.0),
 		}
 
@@ -52,17 +53,17 @@ func CreateMapPanel(topH, centerH, colLeftW, colMidW float32, data world.GameDat
 	}
 
 	return &components.Panel{
-		Name:        "MAP",
+		Name:        "Hotel MAP",
 		DisplayName: true,
-		TextColor:   color.RGBA{R: 50, G: 50, B: 50, A: 255},
+		TextColor:   color.RGBA{R: 0, G: 255, B: 200, A: 255},
 		ToDraw:      true,
 		X:           colLeftW,
 		Y:           topH,
 		W:           colMidW,
 		H:           centerH,
 		Content:     content,
-		BgColor:     color.RGBA{R: 120, G: 120, B: 120, A: 255},
-		BorderColor: color.RGBA{R: 50, G: 50, B: 50, A: 255},
-		TextSize:    float32(25.0),
+		BgColor:     color.RGBA{R: 8, G: 12, B: 20, A: 240},
+		BorderColor: color.RGBA{R: 0, G: 180, B: 220, A: 255},
+		TextSize:    float32(20.0),
 	}
 }
