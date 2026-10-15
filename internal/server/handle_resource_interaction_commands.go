@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"tap/internal/protocol"
@@ -25,7 +26,7 @@ func (p *Player) handleTake(args string) {
 	foundIndex := -1
 	var takenItem string
 	for i, item := range room.Items {
-		if strings.EqualFold(item, targetItem) {
+		if p.matchNameOrID(item, targetItem) {
 			foundIndex = i
 			takenItem = item
 			break
@@ -59,7 +60,7 @@ func (p *Player) handleDrop(args string) {
 	foundIndex := -1
 	var droppedItem string
 	for i, item := range p.Inventory {
-		if strings.EqualFold(targetItem, item) {
+		if p.matchNameOrID(item, targetItem) {
 			foundIndex = i
 			droppedItem = item
 			break
@@ -76,20 +77,31 @@ func (p *Player) handleDrop(args string) {
 	room.Items = append(room.Items, droppedItem)
 	p.Server.world.Rooms[p.CurrentRoom] = room
 
-	p.Inventory = append(p.Inventory[:foundIndex], p.Inventory[foundIndex + 1 :]...)
+	p.Inventory = append(p.Inventory[:foundIndex], p.Inventory[foundIndex+1:]...)
 	p.Server.mu.Unlock()
 
-	p.SendOK(fmt.Sprintf("droppen=%s", droppedItem))
+	p.SendOK(fmt.Sprintf("dropped=%s", droppedItem))
 }
 
-
 func (p *Player) handleInventory(args string) {
-	// TODO
 	if args != "" {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
 		return
 	}
-	p.SendOK("Received INVENTORY. (TODO)")
+
+	p.Server.mu.Lock()
+	inventory := p.Inventory
+	if inventory == nil {
+		inventory = []string{}
+	}
+	p.Server.mu.Unlock()
+
+	data, err := json.Marshal(inventory)
+	if err != nil {
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgBadRequest)
+		return
+	}
+	p.SendOK(string(data))
 }
 
 func (p *Player) handleTalk(args string) {
@@ -136,3 +148,4 @@ func (p *Player) handleQuests(args string) {
 	}
 	p.SendOK("Received QUESTS. (TODO)")
 }
+

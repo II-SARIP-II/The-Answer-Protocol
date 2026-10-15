@@ -24,15 +24,16 @@ type Room struct {
 }
 
 type NPC struct {
-	Role string  `json:"role"`
-	Name string  `json:"name"`
-	Life int     `json:"life"`
-	Item *string `json:"item"`
+	Role     string   `json:"role"`
+	Name     string   `json:"name"`
+	Life     int      `json:"life"`
+	Item     *string  `json:"item"`
+	Dialogue []string `json:"dialogue"`
 }
 
 type Item struct {
-	ID     int `json:"id"`
-	Damage int `json:"damage"`
+	Name   string `json:"name"`
+	Damage int    `json:"damage"`
 }
 
 type GameData struct {
