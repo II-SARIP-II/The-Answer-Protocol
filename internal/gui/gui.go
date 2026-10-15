@@ -24,6 +24,7 @@ type Game struct {
 	name         string
 	conn         net.Conn
 	messagesChan chan string
+	curr_cmd     string
 }
 
 func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
@@ -31,26 +32,6 @@ func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 	t, cl, cm, cr, bl, bc, br := InitPanels(winWidth, winHeight, data)
 	conn, err := Connect("localhost:4242", name)
 	messagesChan := make(chan string, 100)
-	go ListenServer(conn, messagesChan)
-	if err == nil {
-		chat := br.GetChat()
-		if chat != nil {
-			chat.OnSubmit = func(text string) {
-				SendMessage(conn, text)
-			}
-		}
-		if buttons := cr.GetButtons(); buttons != nil {
-			for _, button := range buttons {
-				cmd := button.Label
-				button.OnClick = func() {
-					if chat != nil {
-						chat.AddLine(name + " > " + cmd)
-					}
-					SendMessage(conn, cmd)
-				}
-			}
-		}
-	}
 
 	g := &Game{
 		top:          t,
@@ -63,6 +44,33 @@ func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 		name:         name,
 		conn:         conn,
 		messagesChan: messagesChan,
+		curr_cmd:     "",
+	}
+
+	if err == nil {
+		go ListenServer(conn, messagesChan)
+
+		chat := br.GetChat()
+		if chat != nil {
+			chat.OnSubmit = func(text string) {
+				g.curr_cmd = text
+				SendMessage(conn, text)
+			}
+		}
+
+		if buttons := cr.GetButtons(); buttons != nil {
+			for _, button := range buttons {
+				btnLabel := button.Label
+
+				button.OnClick = func() {
+					g.curr_cmd = btnLabel
+					if chat != nil {
+						chat.AddLine(name + " > " + btnLabel)
+					}
+					SendMessage(conn, btnLabel)
+				}
+			}
+		}
 	}
 
 	return g
@@ -84,9 +92,32 @@ func (g *Game) Update() error {
 		case msg := <-g.messagesChan:
 			if chat := g.bottomRight.GetChat(); chat != nil {
 				chat.AddLine("Server > " + msg)
-				fmt.Print(msg)
-				if msg == "OK Received QUIT." {
-					fmt.Print("QUIT")
+				switch g.curr_cmd {
+    			case "LOOK":
+    			    room := world.ParseRoom(msg)
+					chat.AddLine("Room > " + fmt.Sprintf("%+v", room))
+    			case "MOVE":
+    			    world.ParseRoom(msg)
+    			case "TAKE":
+    			    world.ParseRoom(msg)
+				case "DROP":
+    			    world.ParseRoom(msg)
+				case "TALK":
+    			    world.ParseRoom(msg)
+				case "ATTACK":
+    			    world.ParseRoom(msg)
+				case "STATUS":
+    			    world.ParseRoom(msg)
+				case "QUEST":
+    			    world.ParseRoom(msg)
+				case "QUESTS":
+    			    world.ParseRoom(msg)
+				case "WHO":
+    			    world.ParseRoom(msg)
+				case "GROUP":
+    			    world.ParseRoom(msg)
+				case "QUIT":
+					fmt.Printf("QUIT")
 					return ErrQuit
 				}
 			}
