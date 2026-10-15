@@ -48,13 +48,40 @@ func (p *Player) handleTake(args string) {
 }
 
 func (p *Player) handleDrop(args string) {
-	// TODO
-	if args == "" {
+	targetItem := strings.TrimSpace(args)
+	if targetItem == "" {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
 		return
 	}
-	p.SendOK("Received DROP. (TODO)")
+
+	p.Server.mu.Lock()
+
+	foundIndex := -1
+	var droppedItem string
+	for i, item := range p.Inventory {
+		if strings.EqualFold(targetItem, item) {
+			foundIndex = i
+			droppedItem = item
+			break
+		}
+	}
+
+	if foundIndex == -1 {
+		p.Server.mu.Unlock()
+		p.SendErr(protocol.CodeItemNotInInventory, protocol.MsgItemNotInInventory)
+		return
+	}
+
+	room := p.Server.world.Rooms[p.CurrentRoom]
+	room.Items = append(room.Items, droppedItem)
+	p.Server.world.Rooms[p.CurrentRoom] = room
+
+	p.Inventory = append(p.Inventory[:foundIndex], p.Inventory[foundIndex + 1 :]...)
+	p.Server.mu.Unlock()
+
+	p.SendOK(fmt.Sprintf("droppen=%s", droppedItem))
 }
+
 
 func (p *Player) handleInventory(args string) {
 	// TODO
