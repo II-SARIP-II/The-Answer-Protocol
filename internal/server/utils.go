@@ -7,7 +7,7 @@ import (
 // vérifie si une entité (item ou PNJ) présente dans le monde
 // correspond à la saisie du joueur, qu'il ait tapé l'ID ou le nom affiché.
 func (p *Player) matchNameOrID(worldEntity, userInput string) bool {
-		if strings.EqualFold(worldEntity, userInput) {
+	if strings.EqualFold(worldEntity, userInput) {
 		return true
 	}
 	id1 := p.resolveID(worldEntity)

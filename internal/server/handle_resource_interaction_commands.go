@@ -148,4 +148,3 @@ func (p *Player) handleQuests(args string) {
 	}
 	p.SendOK("Received QUESTS. (TODO)")
 }
-
