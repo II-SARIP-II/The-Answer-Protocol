@@ -25,11 +25,6 @@ func NewServer(worldPath string) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	//tests pour voir si on accéde bien aux champs des structures complétées à partir du world.json)
-	fmt.Printf("Items: %v\n", w.Items)
-	fmt.Printf("NPC1 Name: %s\n", w.NPCs["bodyguard_1"].Name)
-	fmt.Printf("NPC2 Name: %s\n", w.NPCs["bodyguard_2"].Name)
-	fmt.Printf("Exit Room4: %v\n", w.Rooms["room4"].Exits["north"].Target)
 
 	return &Server{
 		players: make(map[string]*Player),
@@ -96,10 +91,21 @@ func (s *Server) handleClientSession(conn net.Conn) {
 	fmt.Fprint(conn, protocol.MsgConnected)
 	slog.Info("Client authenticated", "username", player.Username, "addr", conn.RemoteAddr().String(), "state", player.State)
 
+	s.mu.Lock()
+	for _, otherPlayer := range s.players {
+		if otherPlayer.Username != player.Username {
+			otherPlayer.SendEvt(protocol.EvtGameEnter, player.Username)
+		}
+	}
+	s.mu.Unlock()
+
 	defer func() {
 		s.mu.Lock()
 		player.State = protocol.StateTerminated
 		delete(s.players, player.Username)
+		for _, otherPlayer := range s.players {
+			otherPlayer.SendEvt(protocol.EvtGameLeave, player.Username)
+		}
 		slog.Info("Client disconnected", "username", player.Username, "addr", conn.RemoteAddr().String(), "state", player.State)
 		s.mu.Unlock()
 	}()
@@ -151,10 +157,11 @@ func (s *Server) authenticate(conn net.Conn, command string) (*Player, error) {
 		return nil, errors.New("name in use")
 	}
 	player := &Player{
-		Server:   s,
-		Username: username,
-		Conn:     conn,
-		State:    protocol.StateAuthenticated,
+		Server:      s,
+		Username:    username,
+		Conn:        conn,
+		State:       protocol.StateAuthenticated,
+		CurrentRoom: "room0",
 	}
 	s.players[username] = player
 	s.mu.Unlock()
