@@ -105,8 +105,7 @@ func (p *Player) handleInventory(args string) {
 }
 
 func (p *Player) handleTalk(args string) {
-	// TODO
-	if args == "" {
+		if args == "" {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
 		return
 	}

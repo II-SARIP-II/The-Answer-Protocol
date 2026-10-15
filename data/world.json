@@ -22,7 +22,7 @@
       "exits": {
         "north": { "target": "room0", "door_pos": 2, "wall": 0 }
       },
-      "items": [],
+      "items": ["colt_1911"],
       "npcs": []
     },
     "room2": {
