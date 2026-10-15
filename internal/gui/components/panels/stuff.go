@@ -1,66 +1,21 @@
 package panels
 
 import (
-	"fmt"
 	"image/color"
 
-	"github.com/hajimehoshi/ebiten/v2"
-
 	"tap/internal/gui/components"
-	"tap/internal/world"
 )
-
-type Stuff struct {
-	X, Y, W, H float32
-	items      []world.Item
-}
-
-func (s *Stuff) NewItem(item world.Item) {
-	s.items = append(s.items, item)
-}
-
-func (s *Stuff) Update() {
-}
-
-func (s *Stuff) Draw(screen *ebiten.Image) {
-	const lineHeight float32 = 22.0
-	const paddingTop float32 = 40.0
-
-	for i, item := range s.items {
-		msg := fmt.Sprintf(" - %s (DMG: %d)", item.Name, item.Damage)
-
-		itemY := s.Y + paddingTop + float32(i)*lineHeight
-
-		components.DrawText(
-			screen,
-			msg,
-			float64(s.X+15),
-			float64(itemY),
-			14.0,
-			color.RGBA{R: 0, G: 255, B: 180, A: 255},
-			"default",
-		)
-	}
-}
 
 func CreateStatsPanel(topH, centerH, bottomH, colLeftW float32) *components.Panel {
 	panelX := float32(0)
 	panelY := topH + centerH
 
-	stuff := &Stuff{
-		X:     panelX,
-		Y:     panelY,
-		W:     colLeftW,
-		H:     bottomH,
-		items: []world.Item{},
-	}
-
-	item1 := world.Item{
-		ID:     1,
-		Name:   "couteau",
-		Damage: 5,
-	}
-	stuff.NewItem(item1)
+	stuff := components.NewStuff(
+		panelX,
+		panelY,
+		colLeftW,
+		bottomH,
+	)
 
 	return &components.Panel{
 		Name:        "EQUIPMENT / INVENTORY",
