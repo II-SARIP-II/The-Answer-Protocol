@@ -105,11 +105,43 @@ func (p *Player) handleInventory(args string) {
 }
 
 func (p *Player) handleTalk(args string) {
-		if args == "" {
+	targetNpc := strings.TrimSpace(args)
+	if targetNpc == "" {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
 		return
 	}
-	p.SendOK("Received TALK. (TODO)")
+
+	p.Server.mu.Lock()
+
+	var foundNPCID string
+	room := p.Server.world.Rooms[p.CurrentRoom]
+	for _, npcID := range room.NPCs {
+		if p.matchNameOrID(npcID, targetNpc) {
+			foundNPCID = npcID
+			break
+		}
+	}
+
+	if foundNPCID == "" {
+		p.Server.mu.Unlock()
+		p.SendErr(protocol.CodeNPCNotFound, protocol.MsgNPCNotFound)
+		return
+	}
+
+	npcData, exists := p.Server.world.NPCs[foundNPCID]
+	if !exists || len(npcData.Dialogue) == 0 {
+		p.Server.mu.Unlock()
+		p.SendOK(fmt.Sprintf("%s has nothing to say.", npcData.Name))
+		return
+	}
+
+	npcReply := npcData.Dialogue[0]
+	npcData.Dialogue = append(npcData.Dialogue[1:], npcReply)
+	p.Server.world.NPCs[foundNPCID] = npcData
+
+	p.Server.mu.Unlock()
+
+	p.SendOK(npcReply)
 }
 
 func (p *Player) handleAttack(args string) {
