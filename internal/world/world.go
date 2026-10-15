@@ -32,6 +32,7 @@ type NPC struct {
 
 type Item struct {
 	ID     int `json:"id"`
+	Name	string `json:"name"`
 	Damage int `json:"damage"`
 }
 

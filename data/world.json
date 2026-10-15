@@ -172,18 +172,22 @@
   "items": {
     "Colt 1911": {
       "id": 1,
+      "name": "Colt 1911",
       "damage": 4
     },
     "M16": {
       "id": 2,
+      "name": "M16",
       "damage": 7
     },
     "Knife": {
       "id": 3,
+      "name": "Knife",
       "damage": 3
     },
     "Katana": {
       "id": 4,
+      "name": "Katana",
       "damage": 9
     }
   },
