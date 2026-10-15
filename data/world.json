@@ -166,7 +166,7 @@
       "item": "M16"
     },
     "chef": {
-      "role": "passiv enemy",
+      "role": "passive enemy",
       "name": "Kitchen Chef",
       "life": 5,
       "item": "Katana"
