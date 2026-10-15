@@ -63,7 +63,7 @@ func (b *Button) Draw(screen *ebiten.Image) {
 
 	if b.IsPressed {
 		currentColor = b.PressedColor
-		textColor = color.RGBA{R: 10, G: 15, B: 20, A: 255} // Texte sombre sur fond brillant
+		textColor = color.RGBA{R: 10, G: 15, B: 20, A: 255}
 		borderWidth = 2
 	} else if b.IsHovered {
 		currentColor = b.HoverColor
@@ -71,14 +71,11 @@ func (b *Button) Draw(screen *ebiten.Image) {
 		borderWidth = 2
 	}
 
-	// Fond translucide
 	DrawFilledRect(screen, b.X, b.Y, b.W, b.H, currentColor)
 
-	// Contour style HUD
 	var hole []Hole = []Hole{}
 	DrawStrokeRect(screen, b.X, b.Y, b.W, b.H, borderWidth, b.BorderColor, hole)
 
-	// Petit détail coin HUD si survolé
 	if b.IsHovered {
 		DrawFilledRect(screen, b.X, b.Y, 4, 4, color.RGBA{R: 255, G: 255, B: 255, A: 255})
 		DrawFilledRect(screen, b.X+b.W-4, b.Y+b.H-4, 4, 4, color.RGBA{R: 255, G: 255, B: 255, A: 255})
