@@ -2,7 +2,7 @@ package gui
 
 import (
 	"errors"
-	"fmt"
+//	"fmt"
 	"net"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -24,6 +24,7 @@ type Game struct {
 	name         string
 	conn         net.Conn
 	messagesChan chan string
+	curr_cmd     string
 }
 
 func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
@@ -31,26 +32,6 @@ func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 	t, cl, cm, cr, bl, bc, br := InitPanels(winWidth, winHeight, data)
 	conn, err := Connect("localhost:4242", name)
 	messagesChan := make(chan string, 100)
-	go ListenServer(conn, messagesChan)
-	if err == nil {
-		chat := br.GetChat()
-		if chat != nil {
-			chat.OnSubmit = func(text string) {
-				SendMessage(conn, text)
-			}
-		}
-		if buttons := cr.GetButtons(); buttons != nil {
-			for _, button := range buttons {
-				cmd := button.Label
-				button.OnClick = func() {
-					if chat != nil {
-						chat.AddLine(name + " > " + cmd)
-					}
-					SendMessage(conn, cmd)
-				}
-			}
-		}
-	}
 
 	g := &Game{
 		top:          t,
@@ -63,6 +44,33 @@ func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 		name:         name,
 		conn:         conn,
 		messagesChan: messagesChan,
+		curr_cmd:     "",
+	}
+
+	if err == nil {
+		go ListenServer(conn, messagesChan)
+
+		chat := br.GetChat()
+		if chat != nil {
+			chat.OnSubmit = func(text string) {
+				g.curr_cmd = text
+				SendMessage(conn, text)
+			}
+		}
+
+		if buttons := cr.GetButtons(); buttons != nil {
+			for _, button := range buttons {
+				btnLabel := button.Label
+
+				button.OnClick = func() {
+					g.curr_cmd = btnLabel
+					if chat != nil {
+						chat.AddLine(name + " > " + btnLabel)
+					}
+					SendMessage(conn, btnLabel)
+				}
+			}
+		}
 	}
 
 	return g
@@ -84,11 +92,40 @@ func (g *Game) Update() error {
 		case msg := <-g.messagesChan:
 			if chat := g.bottomRight.GetChat(); chat != nil {
 				chat.AddLine("Server > " + msg)
-				fmt.Print(msg)
-				if msg == "OK Received QUIT." {
-					fmt.Print("QUIT")
-					return ErrQuit
-				}
+				
+//				switch g.curr_cmd {
+//    			case "LOOK":
+//    			    room := world.ParseRoom(msg)
+//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", room))
+//    			case "MOVE":
+//    			    chat.AddLine(g.curr_cmd + msg)
+//    			case "TAKE":
+//					item := world.ParseItem(msg)
+//					AddItem(item)
+//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", item))
+//				case "DROP":
+//    			    item := world.ParseItem(msg)
+//					RemoveItem(item)
+//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", item))
+//				case "TALK":
+//    			    world.ParseRoom(msg)
+//				case "ATTACK":
+//    			    // attack function
+//				case "STATUS":
+//    			    // status function
+//				case "QUEST":
+//    			    // quest function
+//				case "QUESTS":
+//    			    // quests function
+//				case "WHO":
+//    			    player := ParsePlayer(msg)
+//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", player))
+//				case "GROUP":
+//    			    world.ParseRoom(msg)
+//				case "QUIT":
+//					fmt.Printf("QUIT")
+//					return ErrQuit
+//				}
 			}
 		default:
 			goto Done

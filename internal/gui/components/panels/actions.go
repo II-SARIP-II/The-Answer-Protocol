@@ -56,7 +56,7 @@ func CreateActionsPanel(topH, centerH, colLeftW, colMidW, colRightW float32) *co
 		W:           crW,
 		H:           crH,
 		Content:     content,
-		BgColor:     color.RGBA{R: 10, G: 16, B: 26, A: 240}, // Fond sombre Cyber
+		BgColor:     color.RGBA{R: 10, G: 16, B: 26, A: 240},
 		BorderColor: color.RGBA{R: 0, G: 180, B: 220, A: 255},
 		TextSize:    float32(20.0),
 	}
