@@ -10,7 +10,7 @@
         "east": { "target": "room2", "door_pos": 2, "wall": 1 },
         "south": { "target": "room1", "door_pos": 2, "wall": 2 }
       },
-      "items": ["item_test1", "item_test2"],
+      "items": ["colt_1911"],
       "npcs": ["undercover_agent"]
     },
     "room1": {
@@ -22,7 +22,7 @@
       "exits": {
         "north": { "target": "room0", "door_pos": 2, "wall": 0 }
       },
-      "items": ["Colt 1911"],
+      "items": [],
       "npcs": []
     },
     "room2": {
@@ -136,7 +136,8 @@
       "role": "dialogue",
       "name": "The Receptionist",
       "life": -1,
-      "item": null
+      "item": null,
+      "dialogue": ["Welcome in the hotel.", "Have you booked a room?"]
     },
     "undercover_agent": {
       "role": "quest-giver",
@@ -170,20 +171,20 @@
     }
   },
   "items": {
-    "Colt 1911": {
-      "id": 1,
+    "colt_1911": {
+      "name": "Colt 1911",
       "damage": 4
     },
     "M16": {
-      "id": 2,
+      "name": "M16",
       "damage": 7
     },
-    "Knife": {
-      "id": 3,
+    "knife": {
+      "name": "Knife",
       "damage": 3
     },
-    "Katana": {
-      "id": 4,
+    "katana": {
+      "name": "Katana",
       "damage": 9
     }
   },
