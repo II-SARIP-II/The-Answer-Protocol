@@ -76,12 +76,11 @@ func (p *Player) handleDrop(args string) {
 	room.Items = append(room.Items, droppedItem)
 	p.Server.world.Rooms[p.CurrentRoom] = room
 
-	p.Inventory = append(p.Inventory[:foundIndex], p.Inventory[foundIndex + 1 :]...)
+	p.Inventory = append(p.Inventory[:foundIndex], p.Inventory[foundIndex+1:]...)
 	p.Server.mu.Unlock()
 
 	p.SendOK(fmt.Sprintf("droppen=%s", droppedItem))
 }
-
 
 func (p *Player) handleInventory(args string) {
 	// TODO
