@@ -14,7 +14,11 @@ type Player struct {
 	State       protocol.State
 	CurrentRoom string
 	Inventory   []string
-	// TODO RoomID, HP, Inventory...
+	MaxHP     int
+	HP          int
+	EquippedWeapon  string
+	GroupID         string
+	Quests map[string]string // quest_id -> status ("active", "completed")
 }
 
 func NewPlayer(username string, conn net.Conn) *Player {
@@ -24,6 +28,11 @@ func NewPlayer(username string, conn net.Conn) *Player {
 		State:       protocol.StateAuthenticated,
 		CurrentRoom: "room0",
 		Inventory:   make([]string, 0),
+		MaxHP:     100,
+		HP:          100,
+		EquippedWeapon: "",
+		GroupID: "",
+		Quests: make(map[string]string),
 	}
 }
 

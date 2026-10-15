@@ -148,8 +148,8 @@ func (p *Player) handleAttack(args string) {
 	target := strings.TrimSpace(args)
 	if target == "" {
 		if args == "" {
-		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
-		return
+			p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
+			return
 		}
 	}
 
@@ -167,7 +167,7 @@ func (p *Player) handleAttack(args string) {
 		p.Server.mu.Unlock()
 		p.SendErr(protocol.CodeNPCNotFound, protocol.MsgNPCNotFound)
 		return
-		}
+	}
 
 	enemyData := p.Server.world.NPCs[foundTargetID]
 	// on peut bien attaquer les "passive enemies"??
@@ -178,7 +178,7 @@ func (p *Player) handleAttack(args string) {
 
 	// Calcul des dégâts infligés par le joueur :
 	//    Basé sur l'arme dans l'inventaire du joueur (ex: Colt 1911 -> 4 dégâts) ou poings (ex: 2) si pas d'arme?
-	//    ajouter une commande WEAPON pour choisir l árme dans l'inventory?
+	//    ajouter une commande EQUIP pour choisir l árme dans l'inventory??
 	// Application des dégâts au PNJ : npc.Life -= degats
 	//              * Le PNJ survit (npc.Life > 0) :
 	//              		Le PNJ contre-attaque avec son arme (ex: M16 -> 7 dégâts infligés au joueur)
