@@ -30,4 +30,3 @@ func (p *Player) resolveID(input string) string {
 	}
 	return input
 }
-
