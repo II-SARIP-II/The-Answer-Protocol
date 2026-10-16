@@ -2,7 +2,7 @@ package gui
 
 import (
 	"errors"
-//	"fmt"
+	//	"fmt"
 	"net"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -92,40 +92,40 @@ func (g *Game) Update() error {
 		case msg := <-g.messagesChan:
 			if chat := g.bottomRight.GetChat(); chat != nil {
 				chat.AddLine("Server > " + msg)
-				
-//				switch g.curr_cmd {
-//    			case "LOOK":
-//    			    room := world.ParseRoom(msg)
-//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", room))
-//    			case "MOVE":
-//    			    chat.AddLine(g.curr_cmd + msg)
-//    			case "TAKE":
-//					item := world.ParseItem(msg)
-//					AddItem(item)
-//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", item))
-//				case "DROP":
-//    			    item := world.ParseItem(msg)
-//					RemoveItem(item)
-//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", item))
-//				case "TALK":
-//    			    world.ParseRoom(msg)
-//				case "ATTACK":
-//    			    // attack function
-//				case "STATUS":
-//    			    // status function
-//				case "QUEST":
-//    			    // quest function
-//				case "QUESTS":
-//    			    // quests function
-//				case "WHO":
-//    			    player := ParsePlayer(msg)
-//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", player))
-//				case "GROUP":
-//    			    world.ParseRoom(msg)
-//				case "QUIT":
-//					fmt.Printf("QUIT")
-//					return ErrQuit
-//				}
+
+				//				switch g.curr_cmd {
+				//    			case "LOOK":
+				//    			    room := world.ParseRoom(msg)
+				//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", room))
+				//    			case "MOVE":
+				//    			    chat.AddLine(g.curr_cmd + msg)
+				//    			case "TAKE":
+				//					item := world.ParseItem(msg)
+				//					AddItem(item)
+				//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", item))
+				//				case "DROP":
+				//    			    item := world.ParseItem(msg)
+				//					RemoveItem(item)
+				//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", item))
+				//				case "TALK":
+				//    			    world.ParseRoom(msg)
+				//				case "ATTACK":
+				//    			    // attack function
+				//				case "STATUS":
+				//    			    // status function
+				//				case "QUEST":
+				//    			    // quest function
+				//				case "QUESTS":
+				//    			    // quests function
+				//				case "WHO":
+				//    			    player := ParsePlayer(msg)
+				//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", player))
+				//				case "GROUP":
+				//    			    world.ParseRoom(msg)
+				//				case "QUIT":
+				//					fmt.Printf("QUIT")
+				//					return ErrQuit
+				//				}
 			}
 		default:
 			goto Done

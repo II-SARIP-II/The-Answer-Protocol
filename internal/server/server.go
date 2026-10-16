@@ -102,6 +102,7 @@ func (s *Server) handleClientSession(conn net.Conn) {
 	defer func() {
 		s.mu.Lock()
 		player.State = protocol.StateTerminated
+		player.leaveGroupGetModif()
 		delete(s.players, player.Username)
 		for _, otherPlayer := range s.players {
 			otherPlayer.SendEvt(protocol.EvtGameLeave, player.Username)
