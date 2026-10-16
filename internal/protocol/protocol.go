@@ -47,10 +47,13 @@ const (
 )
 
 const (
-	EvtGameEnter = "CONNECTED TO GAME"   // ajout
-	EvtGameLeave = "LEAVE GAME"          // ajout
-	EvtRoomEnter = "ROOM PRESENCE ENTER" // ajout
-	EvtRoomLeave = "ROOM PRESENCE LEAVE" // ajout
+	EvtGameEnter   = "CONNECTED TO GAME"   // ajout
+	EvtGameLeave   = "LEAVE GAME"          // ajout
+	EvtRoomEnter   = "ROOM PRESENCE ENTER" // ajout
+	EvtRoomLeave   = "ROOM PRESENCE LEAVE" // ajout
+	EvtGroupInvite = "GROUP INVITE"
+	EvtGroupJoin   = "GROUP JOIN"  // ajout
+	EvtGroupLeave  = "GROUP LEAVE" // ajout
 )
 
 const (
@@ -59,11 +62,13 @@ const (
 	CodeBadRequest         = 400 // ajout
 	CodeNotInGroup         = 401
 	CodeAlreadyInGroup     = 402
+	CodeUnknownPlayer      = 403 //ajout
 	CodeItemNotFound       = 404
 	CodeItemNotInInventory = 404
 	CodeNPCNotFound        = 404
-	CodeNPCNotHostile      = 405
-	CodeNoQuestAvailable   = 406
+	CodeUnknownGroup       = 405 //ajout
+	CodeNPCNotHostile      = 406
+	CodeNoQuestAvailable   = 407
 	CodeConnectionFailed   = 900
 	CodeSendFailed         = 901
 )
@@ -71,11 +76,13 @@ const (
 const (
 	MsgNameInUse          = "NAME_IN_USE"
 	MsgNoExit             = "NO_EXIT"
-	MsgBadRequest         = "BAD_REQUEST"
+	MsgBadRequest         = "BAD_REQUEST" //ajout
 	MsgNotInGroup         = "NOT_IN_GROUP"
 	MsgAlreadyInGroup     = "ALREADY_IN_GROUP"
+	MsgUnknownPlayer      = "UNKNOWN_PLAYER" //ajout
 	MsgItemNotFound       = "ITEM_NOT_FOUND"
 	MsgItemNotInInventory = "ITEM_NOT_IN_INVENTORY"
+	MsgUnknownGroup       = "UNKNOWN_GROUP" //ajout
 	MsgNPCNotFound        = "NPC_NOT_FOUND"
 	MsgNPCNotHostile      = "NPC_NOT_HOSTILE"
 	MsgNoQuestAvailable   = "NO_QUEST_AVAILABLE"
@@ -87,6 +94,8 @@ const (
 	MsgUnknownCommand       = "UNKNOWN_COMMAND"       // ajout
 	MsgNotAuthenticated     = "NOT_AUTHENTICATED"     // ajout
 	MsgAlreadyAuthenticated = "ALREADY_AUTHENTICATED" // ajout
+	MsgNoInvitation         = "NO_INVITATION"         // ajout
+	MsgGroupNotFound        = "GROUP_NOT_FOUND"       // ajout
 )
 
 func FormatCmd(commandName, arguments string) string {
