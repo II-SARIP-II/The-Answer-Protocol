@@ -22,7 +22,6 @@ func (p *Player) handleTake(args string) {
 		return
 	}
 
-	// L'index -1 est une convention signifiant : « pas encore trouvé ».
 	foundIndex := -1
 	var takenItem string
 	for i, item := range room.Items {
@@ -40,7 +39,6 @@ func (p *Player) handleTake(args string) {
 	}
 
 	p.Inventory = append(p.Inventory, takenItem)
-	// pour remove en go, on append les deux parties du tableau, avant et apr`s le foundIndex
 	room.Items = append(room.Items[:foundIndex], room.Items[foundIndex+1:]...)
 	p.Server.world.Rooms[p.CurrentRoom] = room
 	p.Server.mu.Unlock()
@@ -73,6 +71,10 @@ func (p *Player) handleDrop(args string) {
 		return
 	}
 
+	if droppedItem == p.EquippedWeapon {
+		p.EquippedWeapon = ""
+	}
+
 	room := p.Server.world.Rooms[p.CurrentRoom]
 	room.Items = append(room.Items, droppedItem)
 	p.Server.world.Rooms[p.CurrentRoom] = room
@@ -102,6 +104,34 @@ func (p *Player) handleInventory(args string) {
 		return
 	}
 	p.SendOK(string(data))
+}
+
+func (p *Player) handleEquip(args string) {
+	targetWeapon := strings.TrimSpace(args)
+	if targetWeapon == "" {
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
+		return
+	}
+
+	p.Server.mu.Lock()
+	foundWeapon := ""
+
+	for _, weapon := range p.Inventory {
+		if p.matchNameOrID(weapon, targetWeapon) {
+			foundWeapon = weapon
+			p.EquippedWeapon = foundWeapon
+			break
+		}
+	}
+
+	if foundWeapon == "" {
+		p.SendErr(protocol.CodeItemNotInInventory, protocol.MsgItemNotInInventory)
+		p.Server.mu.Unlock()
+		return
+	}
+	p.Server.mu.Unlock()
+
+	p.SendOK(fmt.Sprintf("equipped=%s", foundWeapon))
 }
 
 func (p *Player) handleTalk(args string) {
@@ -142,64 +172,6 @@ func (p *Player) handleTalk(args string) {
 	p.Server.mu.Unlock()
 
 	p.SendOK(npcReply)
-}
-
-func (p *Player) handleAttack(args string) {
-	target := strings.TrimSpace(args)
-	if target == "" {
-		if args == "" {
-			p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
-			return
-		}
-	}
-
-	p.Server.mu.Lock()
-
-	var foundTargetID string
-	for _, targetID := range p.Server.world.Rooms[p.CurrentRoom].NPCs {
-		if p.matchNameOrID(targetID, target) {
-			foundTargetID = targetID
-			break
-		}
-	}
-
-	if foundTargetID == "" {
-		p.Server.mu.Unlock()
-		p.SendErr(protocol.CodeNPCNotFound, protocol.MsgNPCNotFound)
-		return
-	}
-
-	enemyData := p.Server.world.NPCs[foundTargetID]
-	// on peut bien attaquer les "passive enemies"??
-	if strings.ToLower(enemyData.Role) != "enemy" && strings.ToLower(enemyData.Role) != "passive enemy" {
-		p.SendErr(protocol.CodeNPCNotHostile, protocol.MsgNPCNotHostile)
-		return
-	}
-
-	// Calcul des dégâts infligés par le joueur :
-	//    Basé sur l'arme dans l'inventaire du joueur (ex: Colt 1911 -> 4 dégâts) ou poings (ex: 2) si pas d'arme?
-	//    ajouter une commande EQUIP pour choisir l árme dans l'inventory??
-	// Application des dégâts au PNJ : npc.Life -= degats
-	//              * Le PNJ survit (npc.Life > 0) :
-	//              		Le PNJ contre-attaque avec son arme (ex: M16 -> 7 dégâts infligés au joueur)
-	//              		status = "combat"
-	//              * Le PNJ meurt (npc.Life <= 0) :
-	//              		status = "victory" (ou "defeated")
-	//              		L'objet du PNJ tombe au sol dans la pièce (Loot !)
-	//              		Le PNJ est retiré de room.NPCs
-	// Réponse JSON au client :
-	//    OK {"attacker_hp": 93, "target_hp": 6, "damage": 4, "status": "combat"}// TODO
-	// si le joueur meurt: (cf sujet)
-	// 			Players with 0 HP must respawn at a safe location with reduced health
-	// ◦ Combat results must be logged and broadcast to relevant players
-	// ◦ Design Choice: Your group must design and implement turn-based combat
-	// mechanics, including damage formulas, initiative order, and additional combat
-	// commands (DEFEND, FLEE, etc.). Document and justify your choices in the
-	// README.
-
-	p.Server.mu.Unlock()
-
-	p.SendOK(fmt.Sprintf("Received ATTACK from %s. (TODO)", foundTargetID))
 }
 
 func (p *Player) handleStatus(args string) {
