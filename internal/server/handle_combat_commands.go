@@ -87,11 +87,12 @@ func (p *Player) handleAttack(args string) {
 	combatStatus := protocol.StatusCombat
 	if enemyData.Life == 0 {
 		combatStatus = "victory"
+		p.SendEvt("Victory:", fmt.Sprintf("You have eliminated %s !", enemyData.Name))
 		p.Status = protocol.StatusHealthy
 		p.handleEnemyDeath(foundTargetID)
 	} else if p.HP == 0 {
 		combatStatus = "defeated"
-		p.handlePlayerDeath()
+		p.handlePlayerDeath(target)
 	}
 
 	response := AttackResponse{
@@ -142,23 +143,23 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 	for _, otherPlayer := range p.Server.players {
 		if otherPlayer.Username != p.Username && otherPlayer.CurrentRoom == p.CurrentRoom {
 			eventData := fmt.Sprintf("Player %s has eliminated the enemy %s!", p.Username, enemy.Name)
-			otherPlayer.SendEvt(protocol.ChatRoom + protocol.CmdChat, eventData)
+			otherPlayer.SendEvt(protocol.ChatRoom+protocol.CmdChat, eventData)
 		}
 	}
 
-	if p.GroupID != ""{
+	if p.GroupID != "" {
 		for _, otherPlayer := range p.Server.players {
 			if otherPlayer.Username != p.Username && otherPlayer.GroupID == p.GroupID && otherPlayer.CurrentRoom != p.CurrentRoom {
 				eventData := fmt.Sprintf("Player %s has eliminated the enemy %s!", p.Username, enemy.Name)
-				otherPlayer.SendEvt(protocol.ChatGroup + protocol.CmdChat, eventData)
+				otherPlayer.SendEvt(protocol.ChatGroup+protocol.CmdChat, eventData)
 			}
 		}
 	}
 }
 
-func (p *Player) handlePlayerDeath(){
+func (p *Player) handlePlayerDeath(target string) {
 	roomWhenDeath := p.CurrentRoom
-
+	p.SendEvt("Defeat:", fmt.Sprintf("%s killed you, you will spawn in room0 !", target))
 	for _, otherPlayer := range p.Server.players {
 		if otherPlayer.Username != p.Username && strings.EqualFold(otherPlayer.CurrentRoom, roomWhenDeath) {
 			otherPlayer.SendEvt(protocol.EvtRoomLeave, p.Username)
@@ -173,9 +174,12 @@ func (p *Player) handlePlayerDeath(){
 	p.HP = p.MaxHP
 	p.Status = protocol.StatusHealthy
 
-	// TODO ajouter sendEVT aux joueurs de la pièce
+	for _, otherPlayer := range p.Server.players {
+		if otherPlayer.Username != p.Username && strings.EqualFold(otherPlayer.CurrentRoom, roomWhenDeath) {
+			otherPlayer.SendEvt(protocol.EvtRoomEnter, p.Username)
+		}
+	}
 }
-
 
 // ◦ Combat results must be logged and broadcast to relevant players TODO
 // ◦ Design Choice: Your group must design and implement turn-based combat
