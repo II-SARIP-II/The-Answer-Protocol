@@ -57,6 +57,15 @@ const (
 )
 
 const (
+	FistFightDamage = 2 // ajout
+)
+
+const (
+	StatusCombat  = "combat"  // ajout
+	StatusHealthy = "healthy" // ajout
+)
+
+const (
 	CodeNameInUse          = 201
 	CodeNoExit             = 301
 	CodeBadRequest         = 400 // ajout

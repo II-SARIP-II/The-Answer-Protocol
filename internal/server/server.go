@@ -157,14 +157,11 @@ func (s *Server) authenticate(conn net.Conn, command string) (*Player, error) {
 
 		return nil, errors.New("name in use")
 	}
-	player := &Player{
-		Server:      s,
-		Username:    username,
-		Conn:        conn,
-		State:       protocol.StateAuthenticated,
-		CurrentRoom: "room0",
-	}
+
+	player := NewPlayer(username, conn)
+	player.Server = s
 	s.players[username] = player
+
 	s.mu.Unlock()
 	return player, nil
 
