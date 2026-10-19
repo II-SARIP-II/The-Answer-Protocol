@@ -8,22 +8,35 @@ import (
 )
 
 type Player struct {
-	Server      *Server
-	Username    string
-	Conn        net.Conn
-	State       protocol.State
-	CurrentRoom string
-	Inventory   []string
-	// TODO RoomID, HP, Inventory...
+	Server           *Server
+	Username         string
+	Conn             net.Conn
+	State            protocol.State
+	CurrentRoom      string
+	Inventory        []string
+	MaxHP            int
+	HP               int
+	EquippedWeapon   string
+	Status           string
+	GroupID          string
+	GroupInvitations []string
+	Quests           map[string]string // quest_id -> status ("active", "completed")
 }
 
 func NewPlayer(username string, conn net.Conn) *Player {
 	return &Player{
-		Username:    username,
-		Conn:        conn,
-		State:       protocol.StateAuthenticated,
-		CurrentRoom: "room0",
-		Inventory:   make([]string, 0),
+		Username:         username,
+		Conn:             conn,
+		State:            protocol.StateAuthenticated,
+		CurrentRoom:      "room0",
+		Inventory:        make([]string, 0),
+		MaxHP:            100,
+		HP:               100,
+		EquippedWeapon:   "",
+		GroupID:          "",
+		GroupInvitations: make([]string, 0),
+		Status:           "healthy",
+		Quests:           make(map[string]string),
 	}
 }
 

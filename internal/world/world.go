@@ -54,9 +54,13 @@ func ReadJson(filepath string) (*GameData, error) {
 	if err := json.Unmarshal(jsonFile, &data); err != nil {
 		return nil, fmt.Errorf("JSON parsing error: %w", err)
 	}
+
+	if err := data.ValidateItem(); err != nil {
+		return nil, fmt.Errorf("world validation error: %w", err)
+	}
+
 	return &data, nil
 }
-
 
 func ParseExit(str_exit string) Exit {
 	str := []byte(str_exit)
@@ -101,4 +105,3 @@ func ParseItem(str_item string) Item {
 	}
 	return item
 }
-
