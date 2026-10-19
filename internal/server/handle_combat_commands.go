@@ -142,21 +142,21 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 	for _, otherPlayer := range p.Server.players {
 		if otherPlayer.Username != p.Username && otherPlayer.CurrentRoom == p.CurrentRoom {
 			eventData := fmt.Sprintf("Player %s has eliminated the enemy %s!", p.Username, enemy.Name)
-			otherPlayer.SendEvt(protocol.ChatRoom + protocol.CmdChat, eventData)
+			otherPlayer.SendEvt(protocol.ChatRoom+protocol.CmdChat, eventData)
 		}
 	}
 
-	if p.GroupID != ""{
+	if p.GroupID != "" {
 		for _, otherPlayer := range p.Server.players {
 			if otherPlayer.Username != p.Username && otherPlayer.GroupID == p.GroupID && otherPlayer.CurrentRoom != p.CurrentRoom {
 				eventData := fmt.Sprintf("Player %s has eliminated the enemy %s!", p.Username, enemy.Name)
-				otherPlayer.SendEvt(protocol.ChatGroup + protocol.CmdChat, eventData)
+				otherPlayer.SendEvt(protocol.ChatGroup+protocol.CmdChat, eventData)
 			}
 		}
 	}
 }
 
-func (p *Player) handlePlayerDeath(){
+func (p *Player) handlePlayerDeath() {
 	roomWhenDeath := p.CurrentRoom
 
 	for _, otherPlayer := range p.Server.players {
@@ -175,7 +175,6 @@ func (p *Player) handlePlayerDeath(){
 
 	// TODO ajouter sendEVT aux joueurs de la pièce
 }
-
 
 // ◦ Combat results must be logged and broadcast to relevant players TODO
 // ◦ Design Choice: Your group must design and implement turn-based combat
