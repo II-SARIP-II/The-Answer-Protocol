@@ -144,7 +144,7 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 	for _, otherPlayer := range p.Server.players {
 		if otherPlayer.Username != p.Username && otherPlayer.CurrentRoom == p.CurrentRoom {
 			eventData := fmt.Sprintf("Player %s has eliminated the enemy %s!", p.Username, enemy.Name)
-			otherPlayer.SendEvt(protocol.ChatRoom+"" + protocol.CmdChat, eventData)
+			otherPlayer.SendEvt(protocol.ChatRoom+""+protocol.CmdChat, eventData)
 		}
 	}
 
@@ -152,7 +152,7 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 		for _, otherPlayer := range p.Server.players {
 			if otherPlayer.Username != p.Username && otherPlayer.GroupID == p.GroupID && otherPlayer.CurrentRoom != p.CurrentRoom {
 				eventData := fmt.Sprintf("Player %s has eliminated the enemy %s!", p.Username, enemy.Name)
-				otherPlayer.SendEvt(protocol.ChatGroup+"" + protocol.CmdChat, eventData)
+				otherPlayer.SendEvt(protocol.ChatGroup+""+protocol.CmdChat, eventData)
 			}
 		}
 	}
