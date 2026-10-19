@@ -126,6 +126,7 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 	currentRoom := p.Server.world.Rooms[p.CurrentRoom]
 	enemy := p.Server.world.NPCs[enemyID]
 
+	p.SendEvt("Victory:", fmt.Sprintf("You have eliminated %s !", enemy.Name))
 	UpdatedNPCsInRoom := make([]string, 0, len(currentRoom.NPCs))
 	for _, id := range currentRoom.NPCs {
 		if id != enemyID {
@@ -143,7 +144,7 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 	for _, otherPlayer := range p.Server.players {
 		if otherPlayer.Username != p.Username && otherPlayer.CurrentRoom == p.CurrentRoom {
 			eventData := fmt.Sprintf("Player %s has eliminated the enemy %s!", p.Username, enemy.Name)
-			otherPlayer.SendEvt(protocol.ChatRoom+protocol.CmdChat, eventData)
+			otherPlayer.SendEvt(protocol.ChatRoom+"" + protocol.CmdChat, eventData)
 		}
 	}
 
@@ -151,7 +152,7 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 		for _, otherPlayer := range p.Server.players {
 			if otherPlayer.Username != p.Username && otherPlayer.GroupID == p.GroupID && otherPlayer.CurrentRoom != p.CurrentRoom {
 				eventData := fmt.Sprintf("Player %s has eliminated the enemy %s!", p.Username, enemy.Name)
-				otherPlayer.SendEvt(protocol.ChatGroup+protocol.CmdChat, eventData)
+				otherPlayer.SendEvt(protocol.ChatGroup+"" + protocol.CmdChat, eventData)
 			}
 		}
 	}
@@ -163,6 +164,15 @@ func (p *Player) handlePlayerDeath(target string) {
 	for _, otherPlayer := range p.Server.players {
 		if otherPlayer.Username != p.Username && strings.EqualFold(otherPlayer.CurrentRoom, roomWhenDeath) {
 			otherPlayer.SendEvt(protocol.EvtRoomLeave, p.Username)
+			otherPlayer.SendEvt("ROOM CHAT", fmt.Sprintf("Player %s has been defeated by %s!", p.Username, target))
+		}
+	}
+
+	if p.GroupID != "" {
+		for _, otherPlayer := range p.Server.players {
+			if otherPlayer.Username != p.Username && otherPlayer.GroupID == p.GroupID {
+				otherPlayer.SendEvt("GROUP CHAT", fmt.Sprintf("Player %s was defeated by %s!", p.Username, target))
+			}
 		}
 	}
 
@@ -175,7 +185,7 @@ func (p *Player) handlePlayerDeath(target string) {
 	p.Status = protocol.StatusHealthy
 
 	for _, otherPlayer := range p.Server.players {
-		if otherPlayer.Username != p.Username && strings.EqualFold(otherPlayer.CurrentRoom, roomWhenDeath) {
+		if otherPlayer.Username != p.Username && strings.EqualFold(otherPlayer.CurrentRoom, p.CurrentRoom) {
 			otherPlayer.SendEvt(protocol.EvtRoomEnter, p.Username)
 		}
 	}
