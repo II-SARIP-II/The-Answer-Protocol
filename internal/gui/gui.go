@@ -2,8 +2,9 @@ package gui
 
 import (
 	"errors"
-	//	"fmt"
+	"fmt"
 	"net"
+	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
 

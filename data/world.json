@@ -183,7 +183,7 @@
     },
     "knife": {
       "name": "Knife",
-      "damage": 3
+      "damage": 60
     },
     "katana": {
       "name": "Katana",
