@@ -16,6 +16,18 @@ type Hole struct {
 	Pos  float32
 }
 
+func (p *Panel) GetStuff() *Stuff {
+	if p == nil {
+		return nil
+	}
+	for _, widget := range p.Content {
+		if stuff, ok := widget.(*Stuff); ok {
+			return stuff
+		}
+	}
+	return nil
+}
+
 func (p *Panel) GetChat() *ChatWidget {
 	if p == nil {
 		return nil

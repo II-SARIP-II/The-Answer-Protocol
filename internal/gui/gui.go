@@ -2,7 +2,10 @@ package gui
 
 import (
 	"errors"
-//	"fmt"
+	"fmt"
+	"strings"
+
+	//	"fmt"
 	"net"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -25,6 +28,7 @@ type Game struct {
 	conn         net.Conn
 	messagesChan chan string
 	curr_cmd     string
+	status		string
 }
 
 func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
@@ -58,16 +62,141 @@ func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 			}
 		}
 
+		if buttons := cm.GetButtons(); buttons != nil {
+			for _, button := range buttons {
+				btn := button
+				switch btn.Label {
+				case "North":
+					btn.OnClick = func() {
+						if g.status == "AWAITING_MOVE_DIR" {
+							msg := "MOVE North"
+							SendMessage(conn, msg)
+							g.status = ""
+						}
+					}
+				case "East":
+					btn.OnClick = func() {
+						if g.status == "AWAITING_MOVE_DIR" {
+							msg := "MOVE East"
+							SendMessage(conn, msg)
+							g.status = ""
+						}
+					}
+				case "South":
+					btn.OnClick = func() {
+						if g.status == "AWAITING_MOVE_DIR" {
+							msg := "MOVE South"
+							SendMessage(conn, msg)
+							g.status = ""
+						}
+					}
+				case "West":
+					btn.OnClick = func() {
+						if g.status == "AWAITING_MOVE_DIR" {
+							msg := "MOVE West"
+							SendMessage(conn, msg)
+							g.status = ""
+						}
+					}
+				}
+			}
+		}
+
 		if buttons := cr.GetButtons(); buttons != nil {
 			for _, button := range buttons {
-				btnLabel := button.Label
+				btn := button
 
-				button.OnClick = func() {
-					g.curr_cmd = btnLabel
-					if chat != nil {
-						chat.AddLine(name + " > " + btnLabel)
+				switch btn.Label {
+				case "MOVE":
+					btn.OnClick = func() {
+						g.status = "AWAITING_MOVE_DIR"
+						g.curr_cmd = "MOVE"
+						if chat != nil {
+							chat.AddLine("Wait a direction")
+						}
 					}
-					SendMessage(conn, btnLabel)
+
+				case "TAKE":
+					btn.OnClick = func() {
+						g.status = "AWAITING_TAKE_ITEM"
+						g.curr_cmd = "TAKE"
+					}
+
+				case "DROP":
+					btn.OnClick = func() {
+						g.status = "AWAITING_DROP_ITEM"
+						g.curr_cmd = "DROP"
+					}
+
+				case "TALK":
+					btn.OnClick = func() {
+						g.status = "IDLE"
+						g.curr_cmd = "STATUS"
+						if chat != nil {
+							chat.AddLine(name + " > STATUS")
+						}
+						SendMessage(conn, "STATUS")
+					}
+
+				case "STATUS":
+					btn.OnClick = func() {
+						g.status = "IDLE"
+						g.curr_cmd = "STATUS"
+						if chat != nil {
+							chat.AddLine(name + " > STATUS")
+						}
+						SendMessage(conn, "STATUS")
+					}
+
+				case "QUEST":
+					btn.OnClick = func() {
+						g.status = "IDLE"
+						g.curr_cmd = "STATUS"
+						if chat != nil {
+							chat.AddLine(name + " > STATUS")
+						}
+						SendMessage(conn, "STATUS")
+					}
+
+				case "QUESTS":
+					btn.OnClick = func() {
+						g.status = "IDLE"
+						g.curr_cmd = "STATUS"
+						if chat != nil {
+							chat.AddLine(name + " > STATUS")
+						}
+						SendMessage(conn, "STATUS")
+					}
+
+				case "WHO":
+					btn.OnClick = func() {
+						g.status = "IDLE"
+						g.curr_cmd = "STATUS"
+						if chat != nil {
+							chat.AddLine(name + " > STATUS")
+						}
+						SendMessage(conn, "STATUS")
+					}
+
+				case "GROUP":
+					btn.OnClick = func() {
+						g.status = "IDLE"
+						g.curr_cmd = "STATUS"
+						if chat != nil {
+							chat.AddLine(name + " > STATUS")
+						}
+						SendMessage(conn, "STATUS")
+					}
+
+				default:
+					btn.OnClick = func() {
+						g.status = "IDLE"
+						g.curr_cmd = btn.Label
+						if chat != nil {
+							chat.AddLine(name + " > " + btn.Label)
+						}
+						SendMessage(conn, btn.Label)
+					}
 				}
 			}
 		}
@@ -91,22 +220,65 @@ func (g *Game) Update() error {
 		select {
 		case msg := <-g.messagesChan:
 			if chat := g.bottomRight.GetChat(); chat != nil {
-				chat.AddLine("Server > " + msg)
-				
-//				switch g.curr_cmd {
-//    			case "LOOK":
-//    			    room := world.ParseRoom(msg)
-//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", room))
-//    			case "MOVE":
-//    			    chat.AddLine(g.curr_cmd + msg)
-//    			case "TAKE":
-//					item := world.ParseItem(msg)
-//					AddItem(item)
-//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", item))
-//				case "DROP":
-//    			    item := world.ParseItem(msg)
-//					RemoveItem(item)
-//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", item))
+				fmt.Print(msg)
+				jsonStart := strings.Index(msg, "{")
+        		response := msg
+        		if jsonStart != -1 {
+        		    response = msg[jsonStart:]
+        		}
+
+				stuff := g.bottomLeft.GetStuff()
+				switch g.curr_cmd {
+				case "LOOK":
+    				lookResp, err := ParseLookResponse(msg)
+    				if err == nil {
+    				    room := lookResp.ToWorldRoom()
+
+    				    g.centerMid.AddRoom(
+    				        room.Name,
+    				        room.Exits,
+    				        room.Items,
+    				        func(itemName string) {
+    				            if g.status == "AWAITING_TAKE_ITEM" {
+    				                cmd := "TAKE " + itemName
+    				                g.curr_cmd = "TAKE"
+    				                if chat != nil {
+    				                    chat.AddLine(g.name + " > " + cmd)
+    				                }
+    				                SendMessage(g.conn, cmd)
+    				                g.status = ""
+    				            }
+    				        },
+    				    )
+    				    chat.AddLine(g.curr_cmd + " > " + room.Name)
+    				} else {
+    				    chat.AddLine("Server > " + msg)
+    				}
+                case "MOVE":
+                    chat.AddLine(g.curr_cmd + " > " + response)
+                case "TAKE":
+    				if strings.Contains(msg, "taken=") {
+    				    parts := strings.Split(msg, "taken=")
+    				    if len(parts) > 1 {
+    				        itemName := strings.TrimSpace(parts[1])
+
+    				        if stuff != nil {
+    				            stuff.AddItem(world.Item{Name: itemName})
+    				        }
+    				        chat.AddLine(g.curr_cmd + " > " + itemName)
+
+    				        g.curr_cmd = "LOOK"
+    				        SendMessage(g.conn, "LOOK")
+    				    }
+    				} else {
+    				    chat.AddLine("Server > " + msg)
+    				}
+                case "DROP":
+                    item := world.ParseItem(response)
+                    if stuff != nil {
+                        stuff.RemoveItem(item)
+                    }
+                    chat.AddLine(g.curr_cmd + " > " + fmt.Sprintf("%+v", item))
 //				case "TALK":
 //    			    world.ParseRoom(msg)
 //				case "ATTACK":
@@ -117,15 +289,15 @@ func (g *Game) Update() error {
 //    			    // quest function
 //				case "QUESTS":
 //    			    // quests function
-//				case "WHO":
-//    			    player := ParsePlayer(msg)
-//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", player))
+				case "WHO":
+    			    player := ParsePlayer(response)
+					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", player))
 //				case "GROUP":
 //    			    world.ParseRoom(msg)
-//				case "QUIT":
-//					fmt.Printf("QUIT")
-//					return ErrQuit
-//				}
+				case "QUIT":
+					fmt.Printf("QUIT")
+					return ErrQuit
+				}
 			}
 		default:
 			goto Done

@@ -4,6 +4,7 @@ import (
 	"image/color"
 
 	"tap/internal/gui/components"
+	"tap/internal/world"
 )
 
 func CreateStatsPanel(topH, centerH, bottomH, colLeftW float32) *components.Panel {
@@ -16,6 +17,9 @@ func CreateStatsPanel(topH, centerH, bottomH, colLeftW float32) *components.Pane
 		colLeftW,
 		bottomH,
 	)
+
+	msg := `{"name": "Colt", "damage": 5}`
+	stuff.AddItem(world.ParseItem(msg))
 
 	return &components.Panel{
 		Name:        "EQUIPMENT / INVENTORY",
@@ -32,3 +36,4 @@ func CreateStatsPanel(topH, centerH, bottomH, colLeftW float32) *components.Pane
 		TextSize:    float32(20.0),
 	}
 }
+

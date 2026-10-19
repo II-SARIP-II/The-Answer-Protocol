@@ -2,15 +2,27 @@ package components
 
 import (
 	"fmt"
-	"image/color"
-	"tap/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
+
+	"tap/internal/world"
 )
+
+const (
+	slotHeight float32 = 40.0
+	paddingTop float32 = 45.0
+	paddingX   float32 = 15.0
+	gapY       float32 = 8.0
+)
+
+type ItemSlot struct {
+	Item   world.Item
+	Button *Button
+}
 
 type Stuff struct {
 	X, Y, W, H float32
-	Items      []world.Item
+	Slots      []ItemSlot
 }
 
 func NewStuff(x, y, w, h float32) *Stuff {
@@ -19,38 +31,75 @@ func NewStuff(x, y, w, h float32) *Stuff {
 		Y:     y,
 		W:     w,
 		H:     h,
-		Items: []world.Item{},
+		Slots: []ItemSlot{},
+	}
+}
+
+func (s *Stuff) RecalculatePositions() {
+	for i := range s.Slots {
+		itemY := s.Y + paddingTop + float32(i)*(slotHeight+gapY)
+		s.Slots[i].Button.X = s.X + paddingX
+		s.Slots[i].Button.Y = itemY
+		s.Slots[i].Button.W = s.W - (paddingX * 2)
+		s.Slots[i].Button.H = slotHeight
+	}
+}
+
+func (s *Stuff) MoveToTop(itemName string) {
+	targetIdx := -1
+	for i, slot := range s.Slots {
+		if slot.Item.Name == itemName {
+			targetIdx = i
+			break
+		}
+	}
+
+	if targetIdx > 0 {
+		targetSlot := s.Slots[targetIdx]
+
+		remaining := append(s.Slots[:targetIdx], s.Slots[targetIdx+1:]...)
+		s.Slots = append([]ItemSlot{targetSlot}, remaining...)
+		s.RecalculatePositions()
 	}
 }
 
 func (s *Stuff) AddItem(item world.Item) {
-	s.Items = append(s.Items, item)
+	label := fmt.Sprintf("%s (DMG: %d)", item.Name, item.Damage)
+	btn := NewButton(label, 0, 0, 0, 0)
+
+	itemName := item.Name
+	btn.OnClick = func() {
+		s.MoveToTop(itemName)
+	}
+
+	itemSlot := ItemSlot{
+		Item:   item,
+		Button: btn,
+	}
+
+	s.Slots = append(s.Slots, itemSlot)
+	s.RecalculatePositions()
 }
 
 func (s *Stuff) RemoveItem(item world.Item) {
-	s.Items = append(s.Items, item)
+	for i, slot := range s.Slots {
+		if slot.Item.Name == item.Name {
+			s.Slots = append(s.Slots[:i], s.Slots[i+1:]...)
+			break
+		}
+	}
+
+	s.RecalculatePositions()
 }
 
 func (s *Stuff) Update() {
+	for i := range s.Slots {
+		s.Slots[i].Button.Update()
+	}
 }
 
 func (s *Stuff) Draw(screen *ebiten.Image) {
-	const lineHeight float32 = 22.0
-	const paddingTop float32 = 40.0
-
-	for i, item := range s.Items {
-		msg := fmt.Sprintf(" - %s (DMG: %d)", item.Name, item.Damage)
-
-		itemY := s.Y + paddingTop + float32(i)*lineHeight
-
-		DrawText(
-			screen,
-			msg,
-			float64(s.X+15),
-			float64(itemY),
-			20.0,
-			color.RGBA{R: 0, G: 255, B: 180, A: 255},
-			"default",
-		)
+	for i := range s.Slots {
+		s.Slots[i].Button.Draw(screen)
 	}
 }
