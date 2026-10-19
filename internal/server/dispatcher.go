@@ -45,10 +45,16 @@ func (p *Player) HandleCommand(rawLine string) {
 		p.handleDrop(args)
 	case protocol.CmdInventory:
 		p.handleInventory(args)
+	case protocol.CmdEquip:
+		p.handleEquip(args)
 	case protocol.CmdTalk:
 		p.handleTalk(args)
 	case protocol.CmdAttack:
 		p.handleAttack(args)
+	case protocol.CmdDefend:
+		p.handleDefend(args)
+	case protocol.CmdFlee:
+		p.handleFlee(args)
 	case protocol.CmdStatus:
 		p.handleStatus(args)
 	case protocol.CmdQuest:

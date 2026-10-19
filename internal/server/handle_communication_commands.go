@@ -29,19 +29,30 @@ func (p *Player) handleChat(args string) {
 
 	switch scope {
 	case protocol.ChatGlobal:
-		p.SendOK("")
 		p.Server.mu.Lock()
 		for _, dest := range p.Server.players {
 			dest.SendEvt("GLOBAL CHAT", eventData)
 		}
 		p.Server.mu.Unlock()
+		p.SendOK("")
 
 	case protocol.ChatGroup:
-		// TODO à compléter si player appartient à un groupe
-		p.SendErr(protocol.CodeNotInGroup, protocol.MsgNotInGroup)
+		p.Server.mu.Lock()
+		if p.GroupID == "" {
+			p.Server.mu.Unlock()
+			p.SendErr(protocol.CodeNotInGroup, protocol.MsgNotInGroup)
+			return
+		}
+
+		for _, dest := range p.Server.players {
+			if dest.GroupID == p.GroupID {
+				dest.SendEvt("GROUP CHAT", eventData)
+			}
+		}
+		p.Server.mu.Unlock()
+		p.SendOK("")
 
 	case protocol.ChatRoom:
-		p.SendOK("")
 		p.Server.mu.Lock()
 		for _, dest := range p.Server.players {
 			if dest.CurrentRoom == p.CurrentRoom {
@@ -49,10 +60,10 @@ func (p *Player) handleChat(args string) {
 			}
 		}
 		p.Server.mu.Unlock()
+		p.SendOK("")
 
 	default:
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
-		return
 	}
 }
 
@@ -66,7 +77,7 @@ func (p *Player) handleWho(args string) {
 	for username := range p.Server.players {
 		usernamesList = append(usernamesList, username)
 	}
-	// TODO ajouter la vraie liste de la current room
+
 	playersNumber := len(p.Server.players)
 	p.Server.mu.Unlock()
 

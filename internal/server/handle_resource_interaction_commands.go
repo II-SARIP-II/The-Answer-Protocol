@@ -22,7 +22,6 @@ func (p *Player) handleTake(args string) {
 		return
 	}
 
-	// L'index -1 est une convention signifiant : « pas encore trouvé ».
 	foundIndex := -1
 	var takenItem string
 	for i, item := range room.Items {
@@ -40,7 +39,6 @@ func (p *Player) handleTake(args string) {
 	}
 
 	p.Inventory = append(p.Inventory, takenItem)
-	// pour remove en go, on append les deux parties du tableau, avant et apr`s le foundIndex
 	room.Items = append(room.Items[:foundIndex], room.Items[foundIndex+1:]...)
 	p.Server.world.Rooms[p.CurrentRoom] = room
 	p.Server.mu.Unlock()
@@ -71,6 +69,10 @@ func (p *Player) handleDrop(args string) {
 		p.Server.mu.Unlock()
 		p.SendErr(protocol.CodeItemNotInInventory, protocol.MsgItemNotInInventory)
 		return
+	}
+
+	if droppedItem == p.EquippedWeapon {
+		p.EquippedWeapon = ""
 	}
 
 	room := p.Server.world.Rooms[p.CurrentRoom]
@@ -104,22 +106,72 @@ func (p *Player) handleInventory(args string) {
 	p.SendOK(string(data))
 }
 
-func (p *Player) handleTalk(args string) {
-	// TODO
-	if args == "" {
+func (p *Player) handleEquip(args string) {
+	targetWeapon := strings.TrimSpace(args)
+	if targetWeapon == "" {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
 		return
 	}
-	p.SendOK("Received TALK. (TODO)")
+
+	p.Server.mu.Lock()
+	foundWeapon := ""
+
+	for _, weapon := range p.Inventory {
+		if p.matchNameOrID(weapon, targetWeapon) {
+			foundWeapon = weapon
+			p.EquippedWeapon = foundWeapon
+			break
+		}
+	}
+
+	if foundWeapon == "" {
+		p.SendErr(protocol.CodeItemNotInInventory, protocol.MsgItemNotInInventory)
+		p.Server.mu.Unlock()
+		return
+	}
+	p.Server.mu.Unlock()
+
+	p.SendOK(fmt.Sprintf("equipped=%s", foundWeapon))
 }
 
-func (p *Player) handleAttack(args string) {
-	// TODO
-	if args == "" {
+func (p *Player) handleTalk(args string) {
+	targetNpc := strings.TrimSpace(args)
+	if targetNpc == "" {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
 		return
 	}
-	p.SendOK("Received ATTACK. (TODO)")
+
+	p.Server.mu.Lock()
+
+	var foundNPCID string
+	room := p.Server.world.Rooms[p.CurrentRoom]
+	for _, npcID := range room.NPCs {
+		if p.matchNameOrID(npcID, targetNpc) {
+			foundNPCID = npcID
+			break
+		}
+	}
+
+	if foundNPCID == "" {
+		p.Server.mu.Unlock()
+		p.SendErr(protocol.CodeNPCNotFound, protocol.MsgNPCNotFound)
+		return
+	}
+
+	npcData, exists := p.Server.world.NPCs[foundNPCID]
+	if !exists || len(npcData.Dialogue) == 0 {
+		p.Server.mu.Unlock()
+		p.SendOK(fmt.Sprintf("%s has nothing to say.", npcData.Name))
+		return
+	}
+
+	npcReply := npcData.Dialogue[0]
+	npcData.Dialogue = append(npcData.Dialogue[1:], npcReply)
+	p.Server.world.NPCs[foundNPCID] = npcData
+
+	p.Server.mu.Unlock()
+
+	p.SendOK(npcReply)
 }
 
 func (p *Player) handleStatus(args string) {

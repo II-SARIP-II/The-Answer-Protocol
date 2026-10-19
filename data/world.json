@@ -10,7 +10,7 @@
         "east": { "target": "room2", "door_pos": 2, "wall": 1 },
         "south": { "target": "room1", "door_pos": 2, "wall": 2 }
       },
-      "items": ["colt_1911"],
+      "items": ["colt_1911", "weapon2"],
       "npcs": ["undercover_agent"]
     },
     "room1": {
@@ -143,7 +143,9 @@
       "role": "quest-giver",
       "name": "Agent Smith",
       "life": -1,
-      "item": null
+      "item": null,
+      "dialogue": ["talk_test1", "talk_test2"]
+
     },
     "target": {
       "role": "target",
@@ -164,7 +166,7 @@
       "item": "M16"
     },
     "chef": {
-      "role": "passiv enemy",
+      "role": "passive enemy",
       "name": "Kitchen Chef",
       "life": 5,
       "item": "Katana"
