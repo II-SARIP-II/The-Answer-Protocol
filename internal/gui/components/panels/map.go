@@ -10,14 +10,13 @@ import (
 func CreateMapPanel(topH, centerH, colLeftW, colMidW float32, data world.GameData) *components.Panel {
 	var content []components.Widget
 
-	const scale float32 = 30.0
 	const compassW float32 = 60
 	const compassH float32 = 60
-	
-	compassRoseNorth := components.NewButton("North", colLeftW + colMidW/2 - compassW/2, topH + centerH - 3 * compassH, compassW, compassH)
-	compassRoseEast := components.NewButton("West", colLeftW + colMidW/2 - compassW/2 - compassW, topH + centerH - 2 * compassH, compassW, compassH)
-	compassRoseSouth := components.NewButton("South", colLeftW + colMidW/2 - compassW/2, topH + centerH - 1 * compassH, compassW, compassH)
-	compassRoseWest := components.NewButton("East", colLeftW + colMidW/2 - compassW/2 + compassW, topH + centerH - 2 * compassH, compassW, compassH)
+
+	compassRoseNorth := components.NewButton("North", colLeftW+colMidW/2-compassW/2, topH+centerH-3*compassH, compassW, compassH)
+	compassRoseEast := components.NewButton("West", colLeftW+colMidW/2-compassW/2-compassW, topH+centerH-2*compassH, compassW, compassH)
+	compassRoseSouth := components.NewButton("South", colLeftW+colMidW/2-compassW/2, topH+centerH-1*compassH, compassW, compassH)
+	compassRoseWest := components.NewButton("East", colLeftW+colMidW/2-compassW/2+compassW, topH+centerH-2*compassH, compassW, compassH)
 	content = append(content, compassRoseNorth)
 	content = append(content, compassRoseEast)
 	content = append(content, compassRoseSouth)

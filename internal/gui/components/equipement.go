@@ -70,8 +70,8 @@ func (s *Stuff) AddItem(item world.Item, onItemClick func(string)) {
 	itemName := item.Name
 	btn.OnClick = func() {
 		if onItemClick != nil {
-            onItemClick(itemName)
-        }
+			onItemClick(itemName)
+		}
 	}
 
 	itemSlot := ItemSlot{

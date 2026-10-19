@@ -17,8 +17,6 @@ func ParsePlayer(str_player string) server.Player {
 	return player
 }
 
-
-
 //type Player struct {
 //	Server      *Server
 //	Username    string
@@ -27,4 +25,3 @@ func ParsePlayer(str_player string) server.Player {
 //	CurrentRoom string
 //	// TODO RoomID, HP, Inventory...
 //}
-

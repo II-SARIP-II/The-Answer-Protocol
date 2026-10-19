@@ -32,4 +32,3 @@ func CreateStatsPanel(topH, centerH, bottomH, colLeftW float32) *components.Pane
 		TextSize:    float32(20.0),
 	}
 }
-
