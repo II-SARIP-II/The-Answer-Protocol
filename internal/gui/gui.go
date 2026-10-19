@@ -263,7 +263,21 @@ func (g *Game) Update() error {
     				        itemName := strings.TrimSpace(parts[1])
 
     				        if stuff != nil {
-    				            stuff.AddItem(world.Item{Name: itemName})
+    				            stuff.AddItem(
+									world.Item{Name: itemName},
+									func(itemName string) {
+    				            		if g.status == "AWAITING_DROP_ITEM" {
+    				            		    cmd := "DROP " + itemName
+    				            		    g.curr_cmd = "DROP"
+    				            		    if chat != nil {
+    				            		        chat.AddLine(g.name + " > " + cmd)
+    				            		    }
+											stuff.RemoveItem(world.Item{Name: itemName})
+    				            		    SendMessage(g.conn, cmd)
+    				            		    g.status = ""
+    				            		}
+    				        		},
+								)
     				        }
     				        chat.AddLine(g.curr_cmd + " > " + itemName)
 
@@ -274,11 +288,9 @@ func (g *Game) Update() error {
     				    chat.AddLine("Server > " + msg)
     				}
                 case "DROP":
-                    item := world.ParseItem(response)
-                    if stuff != nil {
-                        stuff.RemoveItem(item)
-                    }
-                    chat.AddLine(g.curr_cmd + " > " + fmt.Sprintf("%+v", item))
+                    g.status = "AWAITING_DROP_ITEM"
+					g.curr_cmd = "LOOK"
+    				SendMessage(g.conn, "LOOK")
 //				case "TALK":
 //    			    world.ParseRoom(msg)
 //				case "ATTACK":

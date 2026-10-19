@@ -63,13 +63,15 @@ func (s *Stuff) MoveToTop(itemName string) {
 	}
 }
 
-func (s *Stuff) AddItem(item world.Item) {
+func (s *Stuff) AddItem(item world.Item, onItemClick func(string)) {
 	label := fmt.Sprintf("%s (DMG: %d)", item.Name, item.Damage)
 	btn := NewButton(label, 0, 0, 0, 0)
 
 	itemName := item.Name
 	btn.OnClick = func() {
-		s.MoveToTop(itemName)
+		if onItemClick != nil {
+            onItemClick(itemName)
+        }
 	}
 
 	itemSlot := ItemSlot{
