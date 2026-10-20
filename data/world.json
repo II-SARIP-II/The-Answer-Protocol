@@ -11,7 +11,7 @@
         "south": { "target": "room1", "door_pos": 2, "wall": 2 }
       },
       "items": ["colt_1911", "weapon2"],
-      "npcs": ["undercover_agent"]
+      "npcs": ["undercover_agent", "bodyguard_1"]
     },
     "room1": {
       "name": "Broom Closet",
@@ -183,7 +183,7 @@
     },
     "knife": {
       "name": "Knife",
-      "damage": 60
+      "damage": 6
     },
     "katana": {
       "name": "Katana",
