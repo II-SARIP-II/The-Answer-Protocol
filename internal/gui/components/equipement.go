@@ -1,11 +1,7 @@
 package components
 
 import (
-	"fmt"
-
 	"github.com/hajimehoshi/ebiten/v2"
-
-	"tap/internal/world"
 )
 
 const (
@@ -16,7 +12,7 @@ const (
 )
 
 type ItemSlot struct {
-	Item   world.Item
+	Item   string
 	Button *Button
 }
 
@@ -48,7 +44,7 @@ func (s *Stuff) RecalculatePositions() {
 func (s *Stuff) MoveToTop(itemName string) {
 	targetIdx := -1
 	for i, slot := range s.Slots {
-		if slot.Item.Name == itemName {
+		if slot.Item == itemName {
 			targetIdx = i
 			break
 		}
@@ -63,11 +59,10 @@ func (s *Stuff) MoveToTop(itemName string) {
 	}
 }
 
-func (s *Stuff) AddItem(item world.Item, onItemClick func(string)) {
-	label := fmt.Sprintf("%s (DMG: %d)", item.Name, item.Damage)
-	btn := NewButton(label, 0, 0, 0, 0)
+func (s *Stuff) AddItem(item string, onItemClick func(string)) {
+	btn := NewButton(item, 0, 0, 0, 0)
 
-	itemName := item.Name
+	itemName := item
 	btn.OnClick = func() {
 		if onItemClick != nil {
 			onItemClick(itemName)
@@ -83,9 +78,9 @@ func (s *Stuff) AddItem(item world.Item, onItemClick func(string)) {
 	s.RecalculatePositions()
 }
 
-func (s *Stuff) RemoveItem(item world.Item) {
+func (s *Stuff) RemoveItem(item string) {
 	for i, slot := range s.Slots {
-		if slot.Item.Name == item.Name {
+		if slot.Item == item {
 			s.Slots = append(s.Slots[:i], s.Slots[i+1:]...)
 			break
 		}
