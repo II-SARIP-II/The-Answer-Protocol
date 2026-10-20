@@ -174,13 +174,30 @@ func (p *Player) handleTalk(args string) {
 	p.SendOK(npcReply)
 }
 
+type StatusResponse struct {
+	HP int   `json:"hp"`
+	MaxHP int `json:"max_hp"`
+	Status string `json:"status"`
+}
+
 func (p *Player) handleStatus(args string) {
-	// TODO
 	if args != "" {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
 		return
 	}
-	p.SendOK("Received STATUS. (TODO)")
+
+	response := StatusResponse{
+		HP: p.HP,
+		MaxHP: p.MaxHP,
+		Status: p.Status,
+	}
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgBadRequest)
+	}
+
+	p.SendOK(string(data))
 }
 
 func (p *Player) handleQuest(args string) {
