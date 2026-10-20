@@ -58,12 +58,13 @@ func GetRoomPos(name string) (int, int) {
 	return 1, 1
 }
 
-func (p *Panel) AddRoom(name string, exits map[string]world.Exit, items []string, onItemClick func(string)) {
+func (p *Panel) AddRoom(name string, exits map[string]world.Exit, items []string, onItemClick func(string), npcs []string, onNPCClick func(string)) {
 	if p == nil {
 		return
 	}
 
 	const scale float32 = 30.0
+	const padding float32 = 15.0
 	gridX, gridY := GetRoomPos(name)
 
 	rx := p.X + float32(gridX)*scale*float32(roomW)
@@ -121,17 +122,32 @@ func (p *Panel) AddRoom(name string, exits map[string]world.Exit, items []string
 
 	p.Content = cleanContent
 
+	// add item in room
 	for i, item := range items {
 		btnY := p.Y + p.H - float32((i+1)*50)
 		btn := NewButton(item, p.X+p.W-150, btnY, 150, 50)
 
-		itemName := item
 		btn.OnClick = func() {
 			if onItemClick != nil {
-				onItemClick(itemName)
+				onItemClick(item)
 			}
 		}
 
 		p.Content = append(p.Content, btn)
 	}
+
+	// add npc in room
+	for i, npc := range npcs {
+		btnY := p.Y + p.H - float32((i+1)*50)
+		btn := NewButton(npc, p.X + padding, btnY, 175, 50)
+
+		btn.OnClick = func() {
+			if onItemClick != nil {
+				onItemClick(npc)
+			}
+		}
+
+		p.Content = append(p.Content, btn)
+	}
+
 }

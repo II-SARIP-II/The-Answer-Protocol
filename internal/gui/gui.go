@@ -130,12 +130,8 @@ func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 
 				case "TALK":
 					btn.OnClick = func() {
-						g.status = "IDLE"
-						g.curr_cmd = "STATUS"
-						if chat != nil {
-							chat.AddLine(name + " > STATUS")
-						}
-						SendMessage(conn, "STATUS")
+						g.status = "AWAITING_TALK_NPC"
+						g.curr_cmd = "TALK"
 					}
 
 				case "STATUS":
@@ -249,6 +245,24 @@ func (g *Game) Update() error {
 									g.status = ""
 								}
 							},
+							room.NPCs,
+							func(NPCsName string) {
+								if g.status == "AWAITING_TALK_NPC" {
+									cmd := "TALK " + NPCsName
+									g.curr_cmd = "TALK"
+									if chat != nil {
+										chat.AddLine(g.name + " > " + cmd)
+									}
+									SendMessage(g.conn, cmd)
+								} else if g.status == "AWAITING_ATTACK_NPC" {
+									cmd := "ATTACK " + NPCsName
+									g.curr_cmd = "ATTACK"
+									if chat != nil {
+										chat.AddLine(g.name + " > " + cmd)
+									}
+									SendMessage(g.conn, cmd)
+								}
+							},
 						)
 						chat.AddLine(g.curr_cmd + " > " + room.Name)
 					} else {
@@ -291,21 +305,21 @@ func (g *Game) Update() error {
 					g.status = "AWAITING_DROP_ITEM"
 					g.curr_cmd = "LOOK"
 					SendMessage(g.conn, "LOOK")
-					//				case "TALK":
-					//    			    world.ParseRoom(msg)
-					//				case "ATTACK":
-					//    			    // attack function
-					//				case "STATUS":
-					//    			    // status function
-					//				case "QUEST":
-					//    			    // quest function
-					//				case "QUESTS":
-					//    			    // quests function
+				case "TALK":
+    			    world.ParseRoom(msg)
+//				case "ATTACK":
+//    			    // attack function
+//				case "STATUS":
+//    			    // status function
+//				case "QUEST":
+//    			    // quest function
+//				case "QUESTS":
+//    			    // quests function
 				case "WHO":
 					player := ParsePlayer(response)
 					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", player))
-					//				case "GROUP":
-					//    			    world.ParseRoom(msg)
+//				case "GROUP":
+//    			    world.ParseRoom(msg)
 				case "QUIT":
 					fmt.Printf("QUIT")
 					return ErrQuit
