@@ -114,9 +114,12 @@ func (p *Player) handleMove(args string) {
 			otherPlayer.SendEvt(protocol.EvtRoomEnter, p.Username)
 		}
 	}
+
+	p.checkHostileAmbush(newRoom)
+
 	p.Server.mu.Unlock()
 
-	p.SendOK(fmt.Sprintf("room=%s", newRoom))
+	p.SendOK(fmt.Sprintf("room=%s", p.CurrentRoom))
 }
 
 func (p *Player) handleQuit(args string) {

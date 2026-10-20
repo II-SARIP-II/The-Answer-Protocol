@@ -13,11 +13,15 @@ import (
 	"time"
 )
 
+const NPCRespawnDelay = 30 * time.Second
+
 type Server struct {
-	mu      sync.Mutex
-	players (map[string]*Player)
-	port    string
-	world   *world.GameData
+	mu            sync.Mutex
+	players       (map[string]*Player)
+	port          string
+	world         *world.GameData
+	npcSpawnRooms map[string]string
+	initialNPCs   map[string]world.NPC
 }
 
 func NewServer(worldPath string) (*Server, error) {
@@ -26,10 +30,60 @@ func NewServer(worldPath string) (*Server, error) {
 		return nil, err
 	}
 
+	npcSpawnRooms := make(map[string]string)
+	initialNPCs := make(map[string]world.NPC)
+
+	for roomID, room := range w.Rooms {
+		for _, npcID := range room.NPCs {
+			npcSpawnRooms[npcID] = roomID
+		}
+	}
+	for npcID, npc := range w.NPCs {
+		initialNPCs[npcID] = npc
+	}
+
 	return &Server{
-		players: make(map[string]*Player),
-		world:   w,
+		players:       make(map[string]*Player),
+		world:         w,
+		npcSpawnRooms: npcSpawnRooms,
+		initialNPCs:   initialNPCs,
 	}, nil
+}
+
+func (s *Server) scheduleNPCRespawn(enemyID string) {
+	spawnRoom, okRoom := s.npcSpawnRooms[enemyID]
+	initialData, okData := s.initialNPCs[enemyID]
+	if !okRoom || !okData {
+		return
+	}
+
+	time.AfterFunc(NPCRespawnDelay, func() {
+		s.mu.Lock()
+		defer s.mu.Unlock()
+
+		s.world.NPCs[enemyID] = initialData
+
+		room := s.world.Rooms[spawnRoom]
+		alreadyPresent := false
+		for _, id := range room.NPCs {
+			if id == enemyID {
+				alreadyPresent = true
+				break
+			}
+		}
+		if !alreadyPresent {
+			room.NPCs = append(room.NPCs, enemyID)
+			s.world.Rooms[spawnRoom] = room
+		}
+
+		slog.Info("NPC respawned", "npc", enemyID, "room", spawnRoom)
+
+		for _, player := range s.players {
+			if strings.EqualFold(player.CurrentRoom, spawnRoom) {
+				player.SendEvt("ROOM CHAT", fmt.Sprintf("Server %s has reappeared!", initialData.Name))
+			}
+		}
+	})
 }
 
 func (s *Server) Start(port string) error {

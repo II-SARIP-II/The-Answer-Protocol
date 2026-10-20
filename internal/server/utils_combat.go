@@ -29,8 +29,47 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 	p.broadcastRoom(p.CurrentRoom, "ROOM CHAT", fmt.Sprintf("Player %s has eliminated %s!", p.Username, enemy.Name))
 	p.broadcastGroup("GROUP CHAT", fmt.Sprintf("Player %s has eliminated %s!", p.Username, enemy.Name))
 
+	p.Server.scheduleNPCRespawn(enemyID)
+
 	data := fmt.Sprintf("Combat victory, victorious_player=%s, defeated_enemy=%s", p.Username, enemy.Name)
 	slog.Info(data)
+}
+
+func (p *Player) checkHostileAmbush(roomID string) {
+	room := p.Server.world.Rooms[roomID]
+	for _, npcID := range room.NPCs {
+		npc := p.Server.world.NPCs[npcID]
+		if npc.Life > 0 && (npc.Role == "enemy" || npc.Role == "target") {
+			damage := protocol.FistFightDamage
+			if npc.Item != nil {
+				damage = p.getAttackDamage(*npc.Item)
+			}
+
+			p.HP -= damage
+			if p.HP < 0 {
+				p.HP = 0
+			}
+
+			p.Status = protocol.StatusCombat
+			p.DefendCount = 0
+
+			slog.Info("Hostile NPC ambush",
+				"npc", npc.Name,
+				"player", p.Username,
+				"room", roomID,
+				"damage", damage,
+				"player_hp", p.HP,
+			)
+
+			p.SendEvt("ROOM CHAT", fmt.Sprintf("%s ambushes you! You take %d damage!", npc.Name, damage))
+			p.broadcastRoom(roomID, "ROOM CHAT", fmt.Sprintf("%s ambushes %s for %d damage!", npc.Name, p.Username, damage))
+
+			if p.HP == 0 {
+				p.handlePlayerDeath(npc.Name)
+			}
+			break
+		}
+	}
 }
 
 func (p *Player) handlePlayerDeath(target string) {
