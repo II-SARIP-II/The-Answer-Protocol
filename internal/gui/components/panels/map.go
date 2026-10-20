@@ -4,10 +4,9 @@ import (
 	"image/color"
 
 	"tap/internal/gui/components"
-	"tap/internal/world"
 )
 
-func CreateMapPanel(topH, centerH, colLeftW, colMidW float32, data world.GameData) *components.Panel {
+func CreateMapPanel(topH, centerH, colLeftW, colMidW float32) *components.Panel {
 	var content []components.Widget
 
 	const compassW float32 = 60

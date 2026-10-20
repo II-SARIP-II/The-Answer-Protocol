@@ -10,7 +10,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 
 	"tap/internal/gui/components"
-	"tap/internal/world"
 )
 
 var ErrQuit = errors.New("game terminated by user")
@@ -30,9 +29,9 @@ type Game struct {
 	status       string
 }
 
-func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
+func NewGame(winWidth int, winHeight int) *Game {
 	name := "Pâris"
-	t, cl, cm, cr, bl, bc, br := InitPanels(winWidth, winHeight, data)
+	t, cl, cm, cr, bl, bc, br := InitPanels(winWidth, winHeight)
 	conn, err := Connect("localhost:4242", name)
 	messagesChan := make(chan string, 100)
 
@@ -376,13 +375,9 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func Run() error {
 	windowWidth := 1480
 	windowHeight := 1090
-	data, err := world.ReadJson("data/world.json")
-	if err != nil {
-		return err
-	}
 	ebiten.SetWindowSize(windowWidth, windowHeight)
 	ebiten.SetWindowTitle("The Answer Protocol")
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
-	newGame := NewGame(windowWidth, windowHeight, *data)
+	newGame := NewGame(windowWidth, windowHeight)
 	return ebiten.RunGame(newGame)
 }
