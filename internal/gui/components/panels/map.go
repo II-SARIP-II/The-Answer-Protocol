@@ -12,11 +12,12 @@ func CreateMapPanel(topH, centerH, colLeftW, colMidW float32, data world.GameDat
 
 	const compassW float32 = 60
 	const compassH float32 = 60
+	const padding float32 = 15.0
 
-	compassRoseNorth := components.NewButton("North", colLeftW+colMidW/2-compassW/2, topH+centerH-3*compassH, compassW, compassH)
-	compassRoseEast := components.NewButton("West", colLeftW+colMidW/2-compassW/2-compassW, topH+centerH-2*compassH, compassW, compassH)
-	compassRoseSouth := components.NewButton("South", colLeftW+colMidW/2-compassW/2, topH+centerH-1*compassH, compassW, compassH)
-	compassRoseWest := components.NewButton("East", colLeftW+colMidW/2-compassW/2+compassW, topH+centerH-2*compassH, compassW, compassH)
+	compassRoseNorth := components.NewButton("North", colLeftW + padding + compassW, topH+centerH-3*compassH - padding, compassW, compassH)
+	compassRoseEast := components.NewButton("West", colLeftW + padding, topH+centerH-2*compassH - padding, compassW, compassH)
+	compassRoseSouth := components.NewButton("South", colLeftW + padding + compassW, topH+centerH-1*compassH - padding, compassW, compassH)
+	compassRoseWest := components.NewButton("East", colLeftW + compassW*2 + padding, topH+centerH-2*compassH - padding, compassW, compassH)
 	content = append(content, compassRoseNorth)
 	content = append(content, compassRoseEast)
 	content = append(content, compassRoseSouth)
