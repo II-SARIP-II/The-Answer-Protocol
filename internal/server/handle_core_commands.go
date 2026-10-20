@@ -95,6 +95,7 @@ func (p *Player) handleMove(args string) {
 
 	p.Server.mu.Lock()
 
+	p.DefendCount = 0
 	oldRoom := p.CurrentRoom
 
 	for _, otherPlayer := range p.Server.players {

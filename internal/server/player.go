@@ -17,6 +17,7 @@ type Player struct {
 	MaxHP            int
 	HP               int
 	EquippedWeapon   string
+	DefendCount      int
 	Status           string
 	GroupID          string
 	GroupInvitations []string
@@ -33,6 +34,7 @@ func NewPlayer(username string, conn net.Conn) *Player {
 		MaxHP:            100,
 		HP:               100,
 		EquippedWeapon:   "",
+		DefendCount:      0,
 		GroupID:          "",
 		GroupInvitations: make([]string, 0),
 		Status:           "healthy",

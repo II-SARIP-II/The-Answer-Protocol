@@ -63,6 +63,12 @@ const (
 const (
 	StatusCombat  = "combat"  // ajout
 	StatusHealthy = "healthy" // ajout
+	StatusPerfectDefense  = "perfect_defense" // ajout
+	StatusWeakenedDefense = "weakened_defense"// ajout
+	StatusBrokenDefense = "broken_defense" // ajout
+	StatusFlee    = "flee" //ajout
+	StatusDefeated = "defeated" //ajout
+	StatusVictory = "victory" //ajout
 )
 
 const (

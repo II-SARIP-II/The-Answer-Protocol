@@ -6,6 +6,8 @@ import (
 	"log/slog"
 	"strings"
 	"tap/internal/protocol"
+	"tap/internal/world"
+	"math/rand/v2"
 )
 
 type AttackResponse struct {
@@ -15,37 +17,55 @@ type AttackResponse struct {
 	Status     string `json:"status"`
 }
 
-func (p *Player) handleAttack(args string) {
-	target := strings.TrimSpace(args)
-	if target == "" {
+
+type DefendResponse struct {
+	DefenderHP int    `json:"defender_hp"`
+	TargetHP   int    `json:"target_hp"`
+	Damage     int    `json:"damage"`
+	Status     string `json:"status"`
+}
+
+func (p *Player) findAndValidateEnemy(target string) (string, world.NPC, bool) {
+	cleanTarget := strings.TrimSpace(target)
+	if cleanTarget == "" {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
-		return
+		return "", world.NPC{}, false
 	}
 
 	p.Server.mu.Lock()
 
-	var foundTargetID string
+	var foundID string
 	for _, targetID := range p.Server.world.Rooms[p.CurrentRoom].NPCs {
-		if p.matchNameOrID(targetID, target) {
-			foundTargetID = targetID
+		if p.matchNameOrID(targetID, cleanTarget) {
+			foundID = targetID
 			break
 		}
 	}
 
-	if foundTargetID == "" {
+	if foundID == "" {
 		p.Server.mu.Unlock()
 		p.SendErr(protocol.CodeNPCNotFound, protocol.MsgNPCNotFound)
-		return
+		return "", world.NPC{}, false
 	}
 
-	enemyData := p.Server.world.NPCs[foundTargetID]
+	enemyData := p.Server.world.NPCs[foundID]
 	if enemyData.Life <= 0 || (enemyData.Role != "enemy" && enemyData.Role != "target") {
 		p.Server.mu.Unlock()
 		p.SendErr(protocol.CodeNPCNotHostile, protocol.MsgNPCNotHostile)
+		return "", world.NPC{}, false
+	}
+
+	return foundID, enemyData, true
+}
+
+func (p *Player) handleAttack(args string) {
+	enemyID, enemyData, ok := p.findAndValidateEnemy(args)
+	if !ok {
 		return
 	}
 
 	p.Status = protocol.StatusCombat
+	p.DefendCount = 0
 
 	damageDealt := protocol.FistFightDamage
 	if len(p.Inventory) == 1 {
@@ -64,7 +84,8 @@ func (p *Player) handleAttack(args string) {
 	if enemyData.Life < 0 {
 		enemyData.Life = 0
 	}
-	p.Server.world.NPCs[foundTargetID] = enemyData
+	p.Server.world.NPCs[enemyID] = enemyData
+
 
 	damageTaken := 0
 	if enemyData.Life > 0 {
@@ -87,12 +108,11 @@ func (p *Player) handleAttack(args string) {
 	combatStatus := protocol.StatusCombat
 	if enemyData.Life == 0 {
 		combatStatus = "victory"
-		p.SendEvt("Victory:", fmt.Sprintf("You have eliminated %s !", enemyData.Name))
 		p.Status = protocol.StatusHealthy
-		p.handleEnemyDeath(foundTargetID)
+		p.handleEnemyDeath(enemyID)
 	} else if p.HP == 0 {
 		combatStatus = "defeated"
-		p.handlePlayerDeath(target)
+		p.handlePlayerDeath(enemyData.Name)
 	}
 
 	response := AttackResponse{
@@ -111,16 +131,18 @@ func (p *Player) handleAttack(args string) {
 
 	slog.Info("Combat turn",
 		"player", p.Username,
-		"target", foundTargetID,
+		"target", enemyID,
 		"damage_dealt", damageDealt,
 		"damage_taken", damageTaken,
 		"player_hp", p.HP,
 		"target_hp", enemyData.Life,
 		"result", combatStatus,
 	)
+
 	p.Server.mu.Unlock()
 	p.SendOK(string(data))
 }
+
 
 func (p *Player) handleEnemyDeath(enemyID string) {
 	currentRoom := p.Server.world.Rooms[p.CurrentRoom]
@@ -144,7 +166,7 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 	for _, otherPlayer := range p.Server.players {
 		if otherPlayer.Username != p.Username && otherPlayer.CurrentRoom == p.CurrentRoom {
 			eventData := fmt.Sprintf("Player %s has eliminated the enemy %s!", p.Username, enemy.Name)
-			otherPlayer.SendEvt(protocol.ChatRoom+""+protocol.CmdChat, eventData)
+			otherPlayer.SendEvt(protocol.ChatRoom+ " " +protocol.CmdChat, eventData)
 		}
 	}
 
@@ -152,7 +174,7 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 		for _, otherPlayer := range p.Server.players {
 			if otherPlayer.Username != p.Username && otherPlayer.GroupID == p.GroupID && otherPlayer.CurrentRoom != p.CurrentRoom {
 				eventData := fmt.Sprintf("Player %s has eliminated the enemy %s!", p.Username, enemy.Name)
-				otherPlayer.SendEvt(protocol.ChatGroup+""+protocol.CmdChat, eventData)
+				otherPlayer.SendEvt(protocol.ChatGroup+ " " +protocol.CmdChat, eventData)
 			}
 		}
 	}
@@ -182,7 +204,7 @@ func (p *Player) handlePlayerDeath(target string) {
 		p.MaxHP = 25
 	}
 	p.HP = p.MaxHP
-	p.Status = protocol.StatusHealthy
+	p.Status = protocol.StatusDefeated
 
 	for _, otherPlayer := range p.Server.players {
 		if otherPlayer.Username != p.Username && strings.EqualFold(otherPlayer.CurrentRoom, p.CurrentRoom) {
@@ -191,24 +213,74 @@ func (p *Player) handlePlayerDeath(target string) {
 	}
 }
 
-// ◦ Combat results must be logged and broadcast to relevant players TODO
-// ◦ Design Choice: Your group must design and implement turn-based combat
-// mechanics, including damage formulas, initiative order, and additional combat
-// commands (DEFEND, FLEE, etc.). Document and justify your choices in the
-// README.
-
 func (p *Player) handleDefend(args string) {
-	target := strings.TrimSpace(args)
-	if target == "" {
-		if args == "" {
-			p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
-			return
+	_, enemyData, ok := p.findAndValidateEnemy(args)
+	if !ok {
+		return
+	}
+
+	p.Status = protocol.StatusPerfectDefense
+
+	theoricalDamageTaken := protocol.FistFightDamage
+	if enemyData.Item != nil {
+		for itemID, item := range p.Server.world.Items {
+			if p.matchNameOrID(itemID, *enemyData.Item) {
+				theoricalDamageTaken = item.Damage
+				break
+			}
 		}
 	}
-	p.SendOK("Received DEFEND. (TODO)")
-	// si player envoie DEFEND, 0 damage recu/donné
-	// au 2ème DEFEND, 1/2 damage recu/100% donné
-	// si MOVE avant 2eme annulation du mode defense
+
+	damageTaken := 0
+	switch p.DefendCount {
+	case 0:
+		damageTaken = 0
+		p.DefendCount++
+		p.Status = protocol.StatusPerfectDefense
+	case 1:
+		damageTaken = theoricalDamageTaken / 2
+		p.DefendCount++
+		p.Status = protocol.StatusWeakenedDefense
+	default:
+		damageTaken = theoricalDamageTaken
+		p.Status = protocol.StatusBrokenDefense
+	}
+
+	p.HP -= damageTaken
+	if p.HP < 0 {
+		p.HP = 0
+	}
+
+	if p.HP == 0 {
+		p.Status = "defeated"
+		p.handlePlayerDeath(enemyData.Name)
+	}
+
+	response := DefendResponse{
+		DefenderHP: p.HP,
+		TargetHP:   enemyData.Life,
+		Damage:     damageTaken,
+		Status:     p.Status,
+	}
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		p.Server.mu.Unlock()
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgBadRequest)
+		return
+	}
+
+	slog.Info("Defense turn",
+		"player", p.Username,
+		"target", enemyData.Name,
+		"damage_taken", damageTaken,
+		"player_hp", p.HP,
+		"target_hp", enemyData.Life,
+		"status", p.Status,
+	)
+
+	p.Server.mu.Unlock()
+	p.SendOK(string(data))
 }
 
 func (p *Player) handleFlee(args string) {
@@ -216,6 +288,53 @@ func (p *Player) handleFlee(args string) {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
 		return
 	}
-	p.SendOK("Received FLEE. (TODO)")
-	// si fuite au lieu de ATTACK, pas de damage mais Move par une exit au hasard
+
+	p.Server.mu.Lock()
+
+	room := p.Server.world.Rooms[p.CurrentRoom]
+	availableDirections := make([]string, 0, len(room.Exits))
+	for dir := range room.Exits {
+		availableDirections = append(availableDirections, dir)
+	}
+
+	if len(availableDirections) == 0 {
+		p.Server.mu.Unlock()
+		p.SendErr(protocol.CodeNoExit, protocol.MsgNoExit)
+		return
+	}
+
+	randomDirection := availableDirections[rand.IntN(len(availableDirections))]
+	exit := room.Exits[randomDirection]
+	newRoom := exit.Target
+	oldRoom := p.CurrentRoom
+
+	for _, otherPlayer := range p.Server.players {
+		if otherPlayer.Username != p.Username && strings.EqualFold(otherPlayer.CurrentRoom, oldRoom) {
+			otherPlayer.SendEvt(protocol.EvtRoomLeave, p.Username)
+			otherPlayer.SendEvt("ROOM CHAT", fmt.Sprintf("Server Player %s fled the combat towards %s!", p.Username, randomDirection))
+		}
+	}
+
+	p.CurrentRoom = newRoom
+	p.Status = protocol.StatusHealthy
+	p.DefendCount = 0
+
+	for _, otherPlayer := range p.Server.players {
+		if otherPlayer.Username != p.Username && strings.EqualFold(otherPlayer.CurrentRoom, p.CurrentRoom) {
+			otherPlayer.SendEvt(protocol.EvtRoomEnter, p.Username)
+		}
+	}
+
+	slog.Info("Player fled combat",
+		"player", p.Username,
+		"from_room", oldRoom,
+		"to_room", newRoom,
+		"direction", randomDirection,
+	)
+
+	p.Server.mu.Unlock()
+
+	p.SendOK(fmt.Sprintf("room=%s", newRoom))
 }
+
+
