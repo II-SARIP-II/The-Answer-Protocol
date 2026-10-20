@@ -80,7 +80,7 @@ func (s *Server) scheduleNPCRespawn(enemyID string) {
 
 		for _, player := range s.players {
 			if strings.EqualFold(player.CurrentRoom, spawnRoom) {
-				player.SendEvt("ROOM CHAT", fmt.Sprintf("Server %s has reappeared!", initialData.Name))
+				player.SendEvt("ROOM CHAT", fmt.Sprintf("%s has reappeared!", initialData.Name))
 			}
 		}
 	})
