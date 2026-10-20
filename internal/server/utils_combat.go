@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"log/slog"
 	"strings"
 	"tap/internal/protocol"
 	"tap/internal/world"
@@ -27,16 +28,17 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 
 	p.broadcastRoom(p.CurrentRoom, "ROOM CHAT", fmt.Sprintf("Player %s has eliminated %s!", p.Username, enemy.Name))
 	p.broadcastGroup("GROUP CHAT", fmt.Sprintf("Player %s has eliminated %s!", p.Username, enemy.Name))
+
+	data := fmt.Sprintf("Combat victory, victorious_player=%s, defeated_enemy=%s", p.Username, enemy.Name)
+	slog.Info(data)
 }
-
-
 
 func (p *Player) handlePlayerDeath(target string) {
 	roomWhenDeath := p.CurrentRoom
 
 	p.broadcastRoom(roomWhenDeath, protocol.EvtRoomLeave, p.Username)
-	p.broadcastRoom(roomWhenDeath, "ROOM CHAT", fmt.Sprintf("Server Player %s has been defeated by %s!", p.Username, target))
-	p.broadcastGroup("GROUP CHAT", fmt.Sprintf("Server Player %s was defeated by %s!", p.Username, target))
+	p.broadcastRoom(roomWhenDeath, "ROOM CHAT", fmt.Sprintf("Player %s has been defeated by %s!", p.Username, target))
+	p.broadcastGroup("GROUP CHAT", fmt.Sprintf("Player %s was defeated by %s!", p.Username, target))
 
 	p.CurrentRoom = "room0"
 	p.MaxHP /= 2
@@ -45,10 +47,12 @@ func (p *Player) handlePlayerDeath(target string) {
 	}
 	p.HP = p.MaxHP
 	p.Status = protocol.StatusDefeated
+	data := fmt.Sprintf("Combat Defeat, defeated_player=%s, victorious_enemy=%s", p.Username, target )
+	slog.Info(data)
 
 	p.broadcastRoom(p.CurrentRoom, protocol.EvtRoomEnter, p.Username)
+	p.SendEvt("ROOM CHAT", "Defeat: you were defeated and respawned in room0!")
 }
-
 
 // getWeaponDamage retourne les dégâts d'une arme (ou les dégâts à mains nues si vide/introuvable)
 func (p *Player) getAttackDamage(weaponNameOrID string) int {
@@ -63,7 +67,6 @@ func (p *Player) getAttackDamage(weaponNameOrID string) int {
 	return protocol.FistFightDamage
 }
 
-
 func (p *Player) findAndValidateEnemy(target string) (string, world.NPC, bool) {
 	cleanTarget := strings.TrimSpace(target)
 
@@ -72,7 +75,7 @@ func (p *Player) findAndValidateEnemy(target string) (string, world.NPC, bool) {
 	var foundID string
 
 	if cleanTarget == "" {
-		// Pas de cible précisée (ex: DEFEND tout seul) : prend le premier ennemi hostile de la pièce
+		// Pas de cible précisée : prend le premier ennemi hostile de la pièce
 		for _, npcID := range p.Server.world.Rooms[p.CurrentRoom].NPCs {
 			npc := p.Server.world.NPCs[npcID]
 			if npc.Life > 0 && (npc.Role == "enemy" || npc.Role == "target") {

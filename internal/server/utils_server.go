@@ -49,4 +49,3 @@ func (p *Player) broadcastGroup(eventType, message string) {
 		}
 	}
 }
-

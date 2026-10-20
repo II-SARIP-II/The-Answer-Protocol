@@ -93,7 +93,6 @@ func (p *Player) handleAttack(args string) {
 	p.SendOK(string(data))
 }
 
-
 func (p *Player) handleDefend(args string) {
 	_, enemyData, ok := p.findAndValidateEnemy(args)
 	if !ok {
@@ -105,7 +104,7 @@ func (p *Player) handleDefend(args string) {
 	theoricalDamageTaken := protocol.FistFightDamage
 	if enemyData.Item != nil {
 		theoricalDamageTaken = p.getAttackDamage(*enemyData.Item)
-		}
+	}
 
 	damageTaken := 0
 	switch p.DefendCount {
@@ -158,7 +157,6 @@ func (p *Player) handleDefend(args string) {
 	p.Server.mu.Unlock()
 	p.SendOK(string(data))
 }
-
 
 func (p *Player) handleFlee(args string) {
 	if args != "" {
