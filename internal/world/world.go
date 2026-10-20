@@ -13,14 +13,15 @@ type Exit struct {
 }
 
 type Room struct {
-	Name  string          `json:"name"`
-	X     int             `json:"x"`
-	Y     int             `json:"y"`
-	W     int             `json:"w"`
-	H     int             `json:"h"`
-	Exits map[string]Exit `json:"exits"`
-	Items []string        `json:"items"`
-	NPCs  []string        `json:"npcs"`
+	Name        string          `json:"name"`
+	Description string          `json:"description,omitempty"`
+	X           int             `json:"x"`
+	Y           int             `json:"y"`
+	W           int             `json:"w"`
+	H           int             `json:"h"`
+	Exits       map[string]Exit `json:"exits"`
+	Items       []string        `json:"items"`
+	NPCs        []string        `json:"npcs"`
 }
 
 type NPC struct {
@@ -32,15 +33,26 @@ type NPC struct {
 }
 
 type Item struct {
-	Name   string `json:"name"`
-	Damage int    `json:"damage"`
+	Name        string `json:"name"`
+	Damage      int    `json:"damage"`
+	Description string `json:"description,omitempty"`
+}
+
+type Quest struct {
+	Giver        string `json:"giver"`
+	Description  string `json:"description"`
+	Type         string `json:"type"`
+	Target       string `json:"target"`
+	Count        int    `json:"count"`
+	Reward       string `json:"reward"`
+	Prerequisite string `json:"prerequisite"`
 }
 
 type GameData struct {
-	Rooms  map[string]Room `json:"rooms"`
-	NPCs   map[string]NPC  `json:"npcs"`
-	Items  map[string]Item `json:"items"`
-	Quests []string        `json:"quests"`
+	Rooms  map[string]Room  `json:"rooms"`
+	NPCs   map[string]NPC   `json:"npcs"`
+	Items  map[string]Item  `json:"items"`
+	Quests map[string]Quest `json:"quests"`
 }
 
 func ReadJson(filepath string) (*GameData, error) {

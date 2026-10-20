@@ -60,7 +60,7 @@ func (p *Player) handleLook(args string) {
 		Room: LookInfoRoom{
 			Id:          p.CurrentRoom,
 			Name:        room.Name,
-			Description: "", //TODO ajouter un champ description dans les structures Room
+			Description: room.Description,
 			Exits:       exitsMap,
 		},
 		Players: playersInRoom,

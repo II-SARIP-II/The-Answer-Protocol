@@ -175,8 +175,8 @@ func (p *Player) handleTalk(args string) {
 }
 
 type StatusResponse struct {
-	HP int   `json:"hp"`
-	MaxHP int `json:"max_hp"`
+	HP     int    `json:"hp"`
+	MaxHP  int    `json:"max_hp"`
 	Status string `json:"status"`
 }
 
@@ -187,8 +187,8 @@ func (p *Player) handleStatus(args string) {
 	}
 
 	response := StatusResponse{
-		HP: p.HP,
-		MaxHP: p.MaxHP,
+		HP:     p.HP,
+		MaxHP:  p.MaxHP,
 		Status: p.Status,
 	}
 

@@ -2,6 +2,7 @@
   "rooms": {
     "room0": {
       "name": "Hotel Entrance",
+      "description": "The grand marble entrance of the luxurious Hotel Mendoza. A rotating glass door opens to the street, and heavy red carpets lead east toward reception. In the corner, a service door leads south to a broom closet.",
       "x": 1,
       "y": 1,
       "w": 4,
@@ -10,11 +11,12 @@
         "east": { "target": "room2", "door_pos": 2, "wall": 1 },
         "south": { "target": "room1", "door_pos": 2, "wall": 2 }
       },
-      "items": ["colt_1911", "weapon2"],
-      "npcs": ["undercover_agent", "bodyguard_1"]
+      "items": [],
+      "npcs": ["undercover_agent"]
     },
     "room1": {
       "name": "Broom Closet",
+      "description": "A narrow, dark utility closet that gives off a scent of detergent and dust. Cleaning products are arranged on metal shelves.",
       "x": 1,
       "y": 4,
       "w": 4,
@@ -22,11 +24,12 @@
       "exits": {
         "north": { "target": "room0", "door_pos": 2, "wall": 0 }
       },
-      "items": [],
+      "items": ["colt_1911"],
       "npcs": []
     },
     "room2": {
       "name": "Hotel Reception",
+      "description": "A reception hall with a high ceiling, adorned with crystal chandeliers. Behind the counter—crafted from precious wood—hang bronze room keys. The aromas of the restaurant kitchen drift in from the east, while a dark corridor stretches toward the south.",
       "x": 5,
       "y": 1,
       "w": 4,
@@ -41,6 +44,7 @@
     },
     "room3": {
       "name": "Hotel Kitchen",
+      "description": "A professional kitchen bustling with cooks and servers, filled with pots, pans, and all manner of utensils. The air is thick with heat and spices.",
       "x": 9,
       "y": 1,
       "w": 4,
@@ -49,11 +53,12 @@
         "south": { "target": "room4", "door_pos": 3, "wall": 2 },
         "west": { "target": "room2", "door_pos": 2, "wall": 3 }
       },
-      "items": [],
+      "items": ["knife"],
       "npcs": ["chef"]
     },
     "room4": {
       "name": "Dining Room",
+      "description": "A sumptuous dining room, appointed with round, candlelit tables, white tablecloths, and red velvet chairs. Classical music plays softly in the background.",
       "x": 9,
       "y": 4,
       "w": 4,
@@ -67,6 +72,7 @@
     },
     "room5": {
       "name": "Corridor 1",
+      "description": "A carpeted corridor in the south wing—far less luxurious than the reception area. The atmosphere is darker, a bit shady.",
       "x": 1,
       "y": 8,
       "w": 8,
@@ -81,6 +87,7 @@
     },
     "room6": {
       "name": "Corridor 2",
+      "description": "A quiet and very dark corridor. Surveillance cameras film everything from the corners of the ceiling.",
       "x": 1,
       "y": 10,
       "w": 3,
@@ -94,6 +101,7 @@
     },
     "room7": {
       "name": "VIP Room",
+      "description": "A sumptuous private lounge, featuring leather armchairs, a bar made of precious wood, and a massive reinforced door. The air is thick with cigar smoke.",
       "x": 4,
       "y": 14,
       "w": 4,
@@ -107,6 +115,7 @@
     },
     "room8": {
       "name": "Secret Corridor",
+      "description": "A soundproof passageway hidden behind wooden wall panels. Reinforced doors and electronic keypads mark the presence of highly secure rooms.",
       "x": 6,
       "y": 13,
       "w": 4,
@@ -120,6 +129,7 @@
     },
     "room9": {
       "name": "Secret Room",
+      "description": "The mafia boss’s private sanctum. An imposing oak desk faces a wall of screens displaying video surveillance feeds from the hotel. Boxes of contraband goods are stacked in the corners.",
       "x": 10,
       "y": 12,
       "w": 3,
@@ -132,66 +142,110 @@
     }
   },
   "npcs": {
-    "receptionist": {
-      "role": "dialogue",
-      "name": "The Receptionist",
-      "life": -1,
-      "item": null,
-      "dialogue": ["Welcome in the hotel.", "Have you booked a room?"]
-    },
     "undercover_agent": {
       "role": "quest-giver",
       "name": "Agent Smith",
       "life": -1,
       "item": null,
-      "dialogue": ["talk_test1", "talk_test2"]
-
+      "dialogue": [
+        "Agent, keep your voice down. We are on hostile ground.",
+        "I hid a Colt 1911 in the broom closet south of here. Use QUEST to receive your assignment.",
+        "The mafia boss is holed up in a secret room in the south wing. Take out his guards first."
+      ]
     },
-    "target": {
-      "role": "target",
-      "name": "Mafia Boss",
-      "life": 50,
-      "item": "M16"
+    "receptionist": {
+      "role": "dialogue",
+      "name": "The Receptionist",
+      "life": -1,
+      "item": null,
+      "dialogue": [
+        "Welcome to the Grand Hotel Mendoza, sir. May I assist you with your luggage?",
+        "I must inform you that the south wing is strictly reserved for our VIP guests.",
+        "If you are looking for dinner, the kitchen and dining room are located to the east."
+      ]
+    },
+    "chef": {
+      "role": "passive enemy",
+      "name": "Kitchen Chef",
+      "life": 15,
+      "item": "knife",
+      "dialogue": [
+        "Out of my kitchen! I'm preparing a seven-course banquet and I don't need intruders!",
+        "Touch my knives and you'll end up in tomorrow's stew!",
+        "The gentleman in the secret suite demanded his caviar an hour ago... what a nightmare."
+      ]
     },
     "bodyguard_1": {
       "role": "enemy",
       "name": "Big Biceps",
       "life": 20,
-      "item": "Knife"
+      "item": "knife",
+      "dialogue": [
+        "Nobody passes this corridor without the boss's permission.",
+        "You look lost, friend. Turn around before I break both your arms."
+      ]
     },
     "bodyguard_2": {
       "role": "enemy",
       "name": "Big Guns",
-      "life": 10,
-      "item": "M16"
+      "life": 30,
+      "item": "M16",
+      "dialogue": [
+        "VIP area is restricted. Step back right now.",
+        "One more step toward the boss's quarters and I open fire."
+      ]
     },
-    "chef": {
-      "role": "passive enemy",
-      "name": "Kitchen Chef",
-      "life": 5,
-      "item": "Katana"
+    "target": {
+      "role": "target",
+      "name": "Mafia Boss",
+      "life": 50,
+      "item": "M16",
+      "dialogue": [
+        "So MI6 finally sent their best? You're too late, agent.",
+        "My syndicate controls this entire region. You will never walk out of here alive."
+      ]
     }
   },
   "items": {
     "colt_1911": {
       "name": "Colt 1911",
-      "damage": 4
-    },
-    "M16": {
-      "name": "M16",
-      "damage": 7
+      "damage": 5,
+      "description": "A semi-automatic pistol hidden by your handler in the broom closet."
     },
     "knife": {
       "name": "Knife",
-      "damage": 6
+      "damage": 7,
+      "description": "A chef’s knife, sharp as a razor, discovered on a kitchen countertop."
     },
     "katana": {
       "name": "Katana",
-      "damage": 9
+      "damage": 10,
+      "description": "A ceremonial weapon—at once ornamental and deadly—gifted by Agent Smith."
+    },
+    "M16": {
+      "name": "M16",
+      "damage": 12,
+      "description": "A large-caliber tactical assault rifle, used by members of the syndicate."
     }
   },
-  "quests": [
-    "You are an agent of the MI6, and I'm your undercover assistant agent. Go in the closet and take the firearm that i let you. And then, come back and i'll tell you your assignement.",
-    "Your target is the Mafia Boss of Argentina, and he is in the Hotel now, you must find him and eliminate him, but attention, he might be accompanied by bodyguards. And then, come back to me"
-  ]
+  "quests": {
+    "fetch_weapon": {
+      "giver": "undercover_agent",
+      "description": "Go to the broom closet south of the entrance, retrieve the Colt 1911 pistol, and report back to Agent Smith.",
+      "type": "fetch",
+      "target": "colt_1911",
+      "count": 1,
+      "reward": "katana",
+      "prerequisite": ""
+    },
+    "defeat_boss": {
+      "giver": "undercover_agent",
+      "description": "Infiltrate the hotel's south wing, locate the Mafia Boss in the secret room, eliminate him, and confirm your success to Agent Smith.",
+      "type": "defeat",
+      "target": "target",
+      "count": 1,
+      "reward": "M16",
+      "prerequisite": "fetch_weapon"
+    }
+  }
 }

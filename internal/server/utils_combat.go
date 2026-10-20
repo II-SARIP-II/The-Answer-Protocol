@@ -47,7 +47,7 @@ func (p *Player) handlePlayerDeath(target string) {
 	}
 	p.HP = p.MaxHP
 	p.Status = protocol.StatusDefeated
-	data := fmt.Sprintf("Combat Defeat, defeated_player=%s, victorious_enemy=%s", p.Username, target )
+	data := fmt.Sprintf("Combat Defeat, defeated_player=%s, victorious_enemy=%s", p.Username, target)
 	slog.Info(data)
 
 	p.broadcastRoom(p.CurrentRoom, protocol.EvtRoomEnter, p.Username)
