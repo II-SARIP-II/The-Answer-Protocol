@@ -33,9 +33,8 @@ type NPC struct {
 }
 
 type Item struct {
-	Name        string `json:"name"`
-	Damage      int    `json:"damage"`
-	Description string `json:"description,omitempty"`
+	Name   string `json:"name"`
+	Damage int    `json:"damage"`
 }
 
 type Quest struct {

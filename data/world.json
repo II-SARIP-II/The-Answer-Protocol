@@ -2,7 +2,7 @@
   "rooms": {
     "room0": {
       "name": "Hotel Entrance",
-      "description": "The grand marble entrance of the luxurious Hotel Mendoza. A rotating glass door opens to the street, and heavy red carpets lead east toward reception. In the corner, a service door leads south to a broom closet.",
+      "description": "The hotel entrance with a revolving glass door. Red carpets lead east to reception, and a door leads south to a broom closet.",
       "x": 1,
       "y": 1,
       "w": 4,
@@ -16,7 +16,7 @@
     },
     "room1": {
       "name": "Broom Closet",
-      "description": "A narrow, dark utility closet that gives off a scent of detergent and dust. Cleaning products are arranged on metal shelves.",
+      "description": "A small broom closet smelling of bleach.",
       "x": 1,
       "y": 4,
       "w": 4,
@@ -29,7 +29,7 @@
     },
     "room2": {
       "name": "Hotel Reception",
-      "description": "A reception hall with a high ceiling, adorned with crystal chandeliers. Behind the counter—crafted from precious wood—hang bronze room keys. The aromas of the restaurant kitchen drift in from the east, while a dark corridor stretches toward the south.",
+      "description": "The hotel reception with a mahogany counter. Corridors lead east to the kitchen and south to the guest rooms.",
       "x": 5,
       "y": 1,
       "w": 4,
@@ -44,7 +44,7 @@
     },
     "room3": {
       "name": "Hotel Kitchen",
-      "description": "A professional kitchen bustling with cooks and servers, filled with pots, pans, and all manner of utensils. The air is thick with heat and spices.",
+      "description": "The hotel kitchen with hot stoves and steel tables. Smells of food fill the room.",
       "x": 9,
       "y": 1,
       "w": 4,
@@ -58,7 +58,7 @@
     },
     "room4": {
       "name": "Dining Room",
-      "description": "A sumptuous dining room, appointed with round, candlelit tables, white tablecloths, and red velvet chairs. Classical music plays softly in the background.",
+      "description": "A quiet dining room with round tables and soft jazz playing in the background.",
       "x": 9,
       "y": 4,
       "w": 4,
@@ -72,7 +72,7 @@
     },
     "room5": {
       "name": "Corridor 1",
-      "description": "A carpeted corridor in the south wing—far less luxurious than the reception area. The atmosphere is darker, a bit shady.",
+      "description": "A carpeted hallway in the south wing. Security cameras are mounted on the ceiling.",
       "x": 1,
       "y": 8,
       "w": 8,
@@ -87,7 +87,7 @@
     },
     "room6": {
       "name": "Corridor 2",
-      "description": "A quiet and very dark corridor. Surveillance cameras film everything from the corners of the ceiling.",
+      "description": "A shadowy corridor leading toward the private suites.",
       "x": 1,
       "y": 10,
       "w": 3,
@@ -101,7 +101,7 @@
     },
     "room7": {
       "name": "VIP Room",
-      "description": "A sumptuous private lounge, featuring leather armchairs, a bar made of precious wood, and a massive reinforced door. The air is thick with cigar smoke.",
+      "description": "A private VIP lounge with leather armchairs and cigar smoke in the air.",
       "x": 4,
       "y": 14,
       "w": 4,
@@ -115,7 +115,7 @@
     },
     "room8": {
       "name": "Secret Corridor",
-      "description": "A soundproof passageway hidden behind wooden wall panels. Reinforced doors and electronic keypads mark the presence of highly secure rooms.",
+      "description": "A secret corridor hidden behind wood paneling, protected by electronic locks.",
       "x": 6,
       "y": 13,
       "w": 4,
@@ -129,7 +129,7 @@
     },
     "room9": {
       "name": "Secret Room",
-      "description": "The mafia boss’s private sanctum. An imposing oak desk faces a wall of screens displaying video surveillance feeds from the hotel. Boxes of contraband goods are stacked in the corners.",
+      "description": "The secret office of the syndicate boss, filled with security monitors and contraband crates.",
       "x": 10,
       "y": 12,
       "w": 3,
@@ -150,7 +150,7 @@
       "dialogue": [
         "Agent, keep your voice down. We are on hostile ground.",
         "I hid a Colt 1911 in the broom closet south of here. Use QUEST to receive your assignment.",
-        "The mafia boss is holed up in a secret room in the south wing. Take out his guards first."
+        "The syndicate boss is holed up in a secret room in the south wing. Take out his guards first."
       ]
     },
     "receptionist": {
@@ -209,43 +209,48 @@
   "items": {
     "colt_1911": {
       "name": "Colt 1911",
-      "damage": 5,
-      "description": "A semi-automatic pistol hidden by your handler in the broom closet."
+      "damage": 5
     },
     "knife": {
       "name": "Knife",
-      "damage": 7,
-      "description": "A chef’s knife, sharp as a razor, discovered on a kitchen countertop."
+      "damage": 7
     },
     "katana": {
       "name": "Katana",
-      "damage": 10,
-      "description": "A ceremonial weapon—at once ornamental and deadly—gifted by Agent Smith."
+      "damage": 10
     },
     "M16": {
       "name": "M16",
-      "damage": 12,
-      "description": "A large-caliber tactical assault rifle, used by members of the syndicate."
+      "damage": 12
     }
   },
   "quests": {
-    "fetch_weapon": {
+    "gather_weapons": {
       "giver": "undercover_agent",
-      "description": "Go to the broom closet south of the entrance, retrieve the Colt 1911 pistol, and report back to Agent Smith.",
+      "description": "Find 2 weapons in the hotel (the pistol in the closet and the knife in the kitchen) and bring them back.",
       "type": "fetch",
-      "target": "colt_1911",
-      "count": 1,
+      "target": "weapons",
+      "count": 2,
       "reward": "katana",
       "prerequisite": ""
     },
+    "neutralize_guards": {
+      "giver": "undercover_agent",
+      "description": "Eliminate the 2 bodyguards patrolling the south corridors to secure the path.",
+      "type": "defeat",
+      "target": "enemy",
+      "count": 2,
+      "reward": "M16",
+      "prerequisite": "gather_weapons"
+    },
     "defeat_boss": {
       "giver": "undercover_agent",
-      "description": "Infiltrate the hotel's south wing, locate the Mafia Boss in the secret room, eliminate him, and confirm your success to Agent Smith.",
+      "description": "Infiltrate the secret room in the south wing and eliminate the Mafia Boss.",
       "type": "defeat",
       "target": "target",
       "count": 1,
-      "reward": "M16",
-      "prerequisite": "fetch_weapon"
+      "reward": "katana",
+      "prerequisite": "neutralize_guards"
     }
   }
 }
