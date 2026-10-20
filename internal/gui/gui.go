@@ -159,18 +159,18 @@ func NewGame(winWidth int, winHeight int) *Game {
 
 				case "QUESTS":
 					btn.OnClick = func() {
-						g.status = "IDLE"
-						g.curr_cmd = "STATUS"
+						g.status = "AWAITING_QUEST_NPC"
+						g.curr_cmd = "QUESTS"
 						if chat != nil {
-							chat.AddLine(name + " > STATUS")
+							chat.AddLine(name + " > QUESTS")
 						}
-						SendMessage(conn, "STATUS")
+						SendMessage(conn, "QUESTS")
 					}
 
 				case "WHO":
 					btn.OnClick = func() {
-						g.status = "IDLE"
-						g.curr_cmd = "STATUS"
+						g.status = "WHO"
+						g.curr_cmd = "WHO"
 						if chat != nil {
 							chat.AddLine(name + " > STATUS")
 						}
@@ -179,12 +179,12 @@ func NewGame(winWidth int, winHeight int) *Game {
 
 				case "GROUP":
 					btn.OnClick = func() {
-						g.status = "IDLE"
-						g.curr_cmd = "STATUS"
+						g.status = "GROUP"
+						g.curr_cmd = "GROUP"
 						if chat != nil {
-							chat.AddLine(name + " > STATUS")
+							chat.AddLine(name + " > GROUP")
 						}
-						SendMessage(conn, "STATUS")
+						SendMessage(conn, "GROUP")
 					}
 
 				default:
@@ -316,7 +316,6 @@ func (g *Game) Update() error {
 								)
 							}
 							chat.AddLine(g.curr_cmd + " > " + itemName)
-
 							g.curr_cmd = "LOOK"
 							SendMessage(g.conn, "LOOK")
 						}
@@ -332,14 +331,13 @@ func (g *Game) Update() error {
 					SendMessage(g.conn, "LOOK")
 				case "TALK":
 					g.status = ""
-					//				case "ATTACK":
-					//    			    // get enemy defeated etc.
-
+//				case "ATTACK":
+//    			    // get enemy defeated etc.
 				case "WHO":
 					player := ParsePlayer(response)
 					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", player))
-					//				case "GROUP":
-					//    			    world.ParseRoom(msg)
+//				case "GROUP":
+//    			    world.ParseRoom(msg)
 				case "QUIT":
 					fmt.Printf("QUIT")
 					return ErrQuit
