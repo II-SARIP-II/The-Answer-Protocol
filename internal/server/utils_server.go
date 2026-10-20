@@ -30,3 +30,23 @@ func (p *Player) resolveID(input string) string {
 	}
 	return input
 }
+
+func (p *Player) broadcastRoom(roomID, eventType, message string) {
+	for _, other := range p.Server.players {
+		if other.Username != p.Username && strings.EqualFold(other.CurrentRoom, roomID) {
+			other.SendEvt(eventType, message)
+		}
+	}
+}
+
+func (p *Player) broadcastGroup(eventType, message string) {
+	if p.GroupID == "" {
+		return
+	}
+	for _, other := range p.Server.players {
+		if other.Username != p.Username && other.GroupID == p.GroupID {
+			other.SendEvt(eventType, message)
+		}
+	}
+}
+

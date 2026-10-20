@@ -4,10 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"math/rand/v2"
 	"strings"
 	"tap/internal/protocol"
-	"tap/internal/world"
-	"math/rand/v2"
 )
 
 type AttackResponse struct {
@@ -17,7 +16,6 @@ type AttackResponse struct {
 	Status     string `json:"status"`
 }
 
-
 type DefendResponse struct {
 	DefenderHP int    `json:"defender_hp"`
 	TargetHP   int    `json:"target_hp"`
@@ -25,40 +23,12 @@ type DefendResponse struct {
 	Status     string `json:"status"`
 }
 
-func (p *Player) findAndValidateEnemy(target string) (string, world.NPC, bool) {
-	cleanTarget := strings.TrimSpace(target)
-	if cleanTarget == "" {
-		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
-		return "", world.NPC{}, false
-	}
-
-	p.Server.mu.Lock()
-
-	var foundID string
-	for _, targetID := range p.Server.world.Rooms[p.CurrentRoom].NPCs {
-		if p.matchNameOrID(targetID, cleanTarget) {
-			foundID = targetID
-			break
-		}
-	}
-
-	if foundID == "" {
-		p.Server.mu.Unlock()
-		p.SendErr(protocol.CodeNPCNotFound, protocol.MsgNPCNotFound)
-		return "", world.NPC{}, false
-	}
-
-	enemyData := p.Server.world.NPCs[foundID]
-	if enemyData.Life <= 0 || (enemyData.Role != "enemy" && enemyData.Role != "target") {
-		p.Server.mu.Unlock()
-		p.SendErr(protocol.CodeNPCNotHostile, protocol.MsgNPCNotHostile)
-		return "", world.NPC{}, false
-	}
-
-	return foundID, enemyData, true
-}
-
 func (p *Player) handleAttack(args string) {
+	if strings.TrimSpace(args) == "" {
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
+		return
+	}
+
 	enemyID, enemyData, ok := p.findAndValidateEnemy(args)
 	if !ok {
 		return
@@ -67,18 +37,7 @@ func (p *Player) handleAttack(args string) {
 	p.Status = protocol.StatusCombat
 	p.DefendCount = 0
 
-	damageDealt := protocol.FistFightDamage
-	if len(p.Inventory) == 1 {
-		p.EquippedWeapon = p.Inventory[0]
-	}
-	if p.EquippedWeapon != "" {
-		for itemID, item := range p.Server.world.Items {
-			if p.matchNameOrID(itemID, p.EquippedWeapon) {
-				damageDealt = item.Damage
-				break
-			}
-		}
-	}
+	damageDealt := p.getAttackDamage(p.EquippedWeapon)
 
 	enemyData.Life -= damageDealt
 	if enemyData.Life < 0 {
@@ -86,23 +45,14 @@ func (p *Player) handleAttack(args string) {
 	}
 	p.Server.world.NPCs[enemyID] = enemyData
 
-
 	damageTaken := 0
-	if enemyData.Life > 0 {
-		damageTaken = protocol.FistFightDamage
-		if enemyData.Item != nil {
-			for itemID, item := range p.Server.world.Items {
-				if p.matchNameOrID(itemID, *enemyData.Item) {
-					damageTaken = item.Damage
-					break
-				}
-			}
-		}
+	if enemyData.Life > 0 && enemyData.Item != nil {
+		damageTaken = p.getAttackDamage(*enemyData.Item)
+	}
 
-		p.HP -= damageTaken
-		if p.HP < 0 {
-			p.HP = 0
-		}
+	p.HP -= damageTaken
+	if p.HP < 0 {
+		p.HP = 0
 	}
 
 	combatStatus := protocol.StatusCombat
@@ -144,75 +94,6 @@ func (p *Player) handleAttack(args string) {
 }
 
 
-func (p *Player) handleEnemyDeath(enemyID string) {
-	currentRoom := p.Server.world.Rooms[p.CurrentRoom]
-	enemy := p.Server.world.NPCs[enemyID]
-
-	p.SendEvt("Victory:", fmt.Sprintf("You have eliminated %s !", enemy.Name))
-	UpdatedNPCsInRoom := make([]string, 0, len(currentRoom.NPCs))
-	for _, id := range currentRoom.NPCs {
-		if id != enemyID {
-			UpdatedNPCsInRoom = append(UpdatedNPCsInRoom, id)
-		}
-	}
-	currentRoom.NPCs = UpdatedNPCsInRoom
-
-	if enemy.Item != nil && *enemy.Item != "" {
-		itemID := p.resolveID(*enemy.Item)
-		currentRoom.Items = append(currentRoom.Items, itemID)
-	}
-	p.Server.world.Rooms[p.CurrentRoom] = currentRoom
-
-	for _, otherPlayer := range p.Server.players {
-		if otherPlayer.Username != p.Username && otherPlayer.CurrentRoom == p.CurrentRoom {
-			eventData := fmt.Sprintf("Player %s has eliminated the enemy %s!", p.Username, enemy.Name)
-			otherPlayer.SendEvt(protocol.ChatRoom+ " " +protocol.CmdChat, eventData)
-		}
-	}
-
-	if p.GroupID != "" {
-		for _, otherPlayer := range p.Server.players {
-			if otherPlayer.Username != p.Username && otherPlayer.GroupID == p.GroupID && otherPlayer.CurrentRoom != p.CurrentRoom {
-				eventData := fmt.Sprintf("Player %s has eliminated the enemy %s!", p.Username, enemy.Name)
-				otherPlayer.SendEvt(protocol.ChatGroup+ " " +protocol.CmdChat, eventData)
-			}
-		}
-	}
-}
-
-func (p *Player) handlePlayerDeath(target string) {
-	roomWhenDeath := p.CurrentRoom
-	p.SendEvt("Defeat:", fmt.Sprintf("%s killed you, you will spawn in room0 !", target))
-	for _, otherPlayer := range p.Server.players {
-		if otherPlayer.Username != p.Username && strings.EqualFold(otherPlayer.CurrentRoom, roomWhenDeath) {
-			otherPlayer.SendEvt(protocol.EvtRoomLeave, p.Username)
-			otherPlayer.SendEvt("ROOM CHAT", fmt.Sprintf("Player %s has been defeated by %s!", p.Username, target))
-		}
-	}
-
-	if p.GroupID != "" {
-		for _, otherPlayer := range p.Server.players {
-			if otherPlayer.Username != p.Username && otherPlayer.GroupID == p.GroupID {
-				otherPlayer.SendEvt("GROUP CHAT", fmt.Sprintf("Player %s was defeated by %s!", p.Username, target))
-			}
-		}
-	}
-
-	p.CurrentRoom = "room0"
-	p.MaxHP /= 2
-	if p.MaxHP < 25 {
-		p.MaxHP = 25
-	}
-	p.HP = p.MaxHP
-	p.Status = protocol.StatusDefeated
-
-	for _, otherPlayer := range p.Server.players {
-		if otherPlayer.Username != p.Username && strings.EqualFold(otherPlayer.CurrentRoom, p.CurrentRoom) {
-			otherPlayer.SendEvt(protocol.EvtRoomEnter, p.Username)
-		}
-	}
-}
-
 func (p *Player) handleDefend(args string) {
 	_, enemyData, ok := p.findAndValidateEnemy(args)
 	if !ok {
@@ -223,13 +104,8 @@ func (p *Player) handleDefend(args string) {
 
 	theoricalDamageTaken := protocol.FistFightDamage
 	if enemyData.Item != nil {
-		for itemID, item := range p.Server.world.Items {
-			if p.matchNameOrID(itemID, *enemyData.Item) {
-				theoricalDamageTaken = item.Damage
-				break
-			}
+		theoricalDamageTaken = p.getAttackDamage(*enemyData.Item)
 		}
-	}
 
 	damageTaken := 0
 	switch p.DefendCount {
@@ -283,6 +159,7 @@ func (p *Player) handleDefend(args string) {
 	p.SendOK(string(data))
 }
 
+
 func (p *Player) handleFlee(args string) {
 	if args != "" {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
@@ -308,22 +185,13 @@ func (p *Player) handleFlee(args string) {
 	newRoom := exit.Target
 	oldRoom := p.CurrentRoom
 
-	for _, otherPlayer := range p.Server.players {
-		if otherPlayer.Username != p.Username && strings.EqualFold(otherPlayer.CurrentRoom, oldRoom) {
-			otherPlayer.SendEvt(protocol.EvtRoomLeave, p.Username)
-			otherPlayer.SendEvt("ROOM CHAT", fmt.Sprintf("Server Player %s fled the combat towards %s!", p.Username, randomDirection))
-		}
-	}
+	p.broadcastRoom(oldRoom, protocol.EvtRoomLeave, p.Username)
+	p.broadcastRoom(oldRoom, "ROOM CHAT", fmt.Sprintf("Server Player %s fled towards %s!", p.Username, randomDirection))
+	p.broadcastRoom(newRoom, protocol.EvtRoomEnter, p.Username)
 
 	p.CurrentRoom = newRoom
 	p.Status = protocol.StatusHealthy
 	p.DefendCount = 0
-
-	for _, otherPlayer := range p.Server.players {
-		if otherPlayer.Username != p.Username && strings.EqualFold(otherPlayer.CurrentRoom, p.CurrentRoom) {
-			otherPlayer.SendEvt(protocol.EvtRoomEnter, p.Username)
-		}
-	}
 
 	slog.Info("Player fled combat",
 		"player", p.Username,
@@ -336,5 +204,3 @@ func (p *Player) handleFlee(args string) {
 
 	p.SendOK(fmt.Sprintf("room=%s", newRoom))
 }
-
-
