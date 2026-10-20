@@ -125,8 +125,8 @@ func (p *Panel) AddRoom(name string, exits map[string]world.Exit, items []string
 	// add item in room
 	for i, item := range items {
 		btnW := float32(175)
-		btnY := p.Y + p.H - float32((i+1)*50) - padding * float32(i)
-		btn := NewButton(item, p.X+p.W-btnW - padding, btnY - padding, btnW, 50)
+		btnY := p.Y + p.H - float32((i+1)*50) - padding*float32(i)
+		btn := NewButton(item, p.X+p.W-btnW-padding, btnY-padding, btnW, 50)
 
 		itemName := item
 		btn.OnClick = func() {
@@ -141,8 +141,8 @@ func (p *Panel) AddRoom(name string, exits map[string]world.Exit, items []string
 	// add npc in room
 	for i, npc := range npcs {
 		btnW := float32(175)
-		btnY := p.Y + p.H - float32((i+1)*50) - padding * float32(i)
-		btn := NewButton(npc, p.X + p.W/2 - btnW/2, btnY - padding, btnW, 50)
+		btnY := p.Y + p.H - float32((i+1)*50) - padding*float32(i)
+		btn := NewButton(npc, p.X+p.W/2-btnW/2, btnY-padding, btnW, 50)
 
 		npcName := npc
 		btn.OnClick = func() {

@@ -10,7 +10,7 @@ func CreateActionsPanel(topH, centerH, colLeftW, colMidW, colRightW float32) *co
 	actionLabels := []string{
 		"LOOK", "MOVE",
 		"TAKE", "EQUIP",
-		"DROP",	"TALK",
+		"DROP", "TALK",
 		"ATTACK", "DEFEND",
 		"STATUS", "QUEST",
 		"QUESTS", "WHO",

@@ -331,13 +331,13 @@ func (g *Game) Update() error {
 					SendMessage(g.conn, "LOOK")
 				case "TALK":
 					g.status = ""
-//				case "ATTACK":
-//    			    // get enemy defeated etc.
+					//				case "ATTACK":
+					//    			    // get enemy defeated etc.
 				case "WHO":
 					player := ParsePlayer(response)
 					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", player))
-//				case "GROUP":
-//    			    world.ParseRoom(msg)
+					//				case "GROUP":
+					//    			    world.ParseRoom(msg)
 				case "QUIT":
 					fmt.Printf("QUIT")
 					return ErrQuit
