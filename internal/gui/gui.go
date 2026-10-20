@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	//	"fmt"
 	"net"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -133,6 +132,12 @@ func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 						g.status = "AWAITING_TALK_NPC"
 						g.curr_cmd = "TALK"
 					}
+
+				case "ATTACK":
+    				btn.OnClick = func() {
+    				    g.status = "AWAITING_ATTACK_NPC"
+    				    g.curr_cmd = "ATTACK"
+    				}
 
 				case "STATUS":
 					btn.OnClick = func() {
