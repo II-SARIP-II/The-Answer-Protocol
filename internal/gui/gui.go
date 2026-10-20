@@ -133,7 +133,6 @@ func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 						g.curr_cmd = "EQUIP"
 					}
 
-
 				case "TALK":
 					btn.OnClick = func() {
 						g.status = "AWAITING_TALK_NPC"
@@ -334,14 +333,14 @@ func (g *Game) Update() error {
 					SendMessage(g.conn, "LOOK")
 				case "TALK":
 					g.status = ""
-//				case "ATTACK":
-//    			    // get enemy defeated etc.
+					//				case "ATTACK":
+					//    			    // get enemy defeated etc.
 
 				case "WHO":
 					player := ParsePlayer(response)
 					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", player))
-//				case "GROUP":
-//    			    world.ParseRoom(msg)
+					//				case "GROUP":
+					//    			    world.ParseRoom(msg)
 				case "QUIT":
 					fmt.Printf("QUIT")
 					return ErrQuit
