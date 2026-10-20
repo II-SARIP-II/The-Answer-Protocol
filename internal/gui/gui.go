@@ -2,6 +2,9 @@ package gui
 
 import (
 	"errors"
+	"fmt"
+	"strings"
+
 	//	"fmt"
 	"net"
 
@@ -120,10 +123,10 @@ func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 					}
 
 				case "DROP":
-					btn.OnClick = func() {
-						g.status = "AWAITING_DROP_ITEM"
-						g.curr_cmd = "DROP"
-					}
+    				btn.OnClick = func() {
+    				    g.status = "AWAITING_DROP_ITEM"
+    				    g.curr_cmd = "DROP"
+    				}
 
 				case "TALK":
 					btn.OnClick = func() {
@@ -133,22 +136,15 @@ func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 
 				case "STATUS":
 					btn.OnClick = func() {
-						g.status = "IDLE"
+						g.status = ""
 						g.curr_cmd = "STATUS"
-						if chat != nil {
-							chat.AddLine(name + " > STATUS")
-						}
 						SendMessage(conn, "STATUS")
 					}
 
 				case "QUEST":
 					btn.OnClick = func() {
-						g.status = "IDLE"
-						g.curr_cmd = "STATUS"
-						if chat != nil {
-							chat.AddLine(name + " > STATUS")
-						}
-						SendMessage(conn, "STATUS")
+						g.status = "AWAITING_QUEST_NPC"
+						g.curr_cmd = "QUEST"
 					}
 
 				case "QUESTS":
@@ -251,6 +247,15 @@ func (g *Game) Update() error {
 										chat.AddLine(g.name + " > " + cmd)
 									}
 									SendMessage(g.conn, cmd)
+									g.status = ""
+								} else if g.status == "AWAITING_QUEST_NPC" {
+									cmd := "QUEST " + NPCsName
+									g.curr_cmd = "QUEST"
+									if chat != nil {
+										chat.AddLine(g.name + " > " + cmd)
+									}
+									SendMessage(g.conn, cmd)
+									g.status = ""
 								} else if g.status == "AWAITING_ATTACK_NPC" {
 									cmd := "ATTACK " + NPCsName
 									g.curr_cmd = "ATTACK"
@@ -258,6 +263,7 @@ func (g *Game) Update() error {
 										chat.AddLine(g.name + " > " + cmd)
 									}
 									SendMessage(g.conn, cmd)
+									g.status = ""
 								}
 							},
 						)
@@ -299,11 +305,14 @@ func (g *Game) Update() error {
 						chat.AddLine("Server > " + msg)
 					}
 				case "DROP":
-					g.status = "AWAITING_DROP_ITEM"
-					g.curr_cmd = "LOOK"
-					SendMessage(g.conn, "LOOK")
+    				if chat != nil {
+    				    chat.AddLine(g.curr_cmd + " > " + response)
+    				}
+    				g.status = ""
+    				g.curr_cmd = "LOOK"
+    				SendMessage(g.conn, "LOOK")
 				case "TALK":
-    			    world.ParseRoom(msg)
+    				g.status = ""
 //				case "ATTACK":
 //    			    // attack function
 //				case "STATUS":
