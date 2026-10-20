@@ -124,32 +124,32 @@ func (p *Panel) AddRoom(name string, exits map[string]world.Exit, items []string
 
 	// add item in room
 	for i, item := range items {
-        btnY := p.Y + p.H - float32((i+1)*50)
-        btn := NewButton(item, p.X+p.W-150, btnY, 150, 50)
+		btnY := p.Y + p.H - float32((i+1)*50)
+		btn := NewButton(item, p.X+p.W-150, btnY, 150, 50)
 
-        itemName := item
-        btn.OnClick = func() {
-            if onItemClick != nil {
-                onItemClick(itemName)
-            }
-        }
+		itemName := item
+		btn.OnClick = func() {
+			if onItemClick != nil {
+				onItemClick(itemName)
+			}
+		}
 
-        p.Content = append(p.Content, btn)
-    }
+		p.Content = append(p.Content, btn)
+	}
 
-    // add npc in room
-    for i, npc := range npcs {
-        btnY := p.Y + p.H - float32((i+1)*50)
-        btn := NewButton(npc, p.X + padding, btnY, 175, 50)
+	// add npc in room
+	for i, npc := range npcs {
+		btnY := p.Y + p.H - float32((i+1)*50)
+		btn := NewButton(npc, p.X+padding, btnY, 175, 50)
 
-        npcName := npc
-        btn.OnClick = func() {
-            if onNPCClick != nil {
-                onNPCClick(npcName)
-            }
-        }
+		npcName := npc
+		btn.OnClick = func() {
+			if onNPCClick != nil {
+				onNPCClick(npcName)
+			}
+		}
 
-        p.Content = append(p.Content, btn)
-    }
+		p.Content = append(p.Content, btn)
+	}
 
 }

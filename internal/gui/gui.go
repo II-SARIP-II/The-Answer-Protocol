@@ -122,10 +122,10 @@ func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 					}
 
 				case "DROP":
-    				btn.OnClick = func() {
-    				    g.status = "AWAITING_DROP_ITEM"
-    				    g.curr_cmd = "DROP"
-    				}
+					btn.OnClick = func() {
+						g.status = "AWAITING_DROP_ITEM"
+						g.curr_cmd = "DROP"
+					}
 
 				case "TALK":
 					btn.OnClick = func() {
@@ -134,10 +134,10 @@ func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 					}
 
 				case "ATTACK":
-    				btn.OnClick = func() {
-    				    g.status = "AWAITING_ATTACK_NPC"
-    				    g.curr_cmd = "ATTACK"
-    				}
+					btn.OnClick = func() {
+						g.status = "AWAITING_ATTACK_NPC"
+						g.curr_cmd = "ATTACK"
+					}
 
 				case "STATUS":
 					btn.OnClick = func() {
@@ -310,27 +310,27 @@ func (g *Game) Update() error {
 						chat.AddLine("Server > " + msg)
 					}
 				case "DROP":
-    				if chat != nil {
-    				    chat.AddLine(g.curr_cmd + " > " + response)
-    				}
-    				g.status = ""
-    				g.curr_cmd = "LOOK"
-    				SendMessage(g.conn, "LOOK")
+					if chat != nil {
+						chat.AddLine(g.curr_cmd + " > " + response)
+					}
+					g.status = ""
+					g.curr_cmd = "LOOK"
+					SendMessage(g.conn, "LOOK")
 				case "TALK":
-    				g.status = ""
-//				case "ATTACK":
-//    			    // attack function
-//				case "STATUS":
-//    			    // status function
-//				case "QUEST":
-//    			    // quest function
-//				case "QUESTS":
-//    			    // quests function
+					g.status = ""
+					//				case "ATTACK":
+					//    			    // attack function
+					//				case "STATUS":
+					//    			    // status function
+					//				case "QUEST":
+					//    			    // quest function
+					//				case "QUESTS":
+					//    			    // quests function
 				case "WHO":
 					player := ParsePlayer(response)
 					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", player))
-//				case "GROUP":
-//    			    world.ParseRoom(msg)
+					//				case "GROUP":
+					//    			    world.ParseRoom(msg)
 				case "QUIT":
 					fmt.Printf("QUIT")
 					return ErrQuit
