@@ -127,6 +127,13 @@ func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 						g.curr_cmd = "DROP"
 					}
 
+				case "EQUIP":
+					btn.OnClick = func() {
+						g.status = "AWAITING_EQUIP_ITEM"
+						g.curr_cmd = "EQUIP"
+					}
+
+
 				case "TALK":
 					btn.OnClick = func() {
 						g.status = "AWAITING_TALK_NPC"
@@ -214,7 +221,7 @@ func (g *Game) Update() error {
 		select {
 		case msg := <-g.messagesChan:
 			if chat := g.bottomRight.GetChat(); chat != nil {
-				fmt.Print(msg)
+				fmt.Print("\n" + msg)
 				jsonStart := strings.Index(msg, "{")
 				response := msg
 				if jsonStart != -1 {
@@ -286,7 +293,7 @@ func (g *Game) Update() error {
 
 							if stuff != nil {
 								stuff.AddItem(
-									world.Item{Name: itemName},
+									itemName,
 									func(itemName string) {
 										if g.status == "AWAITING_DROP_ITEM" {
 											cmd := "DROP " + itemName
@@ -294,7 +301,16 @@ func (g *Game) Update() error {
 											if chat != nil {
 												chat.AddLine(g.name + " > " + cmd)
 											}
-											stuff.RemoveItem(world.Item{Name: itemName})
+											stuff.RemoveItem(itemName)
+											SendMessage(g.conn, cmd)
+											g.status = ""
+										} else if g.status == "AWAITING_EQUIP_ITEM" {
+											cmd := "EQUIP " + itemName
+											g.curr_cmd = "EQUIP"
+											if chat != nil {
+												chat.AddLine(g.name + " > " + cmd)
+											}
+											stuff.MoveToTop(itemName)
 											SendMessage(g.conn, cmd)
 											g.status = ""
 										}
@@ -318,58 +334,19 @@ func (g *Game) Update() error {
 					SendMessage(g.conn, "LOOK")
 				case "TALK":
 					g.status = ""
-					//				case "ATTACK":
-					//    			    // attack function
-					//				case "STATUS":
-					//    			    // status function
-					//				case "QUEST":
-					//    			    // quest function
-					//				case "QUESTS":
-					//    			    // quests function
+//				case "ATTACK":
+//    			    // get enemy defeated etc.
+
 				case "WHO":
 					player := ParsePlayer(response)
 					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", player))
-					//				case "GROUP":
-					//    			    world.ParseRoom(msg)
+//				case "GROUP":
+//    			    world.ParseRoom(msg)
 				case "QUIT":
 					fmt.Printf("QUIT")
 					return ErrQuit
 				}
 				chat.AddLine("Server > " + msg)
-
-				//				switch g.curr_cmd {
-				//    			case "LOOK":
-				//    			    room := world.ParseRoom(msg)
-				//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", room))
-				//    			case "MOVE":
-				//    			    chat.AddLine(g.curr_cmd + msg)
-				//    			case "TAKE":
-				//					item := world.ParseItem(msg)
-				//					AddItem(item)
-				//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", item))
-				//				case "DROP":
-				//    			    item := world.ParseItem(msg)
-				//					RemoveItem(item)
-				//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", item))
-				//				case "TALK":
-				//    			    world.ParseRoom(msg)
-				//				case "ATTACK":
-				//    			    // attack function
-				//				case "STATUS":
-				//    			    // status function
-				//				case "QUEST":
-				//    			    // quest function
-				//				case "QUESTS":
-				//    			    // quests function
-				//				case "WHO":
-				//    			    player := ParsePlayer(msg)
-				//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", player))
-				//				case "GROUP":
-				//    			    world.ParseRoom(msg)
-				//				case "QUIT":
-				//					fmt.Printf("QUIT")
-				//					return ErrQuit
-				//				}
 			}
 		default:
 			goto Done
