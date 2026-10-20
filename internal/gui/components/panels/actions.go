@@ -9,12 +9,12 @@ import (
 func CreateActionsPanel(topH, centerH, colLeftW, colMidW, colRightW float32) *components.Panel {
 	actionLabels := []string{
 		"LOOK", "MOVE",
-		"TAKE", "DROP",
-		"TALK", "ATTACK",
+		"TAKE", "EQUIP",
+		"DROP",	"TALK",
+		"ATTACK", "DEFEND",
 		"STATUS", "QUEST",
 		"QUESTS", "WHO",
 		"GROUP", "QUIT",
-		"EQUIP",
 	}
 
 	crX := colLeftW + colMidW
@@ -28,7 +28,7 @@ func CreateActionsPanel(topH, centerH, colLeftW, colMidW, colRightW float32) *co
 	gapY := float32(8)
 
 	cols := 2
-	rows := 6
+	rows := 7
 
 	btnW := (crW - (paddingX * 2) - gapX) / float32(cols)
 	btnH := (crH - paddingY - float32(20) - (gapY * float32(rows-1))) / float32(rows)
