@@ -3,13 +3,13 @@ package gui
 import (
 	"errors"
 	"fmt"
-	"net"
 	"strings"
+
+	"net"
 
 	"github.com/hajimehoshi/ebiten/v2"
 
 	"tap/internal/gui/components"
-	"tap/internal/world"
 )
 
 var ErrQuit = errors.New("game terminated by user")
@@ -29,9 +29,9 @@ type Game struct {
 	status       string
 }
 
-func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
+func NewGame(winWidth int, winHeight int) *Game {
 	name := "Pâris"
-	t, cl, cm, cr, bl, bc, br := InitPanels(winWidth, winHeight, data)
+	t, cl, cm, cr, bl, bc, br := InitPanels(winWidth, winHeight)
 	conn, err := Connect("localhost:4242", name)
 	messagesChan := make(chan string, 100)
 
@@ -126,50 +126,51 @@ func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 						g.curr_cmd = "DROP"
 					}
 
+				case "EQUIP":
+					btn.OnClick = func() {
+						g.status = "AWAITING_EQUIP_ITEM"
+						g.curr_cmd = "EQUIP"
+					}
+
 				case "TALK":
 					btn.OnClick = func() {
-						g.status = "IDLE"
-						g.curr_cmd = "STATUS"
-						if chat != nil {
-							chat.AddLine(name + " > STATUS")
-						}
-						SendMessage(conn, "STATUS")
+						g.status = "AWAITING_TALK_NPC"
+						g.curr_cmd = "TALK"
+					}
+
+				case "ATTACK":
+					btn.OnClick = func() {
+						g.status = "AWAITING_ATTACK_NPC"
+						g.curr_cmd = "ATTACK"
 					}
 
 				case "STATUS":
 					btn.OnClick = func() {
-						g.status = "IDLE"
+						g.status = ""
 						g.curr_cmd = "STATUS"
-						if chat != nil {
-							chat.AddLine(name + " > STATUS")
-						}
 						SendMessage(conn, "STATUS")
 					}
 
 				case "QUEST":
 					btn.OnClick = func() {
-						g.status = "IDLE"
-						g.curr_cmd = "STATUS"
-						if chat != nil {
-							chat.AddLine(name + " > STATUS")
-						}
-						SendMessage(conn, "STATUS")
+						g.status = "AWAITING_QUEST_NPC"
+						g.curr_cmd = "QUEST"
 					}
 
 				case "QUESTS":
 					btn.OnClick = func() {
-						g.status = "IDLE"
-						g.curr_cmd = "STATUS"
+						g.status = "AWAITING_QUEST_NPC"
+						g.curr_cmd = "QUESTS"
 						if chat != nil {
-							chat.AddLine(name + " > STATUS")
+							chat.AddLine(name + " > QUESTS")
 						}
-						SendMessage(conn, "STATUS")
+						SendMessage(conn, "QUESTS")
 					}
 
 				case "WHO":
 					btn.OnClick = func() {
-						g.status = "IDLE"
-						g.curr_cmd = "STATUS"
+						g.status = "WHO"
+						g.curr_cmd = "WHO"
 						if chat != nil {
 							chat.AddLine(name + " > STATUS")
 						}
@@ -178,12 +179,12 @@ func NewGame(winWidth int, winHeight int, data world.GameData) *Game {
 
 				case "GROUP":
 					btn.OnClick = func() {
-						g.status = "IDLE"
-						g.curr_cmd = "STATUS"
+						g.status = "GROUP"
+						g.curr_cmd = "GROUP"
 						if chat != nil {
-							chat.AddLine(name + " > STATUS")
+							chat.AddLine(name + " > GROUP")
 						}
-						SendMessage(conn, "STATUS")
+						SendMessage(conn, "GROUP")
 					}
 
 				default:
@@ -218,7 +219,7 @@ func (g *Game) Update() error {
 		select {
 		case msg := <-g.messagesChan:
 			if chat := g.bottomRight.GetChat(); chat != nil {
-				fmt.Print(msg)
+				fmt.Print("\n" + msg)
 				jsonStart := strings.Index(msg, "{")
 				response := msg
 				if jsonStart != -1 {
@@ -247,6 +248,34 @@ func (g *Game) Update() error {
 									g.status = ""
 								}
 							},
+							room.NPCs,
+							func(NPCsName string) {
+								if g.status == "AWAITING_TALK_NPC" {
+									cmd := "TALK " + NPCsName
+									g.curr_cmd = "TALK"
+									if chat != nil {
+										chat.AddLine(g.name + " > " + cmd)
+									}
+									SendMessage(g.conn, cmd)
+									g.status = ""
+								} else if g.status == "AWAITING_QUEST_NPC" {
+									cmd := "QUEST " + NPCsName
+									g.curr_cmd = "QUEST"
+									if chat != nil {
+										chat.AddLine(g.name + " > " + cmd)
+									}
+									SendMessage(g.conn, cmd)
+									g.status = ""
+								} else if g.status == "AWAITING_ATTACK_NPC" {
+									cmd := "ATTACK " + NPCsName
+									g.curr_cmd = "ATTACK"
+									if chat != nil {
+										chat.AddLine(g.name + " > " + cmd)
+									}
+									SendMessage(g.conn, cmd)
+									g.status = ""
+								}
+							},
 						)
 						chat.AddLine(g.curr_cmd + " > " + room.Name)
 					} else {
@@ -262,7 +291,7 @@ func (g *Game) Update() error {
 
 							if stuff != nil {
 								stuff.AddItem(
-									world.Item{Name: itemName},
+									itemName,
 									func(itemName string) {
 										if g.status == "AWAITING_DROP_ITEM" {
 											cmd := "DROP " + itemName
@@ -270,7 +299,16 @@ func (g *Game) Update() error {
 											if chat != nil {
 												chat.AddLine(g.name + " > " + cmd)
 											}
-											stuff.RemoveItem(world.Item{Name: itemName})
+											stuff.RemoveItem(itemName)
+											SendMessage(g.conn, cmd)
+											g.status = ""
+										} else if g.status == "AWAITING_EQUIP_ITEM" {
+											cmd := "EQUIP " + itemName
+											g.curr_cmd = "EQUIP"
+											if chat != nil {
+												chat.AddLine(g.name + " > " + cmd)
+											}
+											stuff.MoveToTop(itemName)
 											SendMessage(g.conn, cmd)
 											g.status = ""
 										}
@@ -278,7 +316,6 @@ func (g *Game) Update() error {
 								)
 							}
 							chat.AddLine(g.curr_cmd + " > " + itemName)
-
 							g.curr_cmd = "LOOK"
 							SendMessage(g.conn, "LOOK")
 						}
@@ -286,19 +323,16 @@ func (g *Game) Update() error {
 						chat.AddLine("Server > " + msg)
 					}
 				case "DROP":
-					g.status = "AWAITING_DROP_ITEM"
+					if chat != nil {
+						chat.AddLine(g.curr_cmd + " > " + response)
+					}
+					g.status = ""
 					g.curr_cmd = "LOOK"
 					SendMessage(g.conn, "LOOK")
-					//				case "TALK":
-					//    			    world.ParseRoom(msg)
+				case "TALK":
+					g.status = ""
 					//				case "ATTACK":
-					//    			    // attack function
-					//				case "STATUS":
-					//    			    // status function
-					//				case "QUEST":
-					//    			    // quest function
-					//				case "QUESTS":
-					//    			    // quests function
+					//    			    // get enemy defeated etc.
 				case "WHO":
 					player := ParsePlayer(response)
 					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", player))
@@ -309,40 +343,6 @@ func (g *Game) Update() error {
 					return ErrQuit
 				}
 				chat.AddLine("Server > " + msg)
-
-				//				switch g.curr_cmd {
-				//    			case "LOOK":
-				//    			    room := world.ParseRoom(msg)
-				//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", room))
-				//    			case "MOVE":
-				//    			    chat.AddLine(g.curr_cmd + msg)
-				//    			case "TAKE":
-				//					item := world.ParseItem(msg)
-				//					AddItem(item)
-				//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", item))
-				//				case "DROP":
-				//    			    item := world.ParseItem(msg)
-				//					RemoveItem(item)
-				//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", item))
-				//				case "TALK":
-				//    			    world.ParseRoom(msg)
-				//				case "ATTACK":
-				//    			    // attack function
-				//				case "STATUS":
-				//    			    // status function
-				//				case "QUEST":
-				//    			    // quest function
-				//				case "QUESTS":
-				//    			    // quests function
-				//				case "WHO":
-				//    			    player := ParsePlayer(msg)
-				//					chat.AddLine(g.curr_cmd + fmt.Sprintf("%+v", player))
-				//				case "GROUP":
-				//    			    world.ParseRoom(msg)
-				//				case "QUIT":
-				//					fmt.Printf("QUIT")
-				//					return ErrQuit
-				//				}
 			}
 		default:
 			goto Done
@@ -373,13 +373,9 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func Run() error {
 	windowWidth := 1480
 	windowHeight := 1090
-	data, err := world.ReadJson("data/world.json")
-	if err != nil {
-		return err
-	}
 	ebiten.SetWindowSize(windowWidth, windowHeight)
 	ebiten.SetWindowTitle("The Answer Protocol")
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
-	newGame := NewGame(windowWidth, windowHeight, *data)
+	newGame := NewGame(windowWidth, windowHeight)
 	return ebiten.RunGame(newGame)
 }

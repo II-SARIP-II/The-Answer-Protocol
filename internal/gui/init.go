@@ -3,10 +3,9 @@ package gui
 import (
 	"tap/internal/gui/components"
 	"tap/internal/gui/components/panels"
-	"tap/internal/world"
 )
 
-func InitPanels(winWidth int, winHeight int, data world.GameData) (*components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel) {
+func InitPanels(winWidth int, winHeight int) (*components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel) {
 	w := float32(winWidth)
 	h := float32(winHeight)
 
@@ -20,7 +19,7 @@ func InitPanels(winWidth int, winHeight int, data world.GameData) (*components.P
 
 	t_panel := panels.CreateTopPanel(w, topH)
 	cl_panel := panels.CreatePlayerPanel(topH, centerH, colLeftW)
-	cm_panel := panels.CreateMapPanel(topH, centerH, colLeftW, colMidW, data)
+	cm_panel := panels.CreateMapPanel(topH, centerH, colLeftW, colMidW)
 	cr_panel := panels.CreateActionsPanel(topH, centerH, colLeftW, colMidW, colRightW)
 	bl_panel := panels.CreateStatsPanel(topH, centerH, bottomH, colLeftW)
 	bc_panel := panels.CreateChatPanel(topH, centerH, bottomH, colLeftW, colMidW)
