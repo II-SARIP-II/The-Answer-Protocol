@@ -239,7 +239,7 @@
     },
     "neutralize_guards": {
       "giver": "undercover_agent",
-      "description": "Eliminate the 2 bodyguards patrolling the south corridors to secure the path.",
+      "description": "Eliminate the 2 bodyguards patrolling the south corridors to secure the path. Come back to see me when you have completed your task",
       "type": "defeat",
       "target": "enemy",
       "count": 2,
@@ -248,7 +248,7 @@
     },
     "defeat_boss": {
       "giver": "undercover_agent",
-      "description": "Infiltrate the secret room in the south wing and eliminate the Mafia Boss.",
+      "description": "Infiltrate the secret room in the south wing and eliminate the Mafia Boss. Come back and see me with some good news.",
       "type": "defeat",
       "target": "target",
       "count": 1,

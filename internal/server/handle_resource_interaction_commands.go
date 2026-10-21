@@ -249,37 +249,77 @@ func (p *Player) handleStatus(args string) {
 
 func (p *Player) handleQuest(args string) {
 	targetNpc := strings.TrimSpace(args)
-	if targetNpc == "" {
-		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
-		return
-	}
 
 	p.Server.mu.Lock()
 
-	var foundNPCID string
 	room := p.Server.world.Rooms[p.CurrentRoom]
-	for _, npcID := range room.NPCs {
-		if p.matchNameOrID(npcID, targetNpc) {
-			foundNPCID = npcID
-			break
+	var questGiverID string
+
+	if targetNpc == "" {
+		for _, npcID := range room.NPCs {
+			npc := p.Server.world.NPCs[npcID]
+			if npc.Role == "quest-giver" {
+				questGiverID = npcID
+				break
+			}
+		}
+	} else {
+		for _, npcID := range room.NPCs {
+			if p.matchNameOrID(npcID, targetNpc) {
+				questGiverID = npcID
+				break
+			}
 		}
 	}
 
-	if foundNPCID == "" {
+	if questGiverID == "" {
 		p.Server.mu.Unlock()
 		p.SendErr(protocol.CodeNPCNotFound, protocol.MsgNPCNotFound)
 		return
 	}
 
-	npcData, exists := p.Server.world.NPCs[foundNPCID]
-	if !exists || npcData.Role != "quest-giver" {
+	questGiverData := p.Server.world.NPCs[questGiverID]
+	if questGiverData.Role != "quest-giver" {
 		p.Server.mu.Unlock()
 		p.SendErr(protocol.CodeNoQuestAvailable, protocol.MsgNoQuestAvailable)
 		return
 	}
 
+	if p.Server.world.Quests == nil {
+		p.Server.mu.Unlock()
+		p.SendErr(protocol.CodeNoQuestAvailable, protocol.MsgNoQuestAvailable)
+		return
+	}
+
+
+	// // si prerequisite: recuperer le statut du player pour cette quête et verifiee qu elle est
+	// // accomplie, sinon continue
+	// // si rien à la fin, message pas de quête disponible
+	// playerNextQuest := Quest {}
+	// for quest := range p.Server.world.Quests {
+	// 	if quest.prerequisite == "" {
+	// 		playerNextQuest = quest
+	// 		break
+	// 	} else {
+	// 		completedQuest := false
+	// 		for playerQuest := range p.Quests {
+	// 			if p.Quests[quest].Status == "completed" && p.Quests[quest].ID == quest {
+	// 				completedQuest := true
+	// 				break
+	// 			}
+	// 		if !completedQuest {
+	// 			p.Server.mu.Unlock()
+	// 			p.SendErr(protocol.CodeNoQuestAvailable, protocol.MsgNoQuestAvailable)
+	// 			return
+	// 			}
+	// 		playerNextQuest = quest
+	// 		}
+	// 	}
+
+
 	p.SendOK("Received QUEST. (TODO)")
 }
+
 
 func (p *Player) handleQuests(args string) {
 	// TODO
@@ -289,3 +329,14 @@ func (p *Player) handleQuests(args string) {
 	}
 	p.SendOK("Received QUESTS. (TODO)")
 }
+
+// il fait QUEST pour récupérer sa quête (status = "active", progerssion = (0/2))
+// ( qui est intégrée à la structure du player sous forme dúne liste de quêtes,
+// visible avec QUESTS. La quête ne peut être attribuée au player que s'il a les prérequis
+//  On met en place en compteur pour les quêtes en plusieurs étapes.
+// Une fois la quête accomplie, il retourne auprès du donneur d'ordre
+// pour lui siginifier l'accoplissement, progression == count/count
+// ca fait status à "completed"
+// Il recoit alors sa récompense. PLusieurs joueurs peuvent chercher à accomplir une même quête.
+// Une fois que la quête ultime est réalisée, message de Victoire totale donnée par le donneur de quête.
+//  TT est broadcasté et loggé.
