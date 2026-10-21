@@ -57,7 +57,8 @@ const (
 )
 
 const (
-	FistFightDamage = 2 // ajout
+	FistFightDamage = 2  // ajout
+	NPCRespawnDelay = 50 // ajout
 )
 
 const (

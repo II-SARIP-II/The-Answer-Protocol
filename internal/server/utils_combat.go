@@ -20,16 +20,22 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 	}
 	currentRoom.NPCs = UpdatedNPCsInRoom
 
-	if enemy.Item != nil && *enemy.Item != "" {
-		itemID := p.resolveID(*enemy.Item)
-		currentRoom.Items = append(currentRoom.Items, itemID)
+	for _, otherPlayer := range p.Server.players {
+		if otherPlayer.CurrentRoom == p.CurrentRoom && otherPlayer.Status == "combat" && otherPlayer.Username != p.Username {
+			otherPlayer.Status = "healthy"
+		}
 	}
+
+	// if enemy.Item != nil && *enemy.Item != "" {
+	// 	itemID := p.resolveID(*enemy.Item)
+	// 	currentRoom.Items = append(currentRoom.Items, itemID)
+	// }
 	p.Server.world.Rooms[p.CurrentRoom] = currentRoom
 
 	p.broadcastRoom(p.CurrentRoom, "ROOM CHAT", fmt.Sprintf("Player %s has eliminated %s!", p.Username, enemy.Name))
 	p.broadcastGroup("GROUP CHAT", fmt.Sprintf("Player %s has eliminated %s!", p.Username, enemy.Name))
 
-	p.Server.scheduleNPCRespawn(enemyID)
+	p.Server.scheduleNPCRespawn(enemyID, p.CurrentRoom)
 
 	data := fmt.Sprintf("Combat victory, victorious_player=%s, defeated_enemy=%s", p.Username, enemy.Name)
 	slog.Info(data)

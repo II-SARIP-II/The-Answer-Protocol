@@ -168,6 +168,7 @@
       "role": "passive enemy",
       "name": "Kitchen Chef",
       "life": 15,
+      "maxlife": 15,
       "item": "knife",
       "dialogue": [
         "Out of my kitchen! I'm preparing a seven-course banquet and I don't need intruders!",
@@ -179,26 +180,29 @@
       "role": "enemy",
       "name": "Big Biceps",
       "life": 20,
+      "maxlife": 20,
       "item": "knife",
       "dialogue": [
-        "Nobody passes this corridor without the boss's permission.",
-        "You look lost, friend. Turn around before I break both your arms."
+        "Let this serve as a lesson to you: Nobody passes this corridor without the boss's permission.",
+        "Turn around before I break both your arms."
       ]
     },
     "bodyguard_2": {
       "role": "enemy",
       "name": "Big Guns",
       "life": 30,
+      "maxlife": 30,
       "item": "M16",
       "dialogue": [
-        "VIP area is restricted. Step back right now.",
-        "One more step toward the boss's quarters and I open fire."
+        "VIP area is restricted. This is what happens to those who don’t know!",
+        "One more step toward the boss's quarters and I open fire again."
       ]
     },
     "target": {
       "role": "target",
       "name": "Mafia Boss",
       "life": 50,
+      "maxlife": 50,
       "item": "M16",
       "dialogue": [
         "So MI6 finally sent their best? You're too late, agent.",

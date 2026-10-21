@@ -96,7 +96,7 @@ func (p *Player) handleMove(args string) {
 	p.Server.mu.Lock()
 
 	p.DefendCount = 0
-	if p.Status == protocol.StatusDefeated {
+	if p.Status == protocol.StatusDefeated || p.Status == protocol.StatusVictory {
 		p.Status = protocol.StatusHealthy
 	}
 	oldRoom := p.CurrentRoom

@@ -58,7 +58,7 @@ func (p *Player) handleAttack(args string) {
 	combatStatus := protocol.StatusCombat
 	if enemyData.Life == 0 {
 		combatStatus = "victory"
-		p.Status = protocol.StatusHealthy
+		p.Status = protocol.StatusVictory
 		p.handleEnemyDeath(enemyID)
 	} else if p.HP == 0 {
 		combatStatus = "defeated"
