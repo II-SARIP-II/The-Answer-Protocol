@@ -168,19 +168,18 @@
       "role": "passive enemy",
       "name": "Kitchen Chef",
       "life": 15,
-      "maxlife": 15,
+      "max_life": 15,
       "item": "knife",
       "dialogue": [
-        "Out of my kitchen! I'm preparing a seven-course banquet and I don't need intruders!",
-        "Touch my knives and you'll end up in tomorrow's stew!",
-        "The gentleman in the secret suite demanded his caviar an hour ago... what a nightmare."
+        "Out of my kitchen !!",
+        "Try to touch my knives and you'll end up in tomorrow's stew!"
       ]
     },
     "bodyguard_1": {
       "role": "enemy",
       "name": "Big Biceps",
       "life": 20,
-      "maxlife": 20,
+      "max_life": 20,
       "item": "knife",
       "dialogue": [
         "Let this serve as a lesson to you: Nobody passes this corridor without the boss's permission.",
@@ -191,7 +190,7 @@
       "role": "enemy",
       "name": "Big Guns",
       "life": 30,
-      "maxlife": 30,
+      "max_life": 30,
       "item": "M16",
       "dialogue": [
         "VIP area is restricted. This is what happens to those who don’t know!",
@@ -202,7 +201,7 @@
       "role": "target",
       "name": "Mafia Boss",
       "life": 50,
-      "maxlife": 50,
+      "max_life": 50,
       "item": "M16",
       "dialogue": [
         "So MI6 finally sent their best? You're too late, agent.",

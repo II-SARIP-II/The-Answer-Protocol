@@ -145,10 +145,15 @@ func (p *Player) findAndValidateEnemy(target string) (string, world.NPC, bool) {
 	}
 
 	enemyData := p.Server.world.NPCs[foundID]
-	if enemyData.Life <= 0 || (enemyData.Role != "enemy" && enemyData.Role != "target") {
+	if enemyData.Life <= 0 || (enemyData.Role != "enemy" && enemyData.Role != "target" && enemyData.Role != "passive enemy") {
 		p.Server.mu.Unlock()
 		p.SendErr(protocol.CodeNPCNotHostile, protocol.MsgNPCNotHostile)
 		return "", world.NPC{}, false
+	}
+
+	if enemyData.Role == "passive enemy" {
+		enemyData.Role = "enemy"
+		p.Server.world.NPCs[foundID] = enemyData
 	}
 
 	return foundID, enemyData, true

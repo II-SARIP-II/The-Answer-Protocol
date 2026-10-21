@@ -16,6 +16,9 @@ func (s *Server) scheduleNPCRespawn(enemyID string, roomID string) {
 
 		npc := s.world.NPCs[enemyID]
 		npc.Life = npc.MaxLife
+		if enemyID == "chef" {
+			npc.Role = "passive enemy"
+		}
 		s.world.NPCs[enemyID] = npc
 
 		room := s.world.Rooms[roomID]
@@ -26,7 +29,7 @@ func (s *Server) scheduleNPCRespawn(enemyID string, roomID string) {
 
 		for _, player := range s.players {
 			if strings.EqualFold(player.CurrentRoom, roomID) {
-				player.SendEvt("ROOM CHAT", fmt.Sprintf("%s has reappeared!", enemyID))
+				player.SendEvt("ROOM CHAT", fmt.Sprintf("Server %s has reappeared!", npc.Name))
 			}
 		}
 	})
