@@ -112,7 +112,7 @@ func (c *ChatWidget) Update() {
 
 	if repeatingKeyPressed(ebiten.KeyEnter) || repeatingKeyPressed(ebiten.KeyNumpadEnter) {
 		if len(c.Text) > 0 {
-			if c.HasBtn != true {
+			if !c.HasBtn {
 				c.AddLine(c.InputTitle + c.Text)
 			}
 
