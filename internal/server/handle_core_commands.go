@@ -131,3 +131,24 @@ func (p *Player) handleQuit(args string) {
 	p.SendOK(protocol.MsgBye)
 	p.State = protocol.StateTerminated
 }
+
+func (p *Player) handleStatus(args string) {
+	if args != "" {
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
+		return
+	}
+
+	response := StatusResponse{
+		HP:     p.HP,
+		MaxHP:  p.MaxHP,
+		Status: p.Status,
+	}
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgBadRequest)
+		return
+	}
+
+	p.SendOK(string(data))
+}

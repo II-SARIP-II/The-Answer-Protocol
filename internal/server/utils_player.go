@@ -49,3 +49,9 @@ func (p *Player) broadcastGroup(eventType, message string) {
 		}
 	}
 }
+
+func (p *Player) broadcastGlobal(eventType, message string) {
+	for _, other := range p.Server.players {
+		other.SendEvt(eventType, message)
+	}
+}
