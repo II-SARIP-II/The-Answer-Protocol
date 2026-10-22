@@ -19,11 +19,8 @@ func CreateInteractionsPanel(topH, centerH, bottomH, colLeftW, colMidW, colRight
 		20.0,
 		color.RGBA{R: 200, G: 200, B: 200, A: 255},
 		"Action > ",
+		false,
 	)
-
-	chat.AddLine("Echo > Where are you guysguysguysguysguysguysgu ysguysguysguys.")
-	chat.AddLine("Echa > In the secret Room.")
-	chat.AddLine("Echu > A secret Room ????")
 
 	return &components.Panel{
 		Name:        "Game Interactions",
