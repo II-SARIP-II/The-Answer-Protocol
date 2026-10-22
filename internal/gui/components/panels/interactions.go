@@ -21,10 +21,6 @@ func CreateInteractionsPanel(topH, centerH, bottomH, colLeftW, colMidW, colRight
 		"Action > ",
 	)
 
-	chat.AddLine("Echo > Where are you guysguysguysguysguysguysgu ysguysguysguys.")
-	chat.AddLine("Echa > In the secret Room.")
-	chat.AddLine("Echu > A secret Room ????")
-
 	return &components.Panel{
 		Name:        "Game Interactions",
 		DisplayName: true,

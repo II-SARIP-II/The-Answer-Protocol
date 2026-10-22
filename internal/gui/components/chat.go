@@ -8,7 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-const MaxCharacterPerLine = 38
+const MaxCharacterPerLine = 50
 const MaxLines = 15
 
 type ChatWidget struct {
