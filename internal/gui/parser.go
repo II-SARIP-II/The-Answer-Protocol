@@ -32,6 +32,31 @@ type WhoResponse struct {
 	Server int      `json:"Server"`
 }
 
+type EventChatMessage struct {
+	Type    string // "EVT"
+	Scope   string // "GLOBAL" ou "GROUP"
+	Channel string // "CHAT"
+	Sender  string // "Pâris"
+	Message string // "ECho ECHO"
+}
+
+func ParseEventChat(raw string) (EventChatMessage, error) {
+	raw = strings.TrimSpace(raw)
+
+	parts := strings.SplitN(raw, " ", 5)
+	if len(parts) < 5 {
+		return EventChatMessage{}, fmt.Errorf("Invalid format : %q", raw)
+	}
+
+	return EventChatMessage{
+		Type:    parts[0],
+		Scope:   parts[1],
+		Channel: parts[2],
+		Sender:  parts[3],
+		Message: parts[4],
+	}, nil
+}
+
 func parseJSON[T any](raw string) (T, error) {
 	var target T
 	jsonStart := strings.Index(raw, "{")

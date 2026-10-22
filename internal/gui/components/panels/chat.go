@@ -18,12 +18,9 @@ func CreateChatPanel(topH, centerH, bottomH, colLeftW, colMidW float32) *compone
 		bottomH-50.0,
 		20.0,
 		color.RGBA{R: 200, G: 200, B: 200, A: 255},
-		"Team > ",
+		"Team",
+		true,
 	)
-
-	chat.AddLine("Echo > Where are you guysguysguysguysguysguysgu ysguysguysguys.")
-	chat.AddLine("Echa > In the secret Room.")
-	chat.AddLine("Echu > A secret Room ????")
 
 	return &components.Panel{
 		Name:        "Team Chat",

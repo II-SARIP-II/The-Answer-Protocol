@@ -19,6 +19,7 @@ func CreateInteractionsPanel(topH, centerH, bottomH, colLeftW, colMidW, colRight
 		20.0,
 		color.RGBA{R: 200, G: 200, B: 200, A: 255},
 		"Action > ",
+		false,
 	)
 
 	return &components.Panel{

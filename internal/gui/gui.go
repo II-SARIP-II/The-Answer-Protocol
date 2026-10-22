@@ -2,6 +2,7 @@ package gui
 
 import (
 	"errors"
+	"strings"
 
 	"net"
 
@@ -52,24 +53,23 @@ func NewGame(winWidth int, winHeight int) *Game {
 	if err == nil {
 		go ListenServer(conn, messagesChan)
 
-		chatAction := br.GetChat()
-		if chatAction != nil {
-			chatAction.OnSubmit = func(text string) {
-				g.curr_cmd = text
-				SendMessage(conn, text)
-			}
+		if chatTeam := g.bottomCenter.GetChat(); chatTeam != nil {
+		    chatTeam.OnSubmit = func(text string) {
+		        SendMessage(conn, text)
+		    }
 		}
-		chat := bc.GetChat()
-		if chat != nil {
-			chat.OnSubmit = func(text string) {
-				g.curr_cmd = text
-				SendMessage(conn, text)
-			}
+
+		if chatAction := g.bottomRight.GetChat(); chatAction != nil {
+		    chatAction.OnSubmit = func(text string) {
+		        parts := strings.Split(text, " ")
+		        g.curr_cmd = strings.ToUpper(parts[0])
+			
+		        SendMessage(conn, text)
+		    }
+			g.sendActionButton(conn, chatAction)
 		}
 
 		g.sendServerDirection(conn)
-		g.sendActionButton(conn, chatAction)
-		g.sendChat(conn, chat)
 
 	}
 	return g
@@ -86,7 +86,10 @@ func (g *Game) Update() error {
 		g.bottomRight,
 	)
 
-	g.serverResponse()
+	err := g.serverResponse()
+	if err != nil {
+		return ErrQuit
+	}
 	return nil
 }
 

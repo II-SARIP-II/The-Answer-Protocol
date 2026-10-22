@@ -151,8 +151,3 @@ func (g *Game) sendActionButton(conn net.Conn, chat *components.ChatWidget) {
 		}
 	}
 }
-
-func (g *Game) sendChat(conn net.Conn, chat *components.ChatWidget) {
-	
-	SendMessage(conn, "DEFEND")
-}
