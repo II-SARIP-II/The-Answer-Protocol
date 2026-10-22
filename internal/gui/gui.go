@@ -22,7 +22,7 @@ type Game struct {
 	bottomCenter *components.Panel
 	bottomRight  *components.Panel
 	name         string
-	hp				int
+	hp           int
 	conn         net.Conn
 	messagesChan chan string
 	curr_cmd     string
@@ -44,7 +44,7 @@ func NewGame(winWidth int, winHeight int) *Game {
 		bottomCenter: bc,
 		bottomRight:  br,
 		name:         name,
-		hp:				100,
+		hp:           100,
 		conn:         conn,
 		messagesChan: messagesChan,
 		curr_cmd:     "",
@@ -54,18 +54,18 @@ func NewGame(winWidth int, winHeight int) *Game {
 		go ListenServer(conn, messagesChan)
 
 		if chatTeam := g.bottomCenter.GetChat(); chatTeam != nil {
-		    chatTeam.OnSubmit = func(text string) {
-		        SendMessage(conn, text)
-		    }
+			chatTeam.OnSubmit = func(text string) {
+				SendMessage(conn, text)
+			}
 		}
 
 		if chatAction := g.bottomRight.GetChat(); chatAction != nil {
-		    chatAction.OnSubmit = func(text string) {
-		        parts := strings.Split(text, " ")
-		        g.curr_cmd = strings.ToUpper(parts[0])
-			
-		        SendMessage(conn, text)
-		    }
+			chatAction.OnSubmit = func(text string) {
+				parts := strings.Split(text, " ")
+				g.curr_cmd = strings.ToUpper(parts[0])
+
+				SendMessage(conn, text)
+			}
 			g.sendActionButton(conn, chatAction)
 		}
 

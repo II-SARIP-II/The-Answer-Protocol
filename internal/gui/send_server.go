@@ -5,7 +5,6 @@ import (
 	"tap/internal/gui/components"
 )
 
-
 func (g *Game) sendServerDirection(conn net.Conn) {
 	if buttons := g.centerMid.GetButtons(); buttons != nil {
 		for _, button := range buttons {

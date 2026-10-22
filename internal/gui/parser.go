@@ -7,6 +7,7 @@ import (
 
 	"tap/internal/server"
 )
+
 type AttackResponse struct {
 	AttackerHP int    `json:"attacker_hp"`
 	TargetHP   int    `json:"target_hp"`
@@ -22,8 +23,8 @@ type DefendResponse struct {
 }
 
 type StatusResponse struct {
-	HP int   `json:"hp"`
-	MaxHP int `json:"max_hp"`
+	HP     int    `json:"hp"`
+	MaxHP  int    `json:"max_hp"`
 	Status string `json:"status"`
 }
 
