@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -37,19 +38,44 @@ func (p *Player) handleQuest(args string) {
 	p.processNextQuest(questGiverID)
 }
 
-// type QuestResponse struct {
-
-// }
+type QuestResponse struct {
+	QuestID  string `json:"quest_id"`
+	Status   string `json:"status"`
+	Progress string `json:"progress,omitempty"`
+}
 
 func (p *Player) handleQuests(args string) {
 	if args != "" {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
 		return
 	}
-	// response := QuestResponse {
+	p.Server.mu.Lock()
 
-	// }
-	p.SendOK("Received QUESTS. (TODO)")
+	listQuestsResponse := make([]QuestResponse, 0)
+
+	for quest := range p.Quests {
+		questData := p.Quests[quest]
+		var progress string
+		if questData.Status == "active" {
+			progress = fmt.Sprintf("%d/%d", questData.CompletedSteps, questData.Steps)
+		}
+		response := QuestResponse{
+			QuestID:  p.Quests[quest].ID,
+			Status:   p.Quests[quest].Status,
+			Progress: progress,
+		}
+		listQuestsResponse = append(listQuestsResponse, response)
+	}
+
+	p.Server.mu.Unlock()
+
+	data, err := json.Marshal(listQuestsResponse)
+	if err != nil {
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
+		return
+	}
+
+	p.SendOK(string(data))
 }
 
 func (p *Player) findQuestGiver(targetNpc string) string {
