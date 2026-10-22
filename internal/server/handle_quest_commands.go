@@ -117,12 +117,18 @@ func (p *Player) findQuestGiver(targetNpc string) string {
 func (p *Player) resolveActiveQuest(activeQuestID string) {
 	playerQuest := p.Quests[activeQuestID]
 	worldQuest := p.Server.world.Quests[activeQuestID]
+
 	if playerQuest.CompletedSteps >= playerQuest.Steps {
+
 		playerQuest.Status = "completed"
 		p.Quests[activeQuestID] = playerQuest
-		playerReward := p.Server.world.Quests[activeQuestID].Reward
-		if playerReward != "" {
-			p.Inventory = append(p.Inventory, playerReward)
+
+		if worldQuest.Reward != "" {
+			p.Inventory = append(p.Inventory, worldQuest.Reward)
+		}
+
+		if worldQuest.Type == "fetch" {
+			p.processTargetsRespawn(worldQuest.Targets)
 		}
 
 		p.broadcastRoom(p.CurrentRoom, "ROOM CHAT", fmt.Sprintf("Player %s completed the quest: %s!", p.Username, activeQuestID))
@@ -137,6 +143,42 @@ func (p *Player) resolveActiveQuest(activeQuestID string) {
 		p.SendOK(fmt.Sprintf(`{"quest_id":"%s","description":"%s","reward":"%s","status":"active","progress":"%d/%d"}`,
 			activeQuestID, worldQuest.Description, worldQuest.Reward, playerQuest.CompletedSteps, playerQuest.Steps))
 		return
+	}
+}
+
+func (p *Player) processTargetsRespawn(questTargets []string) {
+
+	for _, target := range questTargets {
+		foundIndex := -1
+		for index, playerItem := range p.Inventory {
+			if strings.EqualFold(target, playerItem) {
+				foundIndex = index
+				break
+			}
+		}
+		if foundIndex == -1 {
+			continue
+		}
+
+		if p.Inventory[foundIndex] == p.EquippedWeapon {
+			p.EquippedWeapon = ""
+		}
+
+		p.Inventory = append(p.Inventory[:foundIndex], p.Inventory[foundIndex+1:]...)
+
+		initialRoomID := p.Server.spawnsQuestsItems[target]
+		roomData, exists := p.Server.world.Rooms[initialRoomID]
+		if !exists {
+			p.Server.mu.Unlock()
+			p.SendErr(protocol.CodeNPCNotFound, protocol.MsgNPCNotFound)
+			return
+		}
+		roomData.Items = append(roomData.Items, target)
+		p.Server.world.Rooms[initialRoomID] = roomData
+
+		slog.Info("Item respawn after quest completion", "item", target, "player", p.Username)
+		p.broadcastRoom(initialRoomID, "ROOM CHAT", fmt.Sprintf("A %s has reappeared !", target))
+
 	}
 }
 
@@ -167,11 +209,16 @@ func (p *Player) processNextQuest(questGiverID string) {
 	}
 
 	nextQuestData := p.Server.world.Quests[nextQuestID]
+	initialSteps := 0
+	if nextQuestData.Type == "fetch" {
+		initialSteps = p.countHeldTargets(nextQuestData.Targets)
+	}
+
 	p.Quests[nextQuestID] = Quest{
 		ID:             nextQuestID,
 		Status:         "active",
 		Steps:          nextQuestData.Count,
-		CompletedSteps: 0,
+		CompletedSteps: initialSteps,
 	}
 	p.Server.mu.Unlock()
 	p.SendOK(fmt.Sprintf(`{"quest_id":"%s", "description": "%s", "reward":"%s", "status":"active"}`, nextQuestID, nextQuestData.Description, nextQuestData.Reward))

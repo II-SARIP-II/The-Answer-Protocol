@@ -39,13 +39,13 @@ type Item struct {
 }
 
 type Quest struct {
-	Giver        string `json:"giver"`
-	Description  string `json:"description"`
-	Type         string `json:"type"`
-	Target       string `json:"target"`
-	Count        int    `json:"count"`
-	Reward       string `json:"reward"`
-	Prerequisite string `json:"prerequisite"`
+	Giver        string   `json:"giver"`
+	Description  string   `json:"description"`
+	Type         string   `json:"type"`
+	Targets      []string `json:"targets"`
+	Count        int      `json:"count"`
+	Reward       string   `json:"reward"`
+	Prerequisite string   `json:"prerequisite"`
 }
 
 type GameData struct {

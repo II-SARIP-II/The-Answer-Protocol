@@ -44,6 +44,8 @@ func (p *Player) handleTake(args string) {
 	room.Items = append(room.Items[:foundIndex], room.Items[foundIndex+1:]...)
 	p.Server.world.Rooms[p.CurrentRoom] = room
 
+	p.processFetchQuest()
+
 	var provokedPassiveEnemy *world.NPC
 	var damage int
 	for _, npcID := range room.NPCs {

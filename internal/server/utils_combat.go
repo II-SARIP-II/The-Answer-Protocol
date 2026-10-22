@@ -26,14 +26,12 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 		}
 	}
 
-	// if enemy.Item != nil && *enemy.Item != "" {
-	// 	itemID := p.resolveID(*enemy.Item)
-	// 	currentRoom.Items = append(currentRoom.Items, itemID)
-	// }
 	p.Server.world.Rooms[p.CurrentRoom] = currentRoom
 
 	p.broadcastRoom(p.CurrentRoom, "ROOM CHAT", fmt.Sprintf("Player %s has eliminated %s!", p.Username, enemy.Name))
 	p.broadcastGroup("GROUP CHAT", fmt.Sprintf("Player %s has eliminated %s!", p.Username, enemy.Name))
+
+	p.processDefeatQuest(enemyID)
 
 	p.Server.scheduleNPCRespawn(enemyID, p.CurrentRoom)
 
@@ -99,7 +97,6 @@ func (p *Player) handlePlayerDeath(target string) {
 	p.SendEvt("ROOM CHAT", "Defeat: you were defeated and respawned in room0!")
 }
 
-// getWeaponDamage retourne les dégâts d'une arme (ou les dégâts à mains nues si vide/introuvable)
 func (p *Player) getAttackDamage(weaponNameOrID string) int {
 	if weaponNameOrID == "" {
 		return protocol.FistFightDamage
@@ -157,4 +154,40 @@ func (p *Player) findAndValidateEnemy(target string) (string, world.NPC, bool) {
 	}
 
 	return foundID, enemyData, true
+}
+
+func (p *Player) processDefeatQuest(enemyID string) {
+	for questID, questDataPlayer := range p.Quests {
+		if questDataPlayer.Status != "active" {
+			continue
+		}
+		worldQuest, exists := p.Server.world.Quests[questID]
+		if !exists || worldQuest.Type != "defeat" {
+			continue
+		}
+		if questDataPlayer.CompletedSteps >= questDataPlayer.Steps {
+			continue
+		}
+		for _, target := range worldQuest.Targets {
+			if p.matchNameOrID(target, enemyID) {
+				questDataPlayer.CompletedSteps++
+				p.Quests[questID] = questDataPlayer
+				slog.Info("Quest progress",
+					"player", p.Username,
+					"quest", questID,
+					"progress", fmt.Sprintf("%d/%d", questDataPlayer.CompletedSteps, questDataPlayer.Steps),
+				)
+				p.SendEvt("ROOM CHAT", fmt.Sprintf("Server [QUEST] %s progress: %d/%d",
+					questID, questDataPlayer.CompletedSteps, questDataPlayer.Steps))
+				if questDataPlayer.CompletedSteps >= questDataPlayer.Steps {
+					giverName := "the quest giver"
+					if giver, ok := p.Server.world.NPCs[worldQuest.Giver]; ok && giver.Name != "" {
+						giverName = giver.Name
+					}
+					p.SendEvt("ROOM CHAT", fmt.Sprintf("Server [QUEST] %s: Objectives completed! Return to %s to claim your reward, saying \"quest\".", questID, giverName))
+				}
+				break
+			}
+		}
+	}
 }
