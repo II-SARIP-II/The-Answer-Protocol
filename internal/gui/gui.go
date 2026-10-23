@@ -2,6 +2,7 @@ package gui
 
 import (
 	"errors"
+	"os"
 	"strings"
 
 	"net"
@@ -31,7 +32,11 @@ type Game struct {
 }
 
 func NewGame(winWidth int, winHeight int) *Game {
-	name := "Pâris"
+	name := "Smith"
+
+	if len(os.Args) > 1 && os.Args[1] != "" {
+	    name = os.Args[1]
+	}
 	t, cl, cm, cr, bl, bc, br := InitPanels(winWidth, winHeight)
 	conn, err := Connect("localhost:4242", name)
 	messagesChan := make(chan string, 100)
