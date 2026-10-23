@@ -10,7 +10,7 @@ func (g *Game) serverResponse() error {
 		select {
 		case msg := <-g.messagesChan:
 			chatStruct, errChat := ParseEventChat(msg)
-			if errChat == nil {
+			if errChat == nil && chatStruct.Type == "EVT" {
 				if chat := g.bottomCenter.GetChat(); chat != nil {
 					chat.AddLine("[" + chatStruct.Scope + "] " + chatStruct.Sender + " > " + chatStruct.Message)
 				}
