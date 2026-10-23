@@ -116,7 +116,17 @@ func (s *Server) handleClientSession(conn net.Conn) {
 		s.mu.Lock()
 		player.State = protocol.StateTerminated
 		player.leaveGroupGetModif()
+
+		if len(player.Inventory) > 0 {
+			room := s.world.Rooms[player.CurrentRoom]
+			room.Items = append(room.Items, player.Inventory...)
+			s.world.Rooms[player.CurrentRoom] = room
+			player.Inventory = nil
+			slog.Info("Player items dropped on disconnect", "player", player.Username, "room", player.CurrentRoom)
+		}
+
 		delete(s.players, player.Username)
+		
 		for _, otherPlayer := range s.players {
 			otherPlayer.SendEvt(protocol.EvtGameLeave, player.Username)
 		}
@@ -138,7 +148,7 @@ func (s *Server) handleClientSession(conn net.Conn) {
 	}
 	if error := clientScanner.Err(); error != nil {
 		slog.Warn("Client connection error", "username", player.Username, "error", error)
-	}
+		}
 }
 
 func (s *Server) authenticate(conn net.Conn, command string) (*Player, error) {

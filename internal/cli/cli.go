@@ -38,7 +38,6 @@ func Run(addr string) error {
 
 		username := strings.TrimSpace(stdinScanner.Text())
 
-
 		if username == "" {
 			fmt.Println("Error: Username cannot be empty. Please try again.")
 		}
@@ -60,26 +59,27 @@ func Run(addr string) error {
 
 		if response == "ERR 201 NAME_IN_USE" {
 			fmt.Println("Error: This username is already taken by another player. Please choose another one.")
-		} else {
-			fmt.Printf("Error (%s). Please try again.\n", response)
-		}
+		} 
 	}
 
 	fmt.Println("You can now enter commands (or QUIT to exit):")
 
-	// nécessaire d'ouvrir une go routine en arrière plan qui ecoute le serveru en continu
+	// channel de signalisation (structure vide utilisée en go car 0 octet !)
+	// permet de fermer la socket
+	quitChan := make(chan struct{})
 	go func() {
 		for serverScanner.Scan() {
 			response := serverScanner.Text()
+
 			if response == "" {
 				continue
 			}
 			fmt.Println("Server:", response)
+
+			if response == "OK bye" {
+				close(quitChan)
+			}
 		}
-		if err := serverScanner.Err(); err != nil {
-			fmt.Printf("Error reading from server: %v\n", err)
-		}
-		os.Exit(0)
 	}()
 
 	for stdinScanner.Scan() {
@@ -90,10 +90,10 @@ func Run(addr string) error {
 		}
 		if strings.ToUpper(input) == protocol.CmdQuit {
 			fmt.Fprint(conn, protocol.FormatCmd(protocol.CmdQuit, ""))
-			// En langage Go, l'instruction select permet à une goroutine d'attendre
-			// et de gérer plusieurs opérations sur des channels simultanément
-			// ici on attend l affcihage de "bye"
-			select {}
+			// avec <- on extrait une valeur du channel
+			<-quitChan
+				fmt.Println("Disconnected.")
+				return nil
 		}
 		fmt.Fprintf(conn, "%s\n", input)
 	}

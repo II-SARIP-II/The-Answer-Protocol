@@ -146,42 +146,6 @@ func (p *Player) resolveActiveQuest(activeQuestID string) {
 	}
 }
 
-func (p *Player) processTargetsRespawn(questTargets []string) {
-
-	for _, target := range questTargets {
-		foundIndex := -1
-		for index, playerItem := range p.Inventory {
-			if strings.EqualFold(target, playerItem) {
-				foundIndex = index
-				break
-			}
-		}
-		if foundIndex == -1 {
-			continue
-		}
-
-		if p.Inventory[foundIndex] == p.EquippedWeapon {
-			p.EquippedWeapon = ""
-		}
-
-		p.Inventory = append(p.Inventory[:foundIndex], p.Inventory[foundIndex+1:]...)
-
-		initialRoomID := p.Server.spawnsQuestsItems[target]
-		roomData, exists := p.Server.world.Rooms[initialRoomID]
-		if !exists {
-			p.Server.mu.Unlock()
-			p.SendErr(protocol.CodeNPCNotFound, protocol.MsgNPCNotFound)
-			return
-		}
-		roomData.Items = append(roomData.Items, target)
-		p.Server.world.Rooms[initialRoomID] = roomData
-
-		slog.Info("Item respawn after quest completion", "item", target, "player", p.Username)
-		p.broadcastRoom(initialRoomID, "ROOM CHAT", fmt.Sprintf("A %s has reappeared !", target))
-
-	}
-}
-
 func (p *Player) processNextQuest(questGiverID string) {
 	var nextQuestID string
 
