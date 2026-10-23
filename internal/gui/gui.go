@@ -25,6 +25,7 @@ type Game struct {
 	name         string
 	hp           int
 	location     [2]int
+	direction	int
 	conn         net.Conn
 	messagesChan chan string
 	curr_cmd     string

@@ -74,6 +74,16 @@ func (g *Game) serverResponse() error {
 						parts := strings.Split(msg, "room=")
 						if len(parts) > 1 {
 							room := strings.TrimSpace(parts[1])
+							switch g.direction{
+							case 0:
+								g.location[1] -= 1
+							case 1:
+								g.location[0] += 1
+							case 2:
+								g.location[1] += 1
+							case 3:
+								g.location[0] -= 1
+							}
 							if chatAction != nil {
 								chatAction.AddLine(g.curr_cmd + " > You moved into " + room)
 							}
