@@ -18,35 +18,50 @@ func Run(addr string) error {
 	if err != nil {
 		return fmt.Errorf("Cannot connect to the TAP server on %s: %w", addr, err)
 	}
-	// on prévoit la fermeture de la socket juste avant le retour
+
 	defer conn.Close()
 	fmt.Println("Successfully connected to the TAP server.")
 
-	// on crée un scanner pour lire les messages que le serveur écrit dans la socket
 	serverScanner := bufio.NewScanner(conn)
+
 	if serverScanner.Scan() {
 		fmt.Println("Server:", serverScanner.Text())
 	}
-	fmt.Println("Enter your user name: ")
 
-	// on crée un scanner qui va lire les entrées clavier
 	stdinScanner := bufio.NewScanner(os.Stdin)
-	// si la lecture échoue, message d'erreur
-	if !stdinScanner.Scan() {
-		return fmt.Errorf("Failed to read username from stdin.")
-	}
-	// sinon on enregistre le nom d'utilisateur dans une variable et on supprime les espaces éventuels
-	username := strings.TrimSpace(stdinScanner.Text())
 
-	// on envoie au serveur la commande CONNECT avec le nom de l'utilisateur
-	fmt.Fprint(conn, protocol.FormatCmd(protocol.CmdConnect, username))
+	for {
+		fmt.Print("Enter your user name: ")
+		if !stdinScanner.Scan() {
+			return fmt.Errorf("failed to read username from stdin")
+		}
 
-	// on attend et affiche la réponse du serveur (OK connected ou ERR...)
-	if serverScanner.Scan() {
+		username := strings.TrimSpace(stdinScanner.Text())
+
+
+		if username == "" {
+			fmt.Println("Error: Username cannot be empty. Please try again.")
+		}
+		if strings.Contains(username, " ") {
+			fmt.Println("Error: Username cannot contain spaces. Please try again.")
+		}
+
+		fmt.Fprint(conn, protocol.FormatCmd(protocol.CmdConnect, username))
+
+		if !serverScanner.Scan() {
+			return fmt.Errorf("connection lost with server")
+		}
+
 		response := serverScanner.Text()
-		fmt.Println("Server:", response)
-		if strings.HasPrefix(response, protocol.PrefixERR) {
-			return nil
+		if response == "OK connected" {
+			fmt.Println("Server:", response)
+			break
+		}
+
+		if response == "ERR 201 NAME_IN_USE" {
+			fmt.Println("Error: This username is already taken by another player. Please choose another one.")
+		} else {
+			fmt.Printf("Error (%s). Please try again.\n", response)
 		}
 	}
 
