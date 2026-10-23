@@ -60,7 +60,7 @@ func (p *Player) handleLook(args string) {
 		Room: LookInfoRoom{
 			Id:          p.CurrentRoom,
 			Name:        room.Name,
-			Description: "", //TODO ajouter un champ description dans les structures Room
+			Description: room.Description,
 			Exits:       exitsMap,
 		},
 		Players: playersInRoom,
@@ -96,7 +96,7 @@ func (p *Player) handleMove(args string) {
 	p.Server.mu.Lock()
 
 	p.DefendCount = 0
-	if p.Status == protocol.StatusDefeated {
+	if p.Status == protocol.StatusDefeated || p.Status == protocol.StatusVictory {
 		p.Status = protocol.StatusHealthy
 	}
 	oldRoom := p.CurrentRoom
@@ -114,9 +114,12 @@ func (p *Player) handleMove(args string) {
 			otherPlayer.SendEvt(protocol.EvtRoomEnter, p.Username)
 		}
 	}
-	p.Server.mu.Unlock()
 
 	p.SendOK(fmt.Sprintf("room=%s", newRoom))
+
+	p.checkHostileAmbush(newRoom)
+
+	p.Server.mu.Unlock()
 }
 
 func (p *Player) handleQuit(args string) {
@@ -127,4 +130,25 @@ func (p *Player) handleQuit(args string) {
 
 	p.SendOK(protocol.MsgBye)
 	p.State = protocol.StateTerminated
+}
+
+func (p *Player) handleStatus(args string) {
+	if args != "" {
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
+		return
+	}
+
+	response := StatusResponse{
+		HP:     p.HP,
+		MaxHP:  p.MaxHP,
+		Status: p.Status,
+	}
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgBadRequest)
+		return
+	}
+
+	p.SendOK(string(data))
 }

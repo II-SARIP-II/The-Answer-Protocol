@@ -3,8 +3,10 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"strings"
 	"tap/internal/protocol"
+	"tap/internal/world"
 )
 
 func (p *Player) handleTake(args string) {
@@ -41,9 +43,56 @@ func (p *Player) handleTake(args string) {
 	p.Inventory = append(p.Inventory, takenItem)
 	room.Items = append(room.Items[:foundIndex], room.Items[foundIndex+1:]...)
 	p.Server.world.Rooms[p.CurrentRoom] = room
+
+	p.processFetchQuest()
+
+	var provokedPassiveEnemy *world.NPC
+	var damage int
+	for _, npcID := range room.NPCs {
+		npc := p.Server.world.NPCs[npcID]
+		if npc.Life > 0 && npc.Role == "passive enemy" {
+			npc.Role = "enemy"
+			p.Server.world.NPCs[npcID] = npc
+
+			damage = protocol.FistFightDamage
+			if npc.Item != nil {
+				damage = p.getAttackDamage(*npc.Item)
+			}
+
+			p.HP -= damage
+			if p.HP < 0 {
+				p.HP = 0
+			}
+			p.Status = protocol.StatusCombat
+			p.DefendCount = 0
+
+			slog.Info("Passive enemy provoked by TAKE",
+				"npc", npc.Name,
+				"player", p.Username,
+				"item", takenItem,
+				"damage", damage,
+				"player_hp", p.HP,
+			)
+
+			provokedPassiveEnemy = &npc
+			break
+		}
+	}
+
 	p.Server.mu.Unlock()
 
 	p.SendOK(fmt.Sprintf("taken=%s", takenItem))
+
+	if provokedPassiveEnemy != nil {
+		p.SendEvt("ROOM CHAT", fmt.Sprintf("%s is enraged: \"No one has the right to touch my knives!\" He attacks you for %d damage!", provokedPassiveEnemy.Name, damage))
+		p.broadcastRoom(p.CurrentRoom, "ROOM CHAT", fmt.Sprintf("%s is enraged that %s took %s! He attacks for %d damage!", provokedPassiveEnemy.Name, p.Username, takenItem, damage))
+
+		if p.HP == 0 {
+			p.Server.mu.Lock()
+			p.handlePlayerDeath(provokedPassiveEnemy.Name)
+			p.Server.mu.Unlock()
+		}
+	}
 }
 
 func (p *Player) handleDrop(args string) {
@@ -175,45 +224,7 @@ func (p *Player) handleTalk(args string) {
 }
 
 type StatusResponse struct {
-	HP int   `json:"hp"`
-	MaxHP int `json:"max_hp"`
+	HP     int    `json:"hp"`
+	MaxHP  int    `json:"max_hp"`
 	Status string `json:"status"`
-}
-
-func (p *Player) handleStatus(args string) {
-	if args != "" {
-		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
-		return
-	}
-
-	response := StatusResponse{
-		HP: p.HP,
-		MaxHP: p.MaxHP,
-		Status: p.Status,
-	}
-
-	data, err := json.Marshal(response)
-	if err != nil {
-		p.SendErr(protocol.CodeBadRequest, protocol.MsgBadRequest)
-	}
-
-	p.SendOK(string(data))
-}
-
-func (p *Player) handleQuest(args string) {
-	// TODO
-	if args == "" {
-		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
-		return
-	}
-	p.SendOK("Received QUEST. (TODO)")
-}
-
-func (p *Player) handleQuests(args string) {
-	// TODO
-	if args != "" {
-		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
-		return
-	}
-	p.SendOK("Received QUESTS. (TODO)")
 }

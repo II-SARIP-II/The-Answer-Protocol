@@ -21,7 +21,14 @@ type Player struct {
 	Status           string
 	GroupID          string
 	GroupInvitations []string
-	Quests           map[string]string // quest_id -> status ("active", "completed")
+	Quests           map[string]Quest
+}
+
+type Quest struct {
+	ID             string
+	Status         string
+	Steps          int
+	CompletedSteps int
 }
 
 func NewPlayer(username string, conn net.Conn) *Player {
@@ -38,7 +45,7 @@ func NewPlayer(username string, conn net.Conn) *Player {
 		GroupID:          "",
 		GroupInvitations: make([]string, 0),
 		Status:           "healthy",
-		Quests:           make(map[string]string),
+		Quests:           make(map[string]Quest),
 	}
 }
 

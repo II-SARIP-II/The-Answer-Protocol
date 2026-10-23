@@ -1,51 +1,36 @@
 package server
 
 import (
+	"fmt"
+	"log/slog"
 	"strings"
+	"tap/internal/protocol"
+	"time"
 )
 
-// vérifie si une entité (item ou PNJ) présente dans le monde
-// correspond à la saisie du joueur, qu'il ait tapé l'ID ou le nom affiché.
-func (p *Player) matchNameOrID(worldEntity, userInput string) bool {
-	if strings.EqualFold(worldEntity, userInput) {
-		return true
-	}
-	id1 := p.resolveID(worldEntity)
-	id2 := p.resolveID(userInput)
-	return strings.EqualFold(id1, id2)
-}
+func (s *Server) scheduleNPCRespawn(enemyID string, roomID string) {
 
-// associe un nom ou un ID à son identifiant canonique (items ou PNJ).
-// TODO ajouter pour quest/quests?
-func (p *Player) resolveID(input string) string {
-	for id, itemData := range p.Server.world.Items {
-		if strings.EqualFold(input, id) || strings.EqualFold(input, itemData.Name) {
-			return id
-		}
-	}
-	for id, npcData := range p.Server.world.NPCs {
-		if strings.EqualFold(input, id) || strings.EqualFold(input, npcData.Name) {
-			return id
-		}
-	}
-	return input
-}
+	time.AfterFunc(protocol.NPCRespawnDelay*time.Second, func() {
+		s.mu.Lock()
+		defer s.mu.Unlock()
 
-func (p *Player) broadcastRoom(roomID, eventType, message string) {
-	for _, other := range p.Server.players {
-		if other.Username != p.Username && strings.EqualFold(other.CurrentRoom, roomID) {
-			other.SendEvt(eventType, message)
+		npc := s.world.NPCs[enemyID]
+		npc.Life = npc.MaxLife
+		if enemyID == "chef" {
+			npc.Role = "passive enemy"
 		}
-	}
-}
+		s.world.NPCs[enemyID] = npc
 
-func (p *Player) broadcastGroup(eventType, message string) {
-	if p.GroupID == "" {
-		return
-	}
-	for _, other := range p.Server.players {
-		if other.Username != p.Username && other.GroupID == p.GroupID {
-			other.SendEvt(eventType, message)
+		room := s.world.Rooms[roomID]
+		room.NPCs = append(room.NPCs, enemyID)
+		s.world.Rooms[roomID] = room
+
+		slog.Info("NPC respawned", "npc", enemyID, "room", roomID)
+
+		for _, player := range s.players {
+			if strings.EqualFold(player.CurrentRoom, roomID) {
+				player.SendEvt("ROOM CHAT", fmt.Sprintf("Server %s has reappeared!", npc.Name))
+			}
 		}
-	}
+	})
 }
