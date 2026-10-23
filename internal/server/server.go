@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"os"
+	"os/signal"
 	"strings"
 	"sync"
+	"syscall"
 	"tap/internal/protocol"
 	"tap/internal/world"
 	"time"
@@ -15,7 +18,8 @@ import (
 
 type Server struct {
 	mu                sync.Mutex
-	players           (map[string]*Player)
+	listener          net.Listener
+	players           map[string]*Player
 	port              string
 	world             *world.GameData
 	spawnsQuestsItems map[string]string
@@ -50,15 +54,22 @@ func (s *Server) Start(port string) error {
 		return err
 	}
 	defer ln.Close()
-
+	s.listener = ln
 	slog.Info("TAP server started", "port", port)
+
+	stopChan := make(chan os.Signal, 1)
+	signal.Notify(stopChan, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-stopChan
+		s.Stop()
+	}()
 
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
 			// si le listener a été fermé proprement
 			if errors.Is(err, net.ErrClosed) {
-				slog.Info("Listener closed, server shutting down cleanly")
+				slog.Info("Server stopped cleanly")
 				return nil
 			}
 
@@ -75,6 +86,19 @@ func (s *Server) Start(port string) error {
 		}
 
 		go s.handleClientSession(conn)
+	}
+}
+
+func (s *Server) Stop() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	for _, player := range s.players {
+		player.Conn.Close()
+	}
+
+	if s.listener != nil {
+		s.listener.Close()
 	}
 }
 
@@ -126,7 +150,7 @@ func (s *Server) handleClientSession(conn net.Conn) {
 		}
 
 		delete(s.players, player.Username)
-		
+
 		for _, otherPlayer := range s.players {
 			otherPlayer.SendEvt(protocol.EvtGameLeave, player.Username)
 		}
@@ -146,16 +170,16 @@ func (s *Server) handleClientSession(conn net.Conn) {
 			break
 		}
 	}
-	if error := clientScanner.Err(); error != nil {
-		slog.Warn("Client connection error", "username", player.Username, "error", error)
-		}
+	if err := clientScanner.Err(); err != nil && !errors.Is(err, net.ErrClosed) {
+		slog.Warn("Client connection error", "username", player.Username, "error", err)
+	}
 }
 
 func (s *Server) authenticate(conn net.Conn, command string) (*Player, error) {
-	parts := strings.SplitN(command, " ", 2)
+	parts := strings.SplitN(strings.TrimSpace(command), " ", 2)
 	if len(parts) == 0 || strings.ToUpper(parts[0]) != protocol.CmdConnect {
 		fmt.Fprint(conn, protocol.FormatErr(protocol.CodeBadRequest, protocol.MsgUnknownCommand))
-		slog.Warn("Authentication failed", "addr", conn.RemoteAddr().String(), "code", protocol.CodeBadRequest, "msg", protocol.MsgUnknownCommand)
+		slog.Warn("Authentication failed", "addr", conn.RemoteAddr().String(), "code", protocol.CodeBadRequest, "protocol_msg", protocol.MsgUnknownCommand)
 		return nil, errors.New("Authentication failed: invalid command")
 	}
 
@@ -169,7 +193,7 @@ func (s *Server) authenticate(conn net.Conn, command string) (*Player, error) {
 
 	if strings.Contains(username, " ") {
 		fmt.Fprint(conn, protocol.FormatErr(protocol.CodeBadRequest, protocol.MsgArgsError))
-		slog.Warn("Authentication failed: space in username", "addr", conn.RemoteAddr().String(), "code", protocol.CodeBadRequest, "msg", protocol.MsgArgsError)
+		slog.Warn("Authentication failed: space in username", "addr", conn.RemoteAddr().String(), "code", protocol.CodeBadRequest, "protocol_msg", protocol.MsgArgsError)
 		return nil, errors.New("space in username.")
 	}
 
@@ -177,7 +201,7 @@ func (s *Server) authenticate(conn net.Conn, command string) (*Player, error) {
 	if _, exists := s.players[username]; exists {
 		s.mu.Unlock()
 		fmt.Fprint(conn, protocol.FormatErr(protocol.CodeNameInUse, protocol.MsgNameInUse))
-		slog.Warn("Authentication failed", "addr", conn.RemoteAddr().String(), "code", protocol.CodeNameInUse, "msg", protocol.MsgNameInUse)
+		slog.Warn("Authentication failed", "addr", conn.RemoteAddr().String(), "code", protocol.CodeNameInUse, "protocol_msg", protocol.MsgNameInUse)
 
 		return nil, errors.New("name in use")
 	}
