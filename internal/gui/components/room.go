@@ -22,16 +22,16 @@ func GetHolesForRoom(Exits map[string]world.Exit, scale float32) []Hole {
 		switch exit {
 		case "north":
 			exitPos.Wall = 0
-			exitPos.Pos = 2*scale
+			exitPos.Pos = 2 * scale
 		case "east":
 			exitPos.Wall = 1
-			exitPos.Pos = 1*scale
+			exitPos.Pos = 1 * scale
 		case "south":
 			exitPos.Wall = 2
-			exitPos.Pos = 2*scale
+			exitPos.Pos = 2 * scale
 		case "west":
 			exitPos.Wall = 3
-			exitPos.Pos = 1*scale
+			exitPos.Pos = 1 * scale
 		}
 		door = append(door, exitPos)
 	}
@@ -39,7 +39,7 @@ func GetHolesForRoom(Exits map[string]world.Exit, scale float32) []Hole {
 }
 
 func unpack2(arr [2]int) (int, int) {
-    return arr[0], arr[1]
+	return arr[0], arr[1]
 }
 
 func (p *Panel) AddRoom(name string, location [2]int, exits map[string]world.Exit, items []string, onItemClick func(string), npcs []string, onNPCClick func(string)) {
