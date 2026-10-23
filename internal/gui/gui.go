@@ -23,6 +23,7 @@ type Game struct {
 	bottomRight  *components.Panel
 	name         string
 	hp           int
+	location     [2]int
 	conn         net.Conn
 	messagesChan chan string
 	curr_cmd     string
@@ -45,6 +46,7 @@ func NewGame(winWidth int, winHeight int) *Game {
 		bottomRight:  br,
 		name:         name,
 		hp:           100,
+		location:     [2]int{1, 1},
 		conn:         conn,
 		messagesChan: messagesChan,
 		curr_cmd:     "",

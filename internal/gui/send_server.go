@@ -15,6 +15,7 @@ func (g *Game) sendServerDirection(conn net.Conn) {
 					if g.status == "AWAITING_MOVE_DIR" {
 						msg := "MOVE North"
 						SendMessage(conn, msg)
+						g.location[1] -= 1
 						g.status = ""
 					}
 				}
@@ -23,6 +24,7 @@ func (g *Game) sendServerDirection(conn net.Conn) {
 					if g.status == "AWAITING_MOVE_DIR" {
 						msg := "MOVE East"
 						SendMessage(conn, msg)
+						g.location[0] += 1
 						g.status = ""
 					}
 				}
@@ -31,6 +33,7 @@ func (g *Game) sendServerDirection(conn net.Conn) {
 					if g.status == "AWAITING_MOVE_DIR" {
 						msg := "MOVE South"
 						SendMessage(conn, msg)
+						g.location[1] += 1
 						g.status = ""
 					}
 				}
@@ -39,6 +42,7 @@ func (g *Game) sendServerDirection(conn net.Conn) {
 					if g.status == "AWAITING_MOVE_DIR" {
 						msg := "MOVE West"
 						SendMessage(conn, msg)
+						g.location[0] -= 1
 						g.status = ""
 					}
 				}

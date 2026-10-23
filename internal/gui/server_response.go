@@ -9,17 +9,14 @@ func (g *Game) serverResponse() error {
 	for {
 		select {
 		case msg := <-g.messagesChan:
-			// 1. On tente d'abord de parser le message comme un événement de chat (EVT GLOBAL CHAT ...)
 			chatStruct, errChat := ParseEventChat(msg)
-			if errChat == nil {
-				// C'est un message de discussion (Broadcast réseau) -> Direction le chat principal (bottomCenter)
+			if errChat == nil && chatStruct.Type == "EVT" {
 				if chat := g.bottomCenter.GetChat(); chat != nil {
 					chat.AddLine("[" + chatStruct.Scope + "] " + chatStruct.Sender + " > " + chatStruct.Message)
 				}
 				continue
 			}
 
-			// 2. Si ce n'est pas un événement de chat, c'est une réponse de commande -> Direction le panneau d'action (bottomRight)
 			if chatAction := g.bottomRight.GetChat(); chatAction != nil {
 				jsonStart := strings.Index(msg, "{")
 				response := msg
@@ -35,6 +32,7 @@ func (g *Game) serverResponse() error {
 						room := lookResp.ToWorldRoom()
 						g.centerMid.AddRoom(
 							room.Name,
+							g.location,
 							room.Exits,
 							room.Items,
 							func(itemName string) {

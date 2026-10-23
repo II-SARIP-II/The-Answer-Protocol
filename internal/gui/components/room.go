@@ -15,19 +15,6 @@ type Door struct {
 	Pos int
 }
 
-var mapPos = map[string][2]int{
-	"Hotel Entrance":  {1, 1},
-	"Broom Closet":    {1, 2},
-	"Hotel Reception": {2, 1},
-	"Hotel Kitchen":   {3, 1},
-	"Corridor 1":      {2, 2},
-	"Dining Room":     {3, 2},
-	"Corridor 2":      {2, 3},
-	"VIP Room":        {3, 3},
-	"Secret Corridor": {3, 4},
-	"Secret Room":     {4, 4},
-}
-
 func GetHolesForRoom(Exits map[string]world.Exit, scale float32) []Hole {
 	var door []Hole
 	for exit := range Exits {
@@ -35,37 +22,34 @@ func GetHolesForRoom(Exits map[string]world.Exit, scale float32) []Hole {
 		switch exit {
 		case "north":
 			exitPos.Wall = 0
-			exitPos.Pos = 2
+			exitPos.Pos = 2 * scale
 		case "east":
 			exitPos.Wall = 1
-			exitPos.Pos = 1
+			exitPos.Pos = 1 * scale
 		case "south":
 			exitPos.Wall = 2
-			exitPos.Pos = 2
+			exitPos.Pos = 2 * scale
 		case "west":
 			exitPos.Wall = 3
-			exitPos.Pos = 1
+			exitPos.Pos = 1 * scale
 		}
 		door = append(door, exitPos)
 	}
 	return door
 }
 
-func GetRoomPos(name string) (int, int) {
-	if pos, ok := mapPos[name]; ok {
-		return pos[0], pos[1]
-	}
-	return 1, 1
+func unpack2(arr [2]int) (int, int) {
+	return arr[0], arr[1]
 }
 
-func (p *Panel) AddRoom(name string, exits map[string]world.Exit, items []string, onItemClick func(string), npcs []string, onNPCClick func(string)) {
+func (p *Panel) AddRoom(name string, location [2]int, exits map[string]world.Exit, items []string, onItemClick func(string), npcs []string, onNPCClick func(string)) {
 	if p == nil {
 		return
 	}
 
 	const scale float32 = 30.0
 	const padding float32 = 15.0
-	gridX, gridY := GetRoomPos(name)
+	gridX, gridY := unpack2(location)
 
 	rx := p.X + float32(gridX)*scale*float32(roomW)
 	ry := p.Y + float32(gridY)*scale*float32(roomH)
