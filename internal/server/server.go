@@ -14,10 +14,11 @@ import (
 )
 
 type Server struct {
-	mu      sync.Mutex
-	players (map[string]*Player)
-	port    string
-	world   *world.GameData
+	mu                sync.Mutex
+	players           (map[string]*Player)
+	port              string
+	world             *world.GameData
+	spawnsQuestsItems map[string]string
 }
 
 func NewServer(worldPath string) (*Server, error) {
@@ -26,9 +27,17 @@ func NewServer(worldPath string) (*Server, error) {
 		return nil, err
 	}
 
+	spawnsQuestsItems := make(map[string]string)
+	for roomID, room := range w.Rooms {
+		for _, itemID := range room.Items {
+			spawnsQuestsItems[itemID] = roomID
+		}
+	}
+
 	return &Server{
-		players: make(map[string]*Player),
-		world:   w,
+		players:           make(map[string]*Player),
+		world:             w,
+		spawnsQuestsItems: spawnsQuestsItems,
 	}, nil
 }
 

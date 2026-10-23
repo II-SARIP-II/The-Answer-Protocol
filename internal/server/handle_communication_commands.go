@@ -30,11 +30,11 @@ func (p *Player) handleChat(args string) {
 	switch scope {
 	case protocol.ChatGlobal:
 		p.Server.mu.Lock()
+		p.SendOK("")
 		for _, dest := range p.Server.players {
 			dest.SendEvt("GLOBAL CHAT", eventData)
 		}
 		p.Server.mu.Unlock()
-		p.SendOK("")
 
 	case protocol.ChatGroup:
 		p.Server.mu.Lock()
@@ -44,23 +44,24 @@ func (p *Player) handleChat(args string) {
 			return
 		}
 
+		p.SendOK("")
+
 		for _, dest := range p.Server.players {
 			if dest.GroupID == p.GroupID {
 				dest.SendEvt("GROUP CHAT", eventData)
 			}
 		}
 		p.Server.mu.Unlock()
-		p.SendOK("")
 
 	case protocol.ChatRoom:
 		p.Server.mu.Lock()
+		p.SendOK("")
 		for _, dest := range p.Server.players {
 			if dest.CurrentRoom == p.CurrentRoom {
 				dest.SendEvt("ROOM CHAT", eventData)
 			}
 		}
 		p.Server.mu.Unlock()
-		p.SendOK("")
 
 	default:
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
