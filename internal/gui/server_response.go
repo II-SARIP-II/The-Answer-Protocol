@@ -299,7 +299,7 @@ func (g *Game) serverResponse() error {
 				case "QUEST":
 					quest, err := ParseQuest(response)
 					if err == nil {
-						statusMsg := fmt.Sprintf("%s, reward: %s", quest.Description, quest.Reward)
+						statusMsg := fmt.Sprintf("%s | reward: %s", quest.Description, quest.Reward)
 						if chatAction != nil {
 							chatAction.AddLine(g.curr_cmd + " > " + statusMsg)
 						}

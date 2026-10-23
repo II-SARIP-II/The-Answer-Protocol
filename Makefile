@@ -31,7 +31,7 @@ run_cli:
 	@go run $(CLI_SRC)
 
 run_gui:
-	@go run $(GUI_SRC) Pâris
+	@go run $(GUI_SRC)
 
 lint:
 	@echo "Checking with go vet..."
