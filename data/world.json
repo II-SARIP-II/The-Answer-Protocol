@@ -3,12 +3,8 @@
     "room0": {
       "name": "Hotel Entrance",
       "description": "The hotel entrance with a revolving glass door. Red carpets lead east to reception, and a door leads south to a broom closet.",
-      "x": 1,
-      "y": 1,
-      "w": 4,
-      "h": 3,
       "exits": {
-        "east": { "target": "room2", "door_pos": 2, "wall": 1 },
+        "east": { "target": "room2", "wall": 1 },
         "south": { "target": "room1", "door_pos": 2, "wall": 2 }
       },
       "items": [],
@@ -17,12 +13,8 @@
     "room1": {
       "name": "Broom Closet",
       "description": "A small broom closet smelling of bleach.",
-      "x": 1,
-      "y": 4,
-      "w": 4,
-      "h": 3,
       "exits": {
-        "north": { "target": "room0", "door_pos": 2, "wall": 0 }
+        "north": { "target": "room0", "wall": 0 }
       },
       "items": ["colt_1911"],
       "npcs": []
@@ -30,14 +22,10 @@
     "room2": {
       "name": "Hotel Reception",
       "description": "The hotel reception with a mahogany counter. Corridors lead east to the kitchen and south to the guest rooms.",
-      "x": 5,
-      "y": 1,
-      "w": 4,
-      "h": 7,
       "exits": {
-        "east": { "target": "room3", "door_pos": 2, "wall": 1 },
-        "south": { "target": "room5", "door_pos": 2, "wall": 2 },
-        "west": { "target": "room0", "door_pos": 2, "wall": 3 }
+        "east": { "target": "room3", "wall": 1 },
+        "south": { "target": "room5", "wall": 2 },
+        "west": { "target": "room0", "wall": 3 }
       },
       "items": [],
       "npcs": ["receptionist"]
@@ -45,13 +33,9 @@
     "room3": {
       "name": "Hotel Kitchen",
       "description": "The hotel kitchen with hot stoves and steel tables. Smells of food fill the room.",
-      "x": 9,
-      "y": 1,
-      "w": 4,
-      "h": 3,
       "exits": {
-        "south": { "target": "room4", "door_pos": 3, "wall": 2 },
-        "west": { "target": "room2", "door_pos": 2, "wall": 3 }
+        "south": { "target": "room4", "wall": 2 },
+        "west": { "target": "room2", "wall": 3 }
       },
       "items": ["knife"],
       "npcs": ["chef"]
@@ -59,13 +43,9 @@
     "room4": {
       "name": "Dining Room",
       "description": "A quiet dining room with round tables and soft jazz playing in the background.",
-      "x": 9,
-      "y": 4,
-      "w": 4,
-      "h": 7,
       "exits": {
-        "north": { "target": "room3", "door_pos": 3, "wall": 0 },
-        "west": { "target": "room5", "door_pos": 5, "wall": 3 }
+        "north": { "target": "room3", "wall": 0 },
+        "west": { "target": "room5", "wall": 3 }
       },
       "items": [],
       "npcs": []
@@ -73,14 +53,10 @@
     "room5": {
       "name": "Corridor 1",
       "description": "A carpeted hallway in the south wing. Security cameras are mounted on the ceiling.",
-      "x": 1,
-      "y": 8,
-      "w": 8,
-      "h": 2,
       "exits": {
-        "north": { "target": "room2", "door_pos": 6, "wall": 0 },
-        "east": { "target": "room4", "door_pos": 1, "wall": 1 },
-        "south": { "target": "room6", "door_pos": 1, "wall": 2 }
+        "north": { "target": "room2", "wall": 0 },
+        "east": { "target": "room4", "wall": 1 },
+        "south": { "target": "room6", "wall": 2 }
       },
       "items": [],
       "npcs": ["bodyguard_1"]
@@ -88,13 +64,9 @@
     "room6": {
       "name": "Corridor 2",
       "description": "A shadowy corridor leading toward the private suites.",
-      "x": 1,
-      "y": 10,
-      "w": 3,
-      "h": 7,
       "exits": {
-        "north": { "target": "room5", "door_pos": 1, "wall": 0 },
-        "east": { "target": "room7", "door_pos": 5, "wall": 1 }
+        "north": { "target": "room5", "wall": 0 },
+        "east": { "target": "room7", "wall": 1 }
       },
       "items": [],
       "npcs": []
@@ -102,13 +74,9 @@
     "room7": {
       "name": "VIP Room",
       "description": "A private VIP lounge with leather armchairs and cigar smoke in the air.",
-      "x": 4,
-      "y": 14,
-      "w": 4,
-      "h": 3,
       "exits": {
-        "north": { "target": "room8", "door_pos": 3, "wall": 0 },
-        "west": { "target": "room6", "door_pos": 1, "wall": 3 }
+        "north": { "target": "room8", "wall": 0 },
+        "west": { "target": "room6", "wall": 3 }
       },
       "items": [],
       "npcs": ["bodyguard_2"]
@@ -116,13 +84,9 @@
     "room8": {
       "name": "Secret Corridor",
       "description": "A secret corridor hidden behind wood paneling, protected by electronic locks.",
-      "x": 6,
-      "y": 13,
-      "w": 4,
-      "h": 1,
       "exits": {
-        "east": { "target": "room9", "door_pos": 0, "wall": 1 },
-        "south": { "target": "room7", "door_pos": 1, "wall": 2 }
+        "east": { "target": "room9", "wall": 1 },
+        "south": { "target": "room7", "wall": 2 }
       },
       "items": [],
       "npcs": []
@@ -130,12 +94,8 @@
     "room9": {
       "name": "Secret Room",
       "description": "The secret office of the syndicate boss, filled with security monitors and contraband crates.",
-      "x": 10,
-      "y": 12,
-      "w": 3,
-      "h": 4,
       "exits": {
-        "west": { "target": "room8", "door_pos": 1, "wall": 3 }
+        "west": { "target": "room8", "wall": 3 }
       },
       "items": [],
       "npcs": ["target"]

@@ -87,12 +87,16 @@ func (s *Server) handleClientSession(conn net.Conn) {
 	fmt.Fprint(conn, protocol.MsgHello)
 
 	clientScanner := bufio.NewScanner(conn)
-	if !clientScanner.Scan() {
-		return
-	}
 
-	player, err := s.authenticate(conn, clientScanner.Text())
-	if err != nil {
+	var player *Player
+	for clientScanner.Scan() {
+		p, err := s.authenticate(conn, clientScanner.Text())
+		if err == nil {
+			player = p
+			break
+		}
+	}
+	if player == nil {
 		return
 	}
 
@@ -139,18 +143,19 @@ func (s *Server) handleClientSession(conn net.Conn) {
 
 func (s *Server) authenticate(conn net.Conn, command string) (*Player, error) {
 	parts := strings.SplitN(command, " ", 2)
-	if len(parts) != 2 || strings.ToUpper(parts[0]) != protocol.CmdConnect {
+	if len(parts) == 0 || strings.ToUpper(parts[0]) != protocol.CmdConnect {
 		fmt.Fprint(conn, protocol.FormatErr(protocol.CodeBadRequest, protocol.MsgUnknownCommand))
 		slog.Warn("Authentication failed", "addr", conn.RemoteAddr().String(), "code", protocol.CodeBadRequest, "msg", protocol.MsgUnknownCommand)
 		return nil, errors.New("Authentication failed: invalid command")
 	}
 
-	username := strings.TrimSpace(parts[1])
-	if username == "" {
+	if len(parts) == 1 || strings.TrimSpace(parts[1]) == "" {
 		fmt.Fprint(conn, protocol.FormatErr(protocol.CodeBadRequest, protocol.MsgArgsError))
-		slog.Warn("Authentication failed: empty username", "addr", conn.RemoteAddr().String(), "code", protocol.CodeBadRequest, "msg", protocol.MsgArgsError)
-		return nil, errors.New("username is empty.")
+		slog.Warn("Authentication failed: empty username", "addr", conn.RemoteAddr().String(), "code", protocol.CodeBadRequest)
+		return nil, errors.New("username is empty")
 	}
+
+	username := strings.TrimSpace(parts[1])
 
 	if strings.Contains(username, " ") {
 		fmt.Fprint(conn, protocol.FormatErr(protocol.CodeBadRequest, protocol.MsgArgsError))
