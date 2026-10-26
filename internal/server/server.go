@@ -16,6 +16,7 @@ import (
 	"time"
 )
 
+// Server manages game state, connected players, and TCP listening.
 type Server struct {
 	mu                sync.Mutex
 	listener          net.Listener
@@ -25,6 +26,7 @@ type Server struct {
 	spawnsQuestsItems map[string]string
 }
 
+// NewServer initializes and returns a new Server instance with world data.
 func NewServer(worldPath string) (*Server, error) {
 	w, err := world.ReadJson(worldPath)
 	if err != nil {
@@ -45,8 +47,8 @@ func NewServer(worldPath string) (*Server, error) {
 	}, nil
 }
 
+// Start starts listening for client connections on the given port.
 func (s *Server) Start(port string) error {
-	// la fonction Listen ouvre un socket sur le port indiqué et renvoie un listener ln ainsi qu'éventuellement une erreur
 	s.port = port
 	ln, err := net.Listen("tcp", port)
 	if err != nil {
@@ -57,8 +59,10 @@ func (s *Server) Start(port string) error {
 	s.listener = ln
 	slog.Info("TAP server started", "port", port)
 
+	// Intercept shutdown signals for graceful shutdown.
 	stopChan := make(chan os.Signal, 1)
 	signal.Notify(stopChan, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(stopChan)
 	go func() {
 		<-stopChan
 		s.Stop()
@@ -67,13 +71,11 @@ func (s *Server) Start(port string) error {
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-			// si le listener a été fermé proprement
 			if errors.Is(err, net.ErrClosed) {
 				slog.Info("Server stopped cleanly")
 				return nil
 			}
 
-			// gestion d'erreur réseau temporaire
 			var netErr net.Error
 			if errors.As(err, &netErr) && netErr.Timeout() {
 				slog.Warn("Temporary network error on Accept(), pausing 10ms...", "err", err)
@@ -112,50 +114,13 @@ func (s *Server) handleClientSession(conn net.Conn) {
 
 	clientScanner := bufio.NewScanner(conn)
 
-	var player *Player
-	for clientScanner.Scan() {
-		p, err := s.authenticate(conn, clientScanner.Text())
-		if err == nil {
-			player = p
-			break
-		}
-	}
-	if player == nil {
+	player, err := s.newPlayer(conn, clientScanner)
+	if err != nil {
 		return
 	}
 
-	player.State = protocol.StateAuthenticated
-	fmt.Fprint(conn, protocol.MsgConnected)
-	slog.Info("Client authenticated", "username", player.Username, "addr", conn.RemoteAddr().String(), "state", player.State)
-
-	s.mu.Lock()
-	for _, otherPlayer := range s.players {
-		if otherPlayer.Username != player.Username {
-			otherPlayer.SendEvt(protocol.EvtGameEnter, player.Username)
-		}
-	}
-	s.mu.Unlock()
-
 	defer func() {
-		s.mu.Lock()
-		player.State = protocol.StateTerminated
-		player.leaveGroupGetModif()
-
-		if len(player.Inventory) > 0 {
-			room := s.world.Rooms[player.CurrentRoom]
-			room.Items = append(room.Items, player.Inventory...)
-			s.world.Rooms[player.CurrentRoom] = room
-			player.Inventory = nil
-			slog.Info("Player items dropped on disconnect", "player", player.Username, "room", player.CurrentRoom)
-		}
-
-		delete(s.players, player.Username)
-
-		for _, otherPlayer := range s.players {
-			otherPlayer.SendEvt(protocol.EvtGameLeave, player.Username)
-		}
-		slog.Info("Client disconnected", "username", player.Username, "addr", conn.RemoteAddr().String(), "state", player.State)
-		s.mu.Unlock()
+		s.handleDisconnect(player)
 	}()
 
 	for clientScanner.Scan() {
@@ -173,6 +138,39 @@ func (s *Server) handleClientSession(conn net.Conn) {
 	if err := clientScanner.Err(); err != nil && !errors.Is(err, net.ErrClosed) {
 		slog.Warn("Client connection error", "username", player.Username, "error", err)
 	}
+}
+
+func (s *Server) newPlayer(conn net.Conn, clientScanner *bufio.Scanner) (*Player, error) {
+	var player *Player
+	for clientScanner.Scan() {
+		p, err := s.authenticate(conn, clientScanner.Text())
+		if err == nil {
+			player = p
+			break
+		}
+	}
+	if player == nil {
+		return nil, errors.New("client disconnected before authenticating")
+	}
+
+	player.State = protocol.StateAuthenticated
+	fmt.Fprint(conn, protocol.MsgConnected)
+	slog.Info("Client authenticated", "username", player.Username, "addr", conn.RemoteAddr().String(), "state", player.State)
+
+	s.mu.Lock()
+	for _, otherPlayer := range s.players {
+		if otherPlayer.Username != player.Username && otherPlayer.CurrentRoom == player.CurrentRoom {
+			otherPlayer.SendEvt(protocol.EvtRoomEnter, player.Username)
+		}
+	}
+
+	data := fmt.Sprintf("players=%d", len(s.players))
+	for _, otherPlayer := range s.players {
+		otherPlayer.SendEvt(protocol.EvtPlayers, data)
+	}
+
+	s.mu.Unlock()
+	return player, nil
 }
 
 func (s *Server) authenticate(conn net.Conn, command string) (*Player, error) {
@@ -213,4 +211,34 @@ func (s *Server) authenticate(conn net.Conn, command string) (*Player, error) {
 	s.mu.Unlock()
 	return player, nil
 
+}
+
+func (s *Server) handleDisconnect(player *Player) {
+	s.mu.Lock()
+	player.State = protocol.StateTerminated
+	player.leaveGroupGetModif()
+
+	room, exists := s.world.Rooms[player.CurrentRoom]
+	if exists && len(player.Inventory) > 0 {
+		room.Items = append(room.Items, player.Inventory...)
+		s.world.Rooms[player.CurrentRoom] = room
+		player.Inventory = nil
+		slog.Info("Player items dropped on disconnect", "player", player.Username, "room", player.CurrentRoom)
+	}
+
+	delete(s.players, player.Username)
+
+	for _, otherPlayer := range s.players {
+		if otherPlayer.CurrentRoom == player.CurrentRoom {
+			otherPlayer.SendEvt(protocol.EvtRoomLeave, player.Username)
+		}
+	}
+
+	data := fmt.Sprintf("players=%d", len(s.players))
+	for _, otherPlayer := range s.players {
+		otherPlayer.SendEvt(protocol.EvtPlayers, data)
+	}
+
+	slog.Info("Client disconnected", "username", player.Username, "addr", player.Conn.RemoteAddr().String(), "state", player.State)
+	s.mu.Unlock()
 }

@@ -47,13 +47,12 @@ const (
 )
 
 const (
-	EvtGameEnter   = "CONNECTED TO GAME"   // ajout
-	EvtGameLeave   = "LEAVE GAME"          // ajout
-	EvtRoomEnter   = "ROOM PRESENCE ENTER" // ajout
-	EvtRoomLeave   = "ROOM PRESENCE LEAVE" // ajout
+	EvtRoomEnter   = "ROOM PRESENCE ENTER"
+	EvtRoomLeave   = "ROOM PRESENCE LEAVE"
 	EvtGroupInvite = "GROUP INVITE"
-	EvtGroupJoin   = "GROUP JOIN"  // ajout
-	EvtGroupLeave  = "GROUP LEAVE" // ajout
+	EvtGroupJoin   = "GROUP JOIN"
+	EvtGroupLeave  = "GROUP LEAVE"
+	EvtPlayers     = "STATS"
 )
 
 const (
