@@ -72,6 +72,7 @@ func NewGame(winWidth int, winHeight int, conn net.Conn, name string) *Game {
 			SendMessage(conn, text)
 		}
 		g.sendActionButton(conn, chatAction)
+		g.sendGroupButton(conn, chatAction)
 	}
 
 	g.sendServerDirection(conn)

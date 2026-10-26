@@ -3,6 +3,7 @@ package gui
 import (
 	"fmt"
 	"strings"
+	"tap/internal/gui/components"
 )
 
 func (g *Game) serverResponse() error {
@@ -270,6 +271,21 @@ func (g *Game) serverResponse() error {
 					who, err := ParseWho(response)
 					if err == nil {
 						names := ""
+
+						g.centerLeft.PlayerInvites = components.CreateList(
+							who.Room,
+							g.centerLeft.X,
+							g.centerLeft.Y,
+							g.centerLeft.W,
+						)
+
+						for _, invite := range g.centerLeft.PlayerInvites {
+							playerName := invite.Name
+							invite.Btn.OnClick = func() {
+								SendMessage(g.conn, "GROUP INVITE "+playerName)
+							}
+						}
+
 						for _, name := range who.Room {
 							names += name + " "
 						}

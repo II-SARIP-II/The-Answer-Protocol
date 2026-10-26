@@ -1,6 +1,7 @@
 package components
 
 import (
+	"fmt"
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -53,17 +54,33 @@ func (p *Panel) GetButtons() []*Button {
 	return buttons
 }
 
+func (p *Panel) GetPlayerInvitesButton() []*Button {
+	if p == nil {
+		return nil
+	}
+	var buttons []*Button
+	for _, player := range p.PlayerInvites {
+		if player != nil && player.Btn != nil {
+			fmt.Print(player.Name)
+			buttons = append(buttons, player.Btn)
+		}
+	}
+	return buttons
+}
+
+
 type Panel struct {
-	Name        string
-	DisplayName bool
-	TextColor   color.Color
-	ToDraw      bool
-	X, Y, W, H  float32
-	BorderHoles []Hole
-	Content     []Widget
-	BgColor     color.Color
-	BorderColor color.Color
-	TextSize    float32
+	Name          string
+	DisplayName   bool
+	TextColor     color.Color
+	ToDraw        bool
+	X, Y, W, H    float32
+	BorderHoles   []Hole
+	Content       []Widget
+	BgColor       color.Color
+	BorderColor   color.Color
+	TextSize      float32
+	PlayerInvites []*PlayerInvite
 }
 
 func (p *Panel) Update() {
@@ -73,6 +90,11 @@ func (p *Panel) Update() {
 	for _, widget := range p.Content {
 		if widget != nil {
 			widget.Update()
+		}
+	}
+	for _, invite := range p.PlayerInvites {
+		if invite != nil && invite.Btn != nil {
+			invite.Btn.Update()
 		}
 	}
 }
@@ -85,21 +107,25 @@ func PrintTitle(screen *ebiten.Image, x float32, y float32, w float32, h float32
 }
 
 func (p *Panel) Draw(screen *ebiten.Image) {
-	if p == nil {
+	if p == nil || !p.ToDraw {
 		return
 	}
-	if p.ToDraw {
-		DrawFilledRect(screen, p.X, p.Y, p.W, p.H, p.BgColor)
-		DrawStrokeRect(screen, p.X, p.Y, p.W, p.H, 1, p.BorderColor, p.BorderHoles)
 
-		if p.DisplayName {
-			PrintTitle(screen, p.X, p.Y, p.W, p.H, p.Name, p.TextSize, p.TextColor)
-		}
+	DrawFilledRect(screen, p.X, p.Y, p.W, p.H, p.BgColor)
+	DrawStrokeRect(screen, p.X, p.Y, p.W, p.H, 1, p.BorderColor, p.BorderHoles)
+
+	if p.DisplayName {
+		PrintTitle(screen, p.X, p.Y, p.W, p.H, p.Name, p.TextSize, p.TextColor)
 	}
+
 	for _, widget := range p.Content {
 		if widget != nil {
 			widget.Draw(screen)
 		}
+	}
+
+	if len(p.PlayerInvites) > 0 {
+		DrawList(screen, p.PlayerInvites)
 	}
 }
 

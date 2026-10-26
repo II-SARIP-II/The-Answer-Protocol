@@ -154,3 +154,26 @@ func (g *Game) sendActionButton(conn net.Conn, chat *components.ChatWidget) {
 		}
 	}
 }
+
+
+func (g *Game) sendGroupButton(conn net.Conn, chat *components.ChatWidget) {
+	if buttons := g.centerLeft.GetButtons(); buttons != nil {
+		for _, button := range buttons {
+			btn := button
+
+			switch btn.Label {
+			case "CREATE":
+				btn.OnClick = func() {
+					msg := "group create"
+					SendMessage(conn, msg)
+				}
+
+			case "LEAVE":
+				btn.OnClick = func() {
+					msg := "group leave"
+					SendMessage(conn, msg)
+				}
+			}
+		}
+	}
+}
