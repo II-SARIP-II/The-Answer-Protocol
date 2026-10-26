@@ -11,9 +11,17 @@ func (g *Game) serverResponse() error {
 		select {
 		case msg := <-g.messagesChan:
 			chatStruct, errChat := ParseEventChat(msg)
+			fmt.Print(msg)
 			if errChat == nil && chatStruct.Type == "EVT" {
 				if chat := g.bottomCenter.GetChat(); chat != nil {
 					chat.AddLine("[" + chatStruct.Scope + "] " + chatStruct.Sender + " > " + chatStruct.Message)
+				}
+				continue
+			}
+			inviteStruct, errstruct := ParseInvite(msg)
+			if errstruct == nil && inviteStruct.Type == "EVT" && inviteStruct.Cmd == "GROUP" {
+				if chat := g.bottomCenter.GetChat(); chat != nil {
+					chat.AddLine("INVITATION> Invitation Received, group: '" + inviteStruct.Group + "'")
 				}
 				continue
 			}
@@ -86,16 +94,16 @@ func (g *Game) serverResponse() error {
 								g.location[0] -= 1
 							}
 							if chatAction != nil {
-								chatAction.AddLine(g.curr_cmd + " > You moved into " + room)
+								chatAction.AddLine(g.curr_cmd + "> You moved into " + room)
 							}
 						}
 					} else if msg == "ERR 301 NO_EXIT" {
 						if chatAction != nil {
-							chatAction.AddLine(g.curr_cmd + " > No exit in this direction")
+							chatAction.AddLine(g.curr_cmd + "> No exit in this direction")
 						}
 					} else {
 						if chatAction != nil {
-							chatAction.AddLine(g.curr_cmd + " > Cannot move there")
+							chatAction.AddLine(g.curr_cmd + "> Cannot move there")
 						}
 					}
 
@@ -272,19 +280,24 @@ func (g *Game) serverResponse() error {
 					if err == nil {
 						names := ""
 
-						g.centerLeft.PlayerInvites = components.CreateList(
-							who.Room,
-							g.centerLeft.X,
-							g.centerLeft.Y,
-							g.centerLeft.W,
-						)
+						invitesPanel := g.centerLeft.GetSubPanel("INVITE PLAYER")
+        				if invitesPanel != nil {
+        				    invitesPanel.PlayerInvites = components.CreateList(
+        				        g.name,
+        				        who.Room,
+        				        invitesPanel.X,
+        				        invitesPanel.Y,
+        				        invitesPanel.W,
+        				    )
 
-						for _, invite := range g.centerLeft.PlayerInvites {
-							playerName := invite.Name
-							invite.Btn.OnClick = func() {
-								SendMessage(g.conn, "GROUP INVITE "+playerName)
-							}
-						}
+        				    for _, invite := range invitesPanel.PlayerInvites {
+        				        playerName := invite.Name
+        				        invite.Btn.OnClick = func() {
+									g.curr_cmd = "INVITE"
+        				            SendMessage(g.conn, "GROUP INVITE "+playerName)
+        				        }
+        				    }
+        				}
 
 						for _, name := range who.Room {
 							names += name + " "
@@ -295,7 +308,7 @@ func (g *Game) serverResponse() error {
 						}
 					} else {
 						if chatAction != nil {
-							chatAction.AddLine("Server > " + msg)
+							chatAction.AddLine("Server> " + msg)
 						}
 					}
 
@@ -351,8 +364,102 @@ func (g *Game) serverResponse() error {
 				case "QUIT":
 					return ErrQuit
 
+				case "CREATE GROUP":
+					if strings.HasPrefix(msg, "ERR") {
+						if msg == "ERR 402 ALREADY_IN_GROUP" {
+							if chatAction != nil {
+								chatAction.AddLine("GROUP> Cannot create group: you are already in a group")
+							}
+						} else {
+							if chatAction != nil {
+								chatAction.AddLine("GROUP> " + msg)
+							}
+						}
+					} else {
+						group, err := ParseCreateGroup(msg)
+						if err == nil {
+							if chatAction != nil {
+								chatAction.AddLine("GROUP> You created " + group.Group)
+							}
+						} else {
+							if chatAction != nil {
+								chatAction.AddLine("GROUP> " + msg)
+							}
+						}
+					}
+					g.status = ""
+
+				case "LEAVE GROUP":
+					if msg == "ERR 401 NOT_IN_GROUP" {
+						if chatAction != nil {
+							chatAction.AddLine(g.curr_cmd + "> You can not leave because you are not in a group")
+						}
+					} else {
+						if chatAction != nil {
+							msg := fmt.Sprintf("You leaved the group")
+							chatAction.AddLine("GROUP> " + msg)
+						}
+					}
+
+				case "INVITE":
+					fmt.Print(msg)
+					if msg == "ERR 403 UNKNOWN_PLAYER" {
+						if chatAction != nil {
+							chatAction.AddLine(g.curr_cmd + "> Player not found")
+						}
+					} else if msg == "ERR 401 NOT_IN_GROUP" {
+						if chatAction != nil {
+							chatAction.AddLine(g.curr_cmd + "> You can not invite, because you are not in a group")
+						}
+					} else if msg == "ERR 402 ALREADY_IN_GROUP" {
+						if chatAction != nil {
+							chatAction.AddLine(g.curr_cmd + "> Already in a group")
+						}
+					} else {
+						if chatAction != nil {
+							msg := fmt.Sprintf("You invitation is pending")
+							chatAction.AddLine("GROUP> " + msg)
+						}
+					}
+
 				default:
-					return nil
+					if msg == "ERR 403 UNKNOWN_PLAYER" {
+						if chatAction != nil {
+							chatAction.AddLine(g.curr_cmd + "> Player not found")
+						}
+					} else if msg == "ERR 402 ALREADY_IN_GROUP" {
+						if chatAction != nil {
+							chatAction.AddLine("GROUP> Already in a group")
+						}
+					} else if msg == "ERR 401 NOT_IN_GROUP" {
+						if chatAction != nil {
+							chatAction.AddLine("GROUP> You are not in a group")
+						}
+					} else if msg == "ERR 406 NPC_NOT_HOSTILE" {
+						if chatAction != nil {
+							chatAction.AddLine("ATTACK> You are not in a group")
+						}
+					} else if msg == "ERR 301 NO_EXIT" {
+						if chatAction != nil {
+							chatAction.AddLine("MOVE> No exit in this direction")
+						}
+					} else if msg == "ERR 404 ITEM_NOT_FOUND" {
+						if chatAction != nil {
+							chatAction.AddLine("TAKE> Item not found")
+						}
+					} else if msg == "ERR 404 ITEM_NOT_IN_INVENTORY" {
+						if chatAction != nil {
+							chatAction.AddLine("ITEM> Item not found in inventory")
+						}
+					} else if msg == "ERR 404 NPC_NOT_FOUND" {
+						if chatAction != nil {
+							chatAction.AddLine("NPC> NPC not found")
+						}
+					} else if msg == "ERR 406 NO_QUEST_AVAILABLE" {
+						if chatAction != nil {
+							chatAction.AddLine("QUEST> The NPC has no quest to give")
+						}
+					}
 				}
 			}
 

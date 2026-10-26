@@ -10,20 +10,15 @@ type PlayerInvite struct {
 }
 
 func NewPlayerInvite(name string, index int, panelX, panelY, panelW float32) *PlayerInvite {
-	paddingX := float32(15.0)
-	paddingY := float32(100.0)
-	gapX := float32(10.0)
-	gapY := float32(8.0)
+	paddingX := float32(10.0)
+	paddingY := float32(35.0)
+	gapY := float32(6.0)
 
-	cols := 2
-	col := index % cols
-	row := index / cols
+	btnW := panelW - (paddingX * 2)
+	btnH := float32(35.0)
 
-	btnW := (panelW - (paddingX * 2) - gapX) / float32(cols)
-	btnH := float32(40.0)
-
-	xPos := panelX + paddingX + float32(col)*(btnW+gapX)
-	yPos := panelY + paddingY + float32(row)*(btnH+gapY)
+	xPos := panelX + paddingX
+	yPos := panelY + paddingY + float32(index)*(btnH+gapY)
 
 	btn := NewButton(name, xPos, yPos, btnW, btnH)
 	return &PlayerInvite{
@@ -32,11 +27,16 @@ func NewPlayerInvite(name string, index int, panelX, panelY, panelW float32) *Pl
 	}
 }
 
-func CreateList(playerList []string, panelX, panelY, panelW float32) []*PlayerInvite {
+func CreateList(name string, playerList []string, panelX, panelY, panelW float32) []*PlayerInvite {
 	listPlayerInvite := make([]*PlayerInvite, 0, len(playerList))
-	for i, player := range playerList {
-		inv := NewPlayerInvite(player, i, panelX, panelY, panelW)
+	idx := 0
+	for _, player := range playerList {
+		if player == name {
+			continue
+		}
+		inv := NewPlayerInvite(player, idx, panelX, panelY, panelW)
 		listPlayerInvite = append(listPlayerInvite, inv)
+		idx++
 	}
 	return listPlayerInvite
 }

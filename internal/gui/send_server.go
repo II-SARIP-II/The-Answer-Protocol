@@ -129,16 +129,6 @@ func (g *Game) sendActionButton(conn net.Conn, chat *components.ChatWidget) {
 					SendMessage(conn, "WHO")
 				}
 
-			case "GROUP":
-				btn.OnClick = func() {
-					g.status = "GROUP"
-					g.curr_cmd = "GROUP"
-					if chat != nil {
-						chat.AddLine(g.name + " > GROUP")
-					}
-					SendMessage(conn, "GROUP")
-				}
-
 			default:
 				btn.OnClick = func() {
 					g.status = "IDLE"
@@ -163,12 +153,14 @@ func (g *Game) sendGroupButton(conn net.Conn, chat *components.ChatWidget) {
 			switch btn.Label {
 			case "CREATE":
 				btn.OnClick = func() {
+					g.curr_cmd = "CREATE GROUP"
 					msg := "group create"
 					SendMessage(conn, msg)
 				}
 
 			case "LEAVE":
 				btn.OnClick = func() {
+					g.curr_cmd = "LEAVE GROUP"
 					msg := "group leave"
 					SendMessage(conn, msg)
 				}

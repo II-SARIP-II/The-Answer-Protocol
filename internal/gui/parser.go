@@ -49,6 +49,10 @@ type QuestsItemResponse struct {
 	Progress string `json:"progress,omitempty"`
 }
 
+type CreateGroupResponse struct {
+	Group string
+}
+
 type EventChatMessage struct {
 	Type    string // "EVT"
 	Scope   string // "GLOBAL" ou "GROUP"
@@ -56,6 +60,30 @@ type EventChatMessage struct {
 	Sender  string // "Pâris"
 	Message string // "ECho ECHO"
 }
+
+type EventInvite struct {
+	Type    string // "EVT"
+	Cmd   string // "GROUP"
+	Invite string // "INVITE"
+	Group  string // "group_name"
+}
+
+func ParseInvite(raw string) (EventInvite, error) {
+	raw = strings.TrimSpace(raw)
+
+	parts := strings.SplitN(raw, " ", 4)
+	if len(parts) < 4 {
+		return EventInvite{}, fmt.Errorf("Invalid format : %q", raw)
+	}
+
+	return EventInvite{
+		Type:    parts[0],
+		Cmd:   parts[1],
+		Invite: parts[2],
+		Group:  parts[3],
+	}, nil
+}
+
 
 func ParseEventChat(raw string) (EventChatMessage, error) {
 	raw = strings.TrimSpace(raw)
@@ -125,6 +153,19 @@ func ParseWho(strWho string) (WhoResponse, error) {
 	return parseJSON[WhoResponse](strWho)
 }
 
+func ParseCreateGroup(raw string) (CreateGroupResponse, error) {
+	raw = strings.TrimSpace(raw)
+
+	if strings.Contains(raw, "group=") {
+		parts := strings.Split(raw, "group=")
+		if len(parts) > 1 {
+			groupName := strings.TrimSpace(parts[1])
+			return CreateGroupResponse{Group: groupName}, nil
+		}
+	}
+
+	return CreateGroupResponse{}, fmt.Errorf("impossible d'extraire le nom du groupe depuis: %q", raw)
+}
 func ParsePlayer(strPlayer string) (server.Player, error) {
 	return parseJSON[server.Player](strPlayer)
 }
