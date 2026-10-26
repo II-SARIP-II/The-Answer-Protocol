@@ -33,6 +33,22 @@ type WhoResponse struct {
 	Server int      `json:"Server"`
 }
 
+type QuestResponse struct {
+	Giver        string   `json:"giver"`
+	Description  string   `json:"description"`
+	Type         string   `json:"type"`
+	Targets      []string `json:"targets"`
+	Count        int      `json:"count"`
+	Reward       string   `json:"reward"`
+	Prerequisite string   `json:"prerequisite"`
+}
+
+type QuestsItemResponse struct {
+	QuestID  string `json:"quest_id"`
+	Status   string `json:"status"`
+	Progress string `json:"progress,omitempty"`
+}
+
 type EventChatMessage struct {
 	Type    string // "EVT"
 	Scope   string // "GLOBAL" ou "GROUP"
@@ -83,6 +99,26 @@ func ParseDefence(strDefence string) (DefendResponse, error) {
 
 func ParseStatus(strStatus string) (StatusResponse, error) {
 	return parseJSON[StatusResponse](strStatus)
+}
+
+func ParseQuest(strQuest string) (QuestResponse, error) {
+	return parseJSON[QuestResponse](strQuest)
+}
+
+func ParseQuests(strQuests string) ([]QuestsItemResponse, error) {
+	var quests []QuestsItemResponse
+	fmt.Print(strQuests)
+	jsonStart := strings.Index(strQuests, "[")
+	if jsonStart == -1 {
+		return nil, fmt.Errorf("No array found: %q", strQuests)
+	}
+
+	err := json.Unmarshal([]byte(strQuests[jsonStart:]), &quests)
+	if err != nil {
+		return nil, fmt.Errorf("erreur unmarshal Quests: %w", err)
+	}
+
+	return quests, nil
 }
 
 func ParseWho(strWho string) (WhoResponse, error) {

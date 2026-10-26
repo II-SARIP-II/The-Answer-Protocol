@@ -3,6 +3,7 @@ package gui
 import (
 	"fmt"
 	"strings"
+	"tap/internal/gui/components"
 )
 
 func (g *Game) serverResponse() error {
@@ -64,7 +65,9 @@ func (g *Game) serverResponse() error {
 							},
 						)
 					} else {
-						chatAction.AddLine("Server > " + msg)
+						if chatAction != nil {
+							chatAction.AddLine("Server > " + msg)
+						}
 					}
 
 				case "MOVE":
@@ -72,12 +75,28 @@ func (g *Game) serverResponse() error {
 						parts := strings.Split(msg, "room=")
 						if len(parts) > 1 {
 							room := strings.TrimSpace(parts[1])
-							chatAction.AddLine(g.curr_cmd + " > You moved into " + room)
+							switch g.direction {
+							case 0:
+								g.location[1] -= 1
+							case 1:
+								g.location[0] += 1
+							case 2:
+								g.location[1] += 1
+							case 3:
+								g.location[0] -= 1
+							}
+							if chatAction != nil {
+								chatAction.AddLine(g.curr_cmd + " > You moved into " + room)
+							}
 						}
 					} else if msg == "ERR 301 NO_EXIT" {
-						chatAction.AddLine(g.curr_cmd + " > No exit in this direction")
+						if chatAction != nil {
+							chatAction.AddLine(g.curr_cmd + " > No exit in this direction")
+						}
 					} else {
-						chatAction.AddLine(g.curr_cmd + " > Cannot move there")
+						if chatAction != nil {
+							chatAction.AddLine(g.curr_cmd + " > Cannot move there")
+						}
 					}
 
 				case "TAKE":
@@ -105,7 +124,9 @@ func (g *Game) serverResponse() error {
 									},
 								)
 							}
-							chatAction.AddLine(g.curr_cmd + " > You took " + itemName)
+							if chatAction != nil {
+								chatAction.AddLine(g.curr_cmd + " > You took " + itemName)
+							}
 							g.curr_cmd = "LOOK"
 							SendMessage(g.conn, "LOOK")
 						}
@@ -118,7 +139,9 @@ func (g *Game) serverResponse() error {
 						parts := strings.Split(msg, "dropped=")
 						if len(parts) > 1 {
 							itemName := strings.TrimSpace(parts[1])
-							chatAction.AddLine(g.curr_cmd + " > You dropped " + itemName)
+							if chatAction != nil {
+								chatAction.AddLine(g.curr_cmd + " > You dropped " + itemName)
+							}
 						}
 					}
 					g.status = ""
@@ -127,7 +150,11 @@ func (g *Game) serverResponse() error {
 
 				case "ATTACK":
 					if strings.Contains(msg, "Defeat:") || strings.Contains(msg, "defeated") {
-						chatAction.AddLine("COMBAT > YOU DIED! Respawned in room0.")
+						if chatAction != nil {
+							chatAction.AddLine("COMBAT > YOU DIED! Respawned in room0.")
+						}
+						g.centerMid.RemoveRooms()
+						g.location = [2]int{1, 1}
 						g.status = ""
 						g.curr_cmd = "LOOK"
 						SendMessage(g.conn, "LOOK")
@@ -137,13 +164,19 @@ func (g *Game) serverResponse() error {
 						attackJSON, err := ParseAttack(response)
 						if err == nil {
 							if attackJSON.Status == "victory" {
-								chatAction.AddLine(g.curr_cmd + " > Enemy defeated!")
+								if chatAction != nil {
+									chatAction.AddLine(g.curr_cmd + " > Enemy defeated!")
+								}
 								g.hp = attackJSON.AttackerHP
 								g.status = ""
 								g.curr_cmd = "LOOK"
 								SendMessage(g.conn, "LOOK")
 							} else if attackJSON.Status == "defeated" {
-								chatAction.AddLine(g.curr_cmd + " > YOU DIED")
+								if chatAction != nil {
+									chatAction.AddLine(g.curr_cmd + " > YOU DIED")
+								}
+								g.centerMid.RemoveRooms()
+								g.location = [2]int{1, 1}
 								g.status = ""
 								g.curr_cmd = "LOOK"
 								g.hp = attackJSON.AttackerHP
@@ -151,19 +184,27 @@ func (g *Game) serverResponse() error {
 							} else {
 								attackMsg := fmt.Sprintf("Enemy took %d damage (%d HP left)", attackJSON.Damage, attackJSON.TargetHP)
 								g.hp = attackJSON.AttackerHP
-								chatAction.AddLine(g.curr_cmd + " > " + attackMsg)
+								if chatAction != nil {
+									chatAction.AddLine(g.curr_cmd + " > " + attackMsg)
+								}
 							}
 						} else {
-							chatAction.AddLine("Server > " + msg)
+							if chatAction != nil {
+								chatAction.AddLine("Server > " + msg)
+							}
 						}
 					} else {
-						chatAction.AddLine(g.curr_cmd + " > Target is not hostile")
+						if chatAction != nil {
+							chatAction.AddLine(g.curr_cmd + " > Target is not hostile")
+						}
 					}
 					g.status = ""
 
 				case "DEFEND":
 					if strings.Contains(msg, "Defeat:") || strings.Contains(msg, "defeated") {
 						chatAction.AddLine("COMBAT > YOU DIED! Respawned in room0.")
+						g.centerMid.RemoveRooms()
+						g.location = [2]int{1, 1}
 						g.status = ""
 						g.curr_cmd = "LOOK"
 						SendMessage(g.conn, "LOOK")
@@ -174,20 +215,30 @@ func (g *Game) serverResponse() error {
 						if err == nil {
 							if defenceJSON.Status == "defeated" {
 								chatAction.AddLine("DEFEND > YOU DIED")
+								g.centerMid.RemoveRooms()
+								g.location = [2]int{1, 1}
 								g.curr_cmd = "LOOK"
 								SendMessage(g.conn, "LOOK")
 							} else if defenceJSON.Status == "perfect_defense" {
-								chatAction.AddLine("DEFEND > Protected! No damage taken")
+								if chatAction != nil {
+									chatAction.AddLine("DEFEND > Protected! No damage taken")
+								}
 							} else if defenceJSON.Status == "weakened_defense" || defenceJSON.Status == "broken_defense" {
 								defenceMsg := fmt.Sprintf("Defense broken! %d damage taken", defenceJSON.Damage)
-								chatAction.AddLine("DEFEND > " + defenceMsg)
+								if chatAction != nil {
+									chatAction.AddLine("DEFEND > " + defenceMsg)
+								}
 							}
 							g.hp = defenceJSON.DefenderHP
 						} else {
-							chatAction.AddLine("Server > " + msg)
+							if chatAction != nil {
+								chatAction.AddLine("Server > " + msg)
+							}
 						}
 					} else {
-						chatAction.AddLine("Server > " + msg)
+						if chatAction != nil {
+							chatAction.AddLine("Server > " + msg)
+						}
 					}
 					g.status = ""
 
@@ -196,17 +247,23 @@ func (g *Game) serverResponse() error {
 					if len(response) >= 3 {
 						talkResponse = response[3:]
 					}
-					chatAction.AddLine(g.curr_cmd + " > " + talkResponse)
+					if chatAction != nil {
+						chatAction.AddLine(g.curr_cmd + " > " + talkResponse)
+					}
 
 				case "EQUIP":
 					if strings.Contains(msg, "equipped=") {
 						parts := strings.Split(msg, "equipped=")
 						if len(parts) > 1 {
 							itemName := strings.TrimSpace(parts[1])
-							chatAction.AddLine(g.curr_cmd + " > Equipped " + itemName)
+							if chatAction != nil {
+								chatAction.AddLine(g.curr_cmd + " > Equipped " + itemName)
+							}
 						}
 					} else {
-						chatAction.AddLine(g.curr_cmd + " > Equip failed")
+						if chatAction != nil {
+							chatAction.AddLine(g.curr_cmd + " > Equip failed")
+						}
 					}
 					g.status = ""
 
@@ -214,23 +271,82 @@ func (g *Game) serverResponse() error {
 					who, err := ParseWho(response)
 					if err == nil {
 						names := ""
+
+						g.centerLeft.PlayerInvites = components.CreateList(
+							who.Room,
+							g.centerLeft.X,
+							g.centerLeft.Y,
+							g.centerLeft.W,
+						)
+
+						for _, invite := range g.centerLeft.PlayerInvites {
+							playerName := invite.Name
+							invite.Btn.OnClick = func() {
+								SendMessage(g.conn, "GROUP INVITE "+playerName)
+							}
+						}
+
 						for _, name := range who.Room {
 							names += name + " "
 						}
 						whoMsg := fmt.Sprintf("Players: %s| Server: %d", names, who.Server)
-						chatAction.AddLine(g.curr_cmd + " > " + whoMsg)
+						if chatAction != nil {
+							chatAction.AddLine(g.curr_cmd + " > " + whoMsg)
+						}
 					} else {
-						chatAction.AddLine("Server > " + msg)
+						if chatAction != nil {
+							chatAction.AddLine("Server > " + msg)
+						}
 					}
 
 				case "STATUS":
 					status, err := ParseStatus(response)
 					if err == nil {
 						statusMsg := fmt.Sprintf("%d/%d HP | State: %s", status.HP, status.MaxHP, status.Status)
-						chatAction.AddLine(g.curr_cmd + " > " + statusMsg)
+						if chatAction != nil {
+							chatAction.AddLine(g.curr_cmd + " > " + statusMsg)
+						}
 					} else {
-						chatAction.AddLine("Server > " + msg)
+						if chatAction != nil {
+							chatAction.AddLine("Server > " + msg)
+						}
 					}
+
+				case "QUEST":
+					quest, err := ParseQuest(response)
+					if err == nil {
+						statusMsg := fmt.Sprintf("%s | reward: %s", quest.Description, quest.Reward)
+						if chatAction != nil {
+							chatAction.AddLine(g.curr_cmd + " > " + statusMsg)
+						}
+					} else {
+						if chatAction != nil {
+							chatAction.AddLine("Server > " + msg)
+						}
+					}
+
+				case "QUESTS":
+					quests, err := ParseQuests(msg)
+					if err == nil {
+						if len(quests) == 0 {
+							if chatAction != nil {
+								chatAction.AddLine(g.curr_cmd + " > No quest has been started.")
+							}
+						} else {
+							for _, quest := range quests {
+								statusMsg := fmt.Sprintf("[%s] status: %s, progess: %s", quest.QuestID, quest.Status, quest.Progress)
+
+								if chatAction != nil {
+									chatAction.AddLine(g.curr_cmd + " > " + statusMsg)
+								}
+							}
+						}
+					} else {
+						if chatAction != nil {
+							chatAction.AddLine("Server > " + msg)
+						}
+					}
+					g.status = ""
 
 				case "QUIT":
 					return ErrQuit
