@@ -14,7 +14,7 @@ func CreateActionsPanel(topH, centerH, colLeftW, colMidW, colRightW float32) *co
 		"ATTACK", "DEFEND",
 		"STATUS", "QUEST",
 		"QUESTS", "WHO",
-		"GROUP", "QUIT",
+		"QUIT",
 	}
 
 	crX := colLeftW + colMidW

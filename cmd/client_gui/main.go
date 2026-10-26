@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	if err := gui.Run(); err != nil {
+	if err := gui.Run("localhost:4242"); err != nil {
 		log.Fatal(err)
 	}
 }

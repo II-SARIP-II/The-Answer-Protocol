@@ -23,7 +23,7 @@ func CreateChatPanel(topH, centerH, bottomH, colLeftW, colMidW float32) *compone
 	)
 
 	return &components.Panel{
-		Name:        "Team Chat",
+		Name:        "Event Chat",
 		DisplayName: true,
 		TextColor:   color.RGBA{R: 200, G: 200, B: 200, A: 255},
 		ToDraw:      true,

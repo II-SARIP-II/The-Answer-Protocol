@@ -42,6 +42,28 @@ func unpack2(arr [2]int) (int, int) {
 	return arr[0], arr[1]
 }
 
+func (p *Panel) RemoveRooms() {
+	if p == nil {
+		return
+	}
+	var cleanContent []Widget
+	for _, widget := range p.Content {
+		if btn, isButton := widget.(*Button); isButton {
+			switch btn.Label {
+			case "North", "East", "South", "West":
+				cleanContent = append(cleanContent, widget)
+			default:
+			}
+		} else if _, isPanel := widget.(*Panel); isPanel {
+			continue
+		} else {
+			cleanContent = append(cleanContent, widget)
+		}
+	}
+
+	p.Content = cleanContent
+}
+
 func (p *Panel) AddRoom(name string, location [2]int, exits map[string]world.Exit, items []string, onItemClick func(string), npcs []string, onNPCClick func(string)) {
 	if p == nil {
 		return

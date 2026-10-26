@@ -15,7 +15,7 @@ func (g *Game) sendServerDirection(conn net.Conn) {
 					if g.status == "AWAITING_MOVE_DIR" {
 						msg := "MOVE North"
 						SendMessage(conn, msg)
-						g.location[1] -= 1
+						g.direction = 0
 						g.status = ""
 					}
 				}
@@ -24,7 +24,7 @@ func (g *Game) sendServerDirection(conn net.Conn) {
 					if g.status == "AWAITING_MOVE_DIR" {
 						msg := "MOVE East"
 						SendMessage(conn, msg)
-						g.location[0] += 1
+						g.direction = 1
 						g.status = ""
 					}
 				}
@@ -33,7 +33,7 @@ func (g *Game) sendServerDirection(conn net.Conn) {
 					if g.status == "AWAITING_MOVE_DIR" {
 						msg := "MOVE South"
 						SendMessage(conn, msg)
-						g.location[1] += 1
+						g.direction = 2
 						g.status = ""
 					}
 				}
@@ -42,7 +42,7 @@ func (g *Game) sendServerDirection(conn net.Conn) {
 					if g.status == "AWAITING_MOVE_DIR" {
 						msg := "MOVE West"
 						SendMessage(conn, msg)
-						g.location[0] -= 1
+						g.direction = 3
 						g.status = ""
 					}
 				}
@@ -149,6 +149,28 @@ func (g *Game) sendActionButton(conn net.Conn, chat *components.ChatWidget) {
 						}
 					}
 					SendMessage(conn, btn.Label)
+				}
+			}
+		}
+	}
+}
+
+func (g *Game) sendGroupButton(conn net.Conn, chat *components.ChatWidget) {
+	if buttons := g.centerLeft.GetButtons(); buttons != nil {
+		for _, button := range buttons {
+			btn := button
+
+			switch btn.Label {
+			case "CREATE":
+				btn.OnClick = func() {
+					msg := "group create"
+					SendMessage(conn, msg)
+				}
+
+			case "LEAVE":
+				btn.OnClick = func() {
+					msg := "group leave"
+					SendMessage(conn, msg)
 				}
 			}
 		}
