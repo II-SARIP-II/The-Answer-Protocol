@@ -38,7 +38,6 @@ func Run(addr string) error {
 
 		username := strings.TrimSpace(stdinScanner.Text())
 
-
 		if username == "" {
 			fmt.Println("Error: Username cannot be empty. Please try again.")
 		}

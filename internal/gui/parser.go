@@ -43,7 +43,6 @@ type QuestResponse struct {
 	Prerequisite string   `json:"prerequisite"`
 }
 
-
 type QuestsItemResponse struct {
 	QuestID  string `json:"quest_id"`
 	Status   string `json:"status"`

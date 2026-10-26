@@ -68,7 +68,6 @@ func (p *Panel) GetPlayerInvitesButton() []*Button {
 	return buttons
 }
 
-
 type Panel struct {
 	Name          string
 	DisplayName   bool

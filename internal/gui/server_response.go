@@ -75,7 +75,7 @@ func (g *Game) serverResponse() error {
 						parts := strings.Split(msg, "room=")
 						if len(parts) > 1 {
 							room := strings.TrimSpace(parts[1])
-							switch g.direction{
+							switch g.direction {
 							case 0:
 								g.location[1] -= 1
 							case 1:
@@ -325,7 +325,7 @@ func (g *Game) serverResponse() error {
 						}
 					}
 
-				case "QUESTS":	
+				case "QUESTS":
 					quests, err := ParseQuests(msg)
 					if err == nil {
 						if len(quests) == 0 {

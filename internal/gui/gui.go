@@ -28,7 +28,7 @@ type Game struct {
 	name         string
 	hp           int
 	location     [2]int
-	direction	int
+	direction    int
 	conn         net.Conn
 	messagesChan chan string
 	curr_cmd     string
@@ -54,7 +54,6 @@ func NewGame(winWidth int, winHeight int, conn net.Conn, name string) *Game {
 		messagesChan: messagesChan,
 		curr_cmd:     "",
 	}
-
 
 	go ListenServer(conn, messagesChan)
 
