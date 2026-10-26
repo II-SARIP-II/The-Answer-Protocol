@@ -129,7 +129,7 @@ func (s *Server) handleClientSession(conn net.Conn) {
 			continue
 		}
 
-		player.HandleCommand(command)
+		player.handleCommand(command)
 
 		if player.State == protocol.StateTerminated {
 			break

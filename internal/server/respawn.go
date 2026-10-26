@@ -10,7 +10,7 @@ import (
 
 func (s *Server) scheduleNPCRespawn(enemyID string, roomID string) {
 
-	time.AfterFunc(protocol.NPCRespawnDelay*time.Second, func() {
+	time.AfterFunc(NPCRespawnDelay*time.Second, func() {
 		s.mu.Lock()
 		defer s.mu.Unlock()
 
@@ -29,7 +29,7 @@ func (s *Server) scheduleNPCRespawn(enemyID string, roomID string) {
 
 		for _, player := range s.players {
 			if strings.EqualFold(player.CurrentRoom, roomID) {
-				player.SendEvt("ROOM CHAT", fmt.Sprintf("Server %s has reappeared!", npc.Name))
+				player.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server %s has reappeared!", npc.Name))
 			}
 		}
 	})

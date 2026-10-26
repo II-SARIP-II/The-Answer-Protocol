@@ -131,7 +131,7 @@ func (p *Player) resolveActiveQuest(activeQuestID string) {
 			p.processTargetsRespawn(worldQuest.Targets)
 		}
 
-		p.broadcastRoom(p.CurrentRoom, "ROOM CHAT", fmt.Sprintf("Player %s completed the quest: %s!", p.Username, activeQuestID))
+		p.broadcastRoom(p.CurrentRoom, protocol.EvtChatRoom, fmt.Sprintf("Player %s completed the quest: %s!", p.Username, activeQuestID))
 
 		p.resolveFinalVictory()
 
@@ -195,5 +195,5 @@ func (p *Player) resolveFinalVictory() {
 		}
 	}
 	slog.Info("Player achieved final game victory", "player", p.Username)
-	p.broadcastGlobal("GLOBAL CHAT", fmt.Sprintf("Player %s has completed all the quests. Congratulations !", p.Username))
+	p.broadcastGlobal(protocol.EvtChatGlobal, fmt.Sprintf("Player %s has completed all the quests. Congratulations !", p.Username))
 }

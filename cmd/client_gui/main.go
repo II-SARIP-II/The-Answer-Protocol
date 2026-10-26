@@ -2,9 +2,9 @@ package main
 
 import (
 	"log"
-	"tap/internal/gui"
 	"os"
 	"strings"
+	"tap/internal/gui"
 )
 
 func main() {
