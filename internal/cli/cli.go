@@ -9,6 +9,7 @@ import (
 	"tap/internal/protocol"
 )
 
+// Run connects to the TAP server, authenticates the player, and starts the interactive CLI session.
 func Run(addr string) error {
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
@@ -20,10 +21,11 @@ func Run(addr string) error {
 	serverScanner := bufio.NewScanner(conn)
 	stdinScanner := bufio.NewScanner(os.Stdin)
 
-	// 1. Message de bienvenue du protocole (OK hello proto=1)
-	if serverScanner.Scan() {
-		fmt.Println("Server:", serverScanner.Text())
+	// Read initial server greeting (OK hello proto=1).
+	if !serverScanner.Scan() {
+		return fmt.Errorf("server disconnected before greeting: %w", serverScanner.Err())
 	}
+	fmt.Println("Server:", serverScanner.Text())
 
 	if err := authenticate(conn, serverScanner, stdinScanner); err != nil {
 		return err
@@ -32,6 +34,7 @@ func Run(addr string) error {
 	return handleCommands(conn, serverScanner, stdinScanner)
 }
 
+// authenticate prompts the user for a valid username and negotiates the CONNECT handshake.
 func authenticate(conn net.Conn, serverScanner *bufio.Scanner, stdinScanner *bufio.Scanner) error {
 	for {
 		fmt.Print("Enter your user name: ")
@@ -70,6 +73,7 @@ func authenticate(conn net.Conn, serverScanner *bufio.Scanner, stdinScanner *buf
 	}
 }
 
+// handleCommands loops over stdin, forwarding player commands and awaiting QUIT handshake.
 func handleCommands(conn net.Conn, serverScanner *bufio.Scanner, stdinScanner *bufio.Scanner) error {
 	fmt.Println("You can now enter commands (or QUIT to exit):")
 
@@ -85,7 +89,7 @@ func handleCommands(conn net.Conn, serverScanner *bufio.Scanner, stdinScanner *b
 
 		if strings.ToUpper(input) == protocol.CmdQuit {
 			fmt.Fprint(conn, protocol.FormatCmd(protocol.CmdQuit, ""))
-			<-quitChan // Bloque jusqu'à réception de "OK bye"
+			<-quitChan
 			fmt.Println("Disconnected.")
 			return nil
 		}
@@ -99,6 +103,7 @@ func handleCommands(conn net.Conn, serverScanner *bufio.Scanner, stdinScanner *b
 	return nil
 }
 
+// listenServer continuously prints messages received from the server until disconnected.
 func listenServer(serverScanner *bufio.Scanner, quitChan chan struct{}) {
 	for serverScanner.Scan() {
 		response := serverScanner.Text()

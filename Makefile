@@ -25,13 +25,13 @@ client_gui:
 	@go build -o $(GUI_BIN) $(GUI_SRC)
 
 run_server:
-	@go run $(SERVER_SRC)
+	@go run $(SERVER_SRC) $(ARGS)
 
 run_cli:
-	@go run $(CLI_SRC)
+	@go run $(CLI_SRC) $(ARGS)
 
 run_gui:
-	@go run $(GUI_SRC)
+	@go run $(GUI_SRC) $(ARGS)
 
 lint:
 	@echo "Checking with go vet..."
