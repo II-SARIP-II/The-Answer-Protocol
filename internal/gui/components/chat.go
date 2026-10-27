@@ -139,7 +139,7 @@ func (c *ChatWidget) Draw(screen *ebiten.Image) {
 
 	for i, line := range c.Lines {
 		lineY := float64(c.Y) + (float64(i) * c.Spacing)
-		DrawText(screen, line, float64(c.X), lineY, float64(c.TextSize), c.Color, "Title")
+		drawText(screen, line, float64(c.X), lineY, float64(c.TextSize), c.Color, "Title")
 	}
 
 	boxY := c.Y + c.H - inputHeight - 5.0
@@ -158,8 +158,8 @@ func (c *ChatWidget) Draw(screen *ebiten.Image) {
 		borderColor = color.RGBA{R: 0, G: 255, B: 220, A: 255}
 	}
 
-	DrawFilledRect(screen, inputX, boxY, inputW, inputHeight, color.RGBA{R: 5, G: 15, B: 25, A: 200})
-	DrawStrokeRect(screen, inputX, boxY, inputW, inputHeight, 1.0, borderColor, []Hole{})
+	drawFilledRect(screen, inputX, boxY, inputW, inputHeight, color.RGBA{R: 5, G: 15, B: 25, A: 200})
+	drawStrokeRect(screen, inputX, boxY, inputW, inputHeight, 1.0, borderColor, []Hole{})
 
 	cursor := ""
 	if c.HasFocus {
@@ -168,7 +168,7 @@ func (c *ChatWidget) Draw(screen *ebiten.Image) {
 
 	displayText := c.Text + cursor
 
-	DrawText(screen, displayText, float64(inputX+8), float64(boxY+8), float64(c.TextSize), color.RGBA{R: 0, G: 255, B: 180, A: 255}, "Title")
+	drawText(screen, displayText, float64(inputX+8), float64(boxY+8), float64(c.TextSize), color.RGBA{R: 0, G: 255, B: 180, A: 255}, "Title")
 }
 
 func repeatingKeyPressed(key ebiten.Key) bool {

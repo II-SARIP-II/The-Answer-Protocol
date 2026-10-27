@@ -6,19 +6,86 @@ import (
 	"tap/internal/gui/components"
 )
 
+func handleServerError(chat *components.ChatWidget, cmd, msg string) {
+	if chat == nil {
+		return
+	}
+
+	switch {
+	case strings.HasPrefix(msg, "ERR 301"):
+		chat.AddLine(cmd + " > No exit in this direction.")
+	case strings.HasPrefix(msg, "ERR 401"):
+		chat.AddLine(cmd + " > You are not in a group.")
+	case strings.HasPrefix(msg, "ERR 402"):
+		chat.AddLine(cmd + " > You are already in a group.")
+	case strings.HasPrefix(msg, "ERR 403"):
+		chat.AddLine(cmd + " > Player not found.")
+	case strings.HasPrefix(msg, "ERR 404 ITEM_NOT_FOUND"):
+		chat.AddLine(cmd + " > Item not found on the ground.")
+	case strings.HasPrefix(msg, "ERR 404 ITEM_NOT_IN_INVENTORY"):
+		chat.AddLine(cmd + " > Item not found in your inventory.")
+	case strings.HasPrefix(msg, "ERR 404 NPC_NOT_FOUND"):
+		chat.AddLine(cmd + " > NPC not found.")
+	case strings.HasPrefix(msg, "ERR 406 NPC_NOT_HOSTILE"):
+		chat.AddLine(cmd + " > This NPC is not hostile.")
+	case strings.HasPrefix(msg, "ERR 406 NO_QUEST_AVAILABLE"):
+		chat.AddLine(cmd + " > This NPC has no available quests.")
+	default:
+		chat.AddLine("Server > " + msg)
+	}
+}
+
 func (g *Game) serverResponse() error {
 	for {
 		select {
 		case msg := <-g.messagesChan:
-			chatStruct, errChat := ParseEventChat(msg)
-			if errChat == nil && chatStruct.Type == "EVT" {
+			if chatStruct, errChat := parseEventChat(msg); errChat == nil && chatStruct.Type == "EVT" {
 				if chat := g.bottomCenter.GetChat(); chat != nil {
 					chat.AddLine("[" + chatStruct.Scope + "] " + chatStruct.Sender + " > " + chatStruct.Message)
 				}
 				continue
 			}
 
+			if inviteStruct, errStruct := parseInvite(msg); errStruct == nil && inviteStruct.Type == "EVT" {
+				if inviteStruct.Action == "INVITE" {
+					if invitationPanel := g.centerLeft.GetSubPanel("INVITATION"); invitationPanel != nil {
+						nextIndex := len(invitationPanel.AcceptInvites)
+						newInvitation := components.NewPlayerInvite(
+							inviteStruct.Group,
+							nextIndex,
+							invitationPanel.X,
+							invitationPanel.Y,
+							invitationPanel.W,
+						)
+
+						groupName := inviteStruct.Group
+						newInvitation.Btn.OnClick = func() {
+							g.curr_cmd = "GROUP"
+							sendMessage(g.conn, "GROUP JOIN "+groupName)
+						}
+
+						invitationPanel.AcceptInvites = append(invitationPanel.AcceptInvites, newInvitation)
+					}
+
+					if chat := g.bottomCenter.GetChat(); chat != nil {
+						chat.AddLine("[INVITATION] > Received invite from group: '" + inviteStruct.Group + "'")
+					}
+					continue
+				} else if inviteStruct.Action == "JOIN" {
+					if chat := g.bottomCenter.GetChat(); chat != nil {
+						chat.AddLine("[INVITATION] > You joined group: '" + inviteStruct.Group + "'")
+					}
+					continue
+				}
+			}
+
 			if chatAction := g.bottomRight.GetChat(); chatAction != nil {
+				if strings.HasPrefix(msg, "ERR") {
+					handleServerError(chatAction, g.curr_cmd, msg)
+					g.status = ""
+					continue
+				}
+
 				jsonStart := strings.Index(msg, "{")
 				response := msg
 				if jsonStart != -1 {
@@ -26,11 +93,12 @@ func (g *Game) serverResponse() error {
 				}
 				stuff := g.bottomLeft.GetStuff()
 
-				switch g.curr_cmd {
+				verb := strings.ToUpper(strings.Fields(g.curr_cmd)[0])
+
+				switch verb {
 				case "LOOK":
-					lookResp, err := ParseLookResponse(msg)
-					if err == nil {
-						room := lookResp.ToWorldRoom()
+					if lookResp, err := parseLookResponse(msg); err == nil {
+						room := lookResp.toWorldRoom()
 						g.centerMid.AddRoom(
 							room.Name,
 							g.location,
@@ -38,36 +106,27 @@ func (g *Game) serverResponse() error {
 							room.Items,
 							func(itemName string) {
 								if g.status == "AWAITING_TAKE_ITEM" {
-									cmd := "TAKE " + itemName
 									g.curr_cmd = "TAKE"
-									SendMessage(g.conn, cmd)
+									sendMessage(g.conn, "TAKE "+itemName)
 									g.status = ""
 								}
 							},
 							room.NPCs,
 							func(NPCsName string) {
-								if g.status == "AWAITING_TALK_NPC" {
-									cmd := "TALK " + NPCsName
+								switch g.status {
+								case "AWAITING_TALK_NPC":
 									g.curr_cmd = "TALK"
-									SendMessage(g.conn, cmd)
-									g.status = ""
-								} else if g.status == "AWAITING_QUEST_NPC" {
-									cmd := "QUEST " + NPCsName
+									sendMessage(g.conn, "TALK "+NPCsName)
+								case "AWAITING_QUEST_NPC":
 									g.curr_cmd = "QUEST"
-									SendMessage(g.conn, cmd)
-									g.status = ""
-								} else if g.status == "AWAITING_ATTACK_NPC" {
-									cmd := "ATTACK " + NPCsName
+									sendMessage(g.conn, "QUEST "+NPCsName)
+								case "AWAITING_ATTACK_NPC":
 									g.curr_cmd = "ATTACK"
-									SendMessage(g.conn, cmd)
-									g.status = ""
+									sendMessage(g.conn, "ATTACK "+NPCsName)
 								}
+								g.status = ""
 							},
 						)
-					} else {
-						if chatAction != nil {
-							chatAction.AddLine("Server > " + msg)
-						}
 					}
 
 				case "MOVE":
@@ -85,17 +144,7 @@ func (g *Game) serverResponse() error {
 							case 3:
 								g.location[0] -= 1
 							}
-							if chatAction != nil {
-								chatAction.AddLine(g.curr_cmd + " > You moved into " + room)
-							}
-						}
-					} else if msg == "ERR 301 NO_EXIT" {
-						if chatAction != nil {
-							chatAction.AddLine(g.curr_cmd + " > No exit in this direction")
-						}
-					} else {
-						if chatAction != nil {
-							chatAction.AddLine(g.curr_cmd + " > Cannot move there")
+							chatAction.AddLine("MOVE > Moved into " + room)
 						}
 					}
 
@@ -109,136 +158,76 @@ func (g *Game) serverResponse() error {
 									itemName,
 									func(itemName string) {
 										if g.status == "AWAITING_DROP_ITEM" {
-											cmd := "DROP " + itemName
 											g.curr_cmd = "DROP"
 											stuff.RemoveItem(itemName)
-											SendMessage(g.conn, cmd)
+											sendMessage(g.conn, "DROP "+itemName)
 											g.status = ""
 										} else if g.status == "AWAITING_EQUIP_ITEM" {
-											cmd := "EQUIP " + itemName
 											g.curr_cmd = "EQUIP"
 											stuff.MoveToTop(itemName)
-											SendMessage(g.conn, cmd)
+											sendMessage(g.conn, "EQUIP "+itemName)
 											g.status = ""
 										}
 									},
 								)
 							}
-							if chatAction != nil {
-								chatAction.AddLine(g.curr_cmd + " > You took " + itemName)
-							}
+							chatAction.AddLine("TAKE > Item taken: " + itemName)
 							g.curr_cmd = "LOOK"
-							SendMessage(g.conn, "LOOK")
+							sendMessage(g.conn, "LOOK")
 						}
-					} else {
-						chatAction.AddLine("Server > " + msg)
 					}
 
 				case "DROP":
 					if strings.Contains(msg, "dropped=") {
 						parts := strings.Split(msg, "dropped=")
 						if len(parts) > 1 {
-							itemName := strings.TrimSpace(parts[1])
-							if chatAction != nil {
-								chatAction.AddLine(g.curr_cmd + " > You dropped " + itemName)
-							}
+							chatAction.AddLine("DROP > Item dropped: " + strings.TrimSpace(parts[1]))
 						}
 					}
 					g.status = ""
 					g.curr_cmd = "LOOK"
-					SendMessage(g.conn, "LOOK")
+					sendMessage(g.conn, "LOOK")
 
 				case "ATTACK":
-					if strings.Contains(msg, "Defeat:") || strings.Contains(msg, "defeated") {
-						if chatAction != nil {
-							chatAction.AddLine("COMBAT > YOU DIED! Respawned in room0.")
-						}
-						g.centerMid.RemoveRooms()
-						g.location = [2]int{1, 1}
-						g.status = ""
-						g.curr_cmd = "LOOK"
-						SendMessage(g.conn, "LOOK")
-						break
-					}
-					if response != "ERR 406 NPC_NOT_HOSTILE" && strings.Contains(msg, "{") {
-						attackJSON, err := ParseAttack(response)
-						if err == nil {
-							if attackJSON.Status == "victory" {
-								if chatAction != nil {
-									chatAction.AddLine(g.curr_cmd + " > Enemy defeated!")
-								}
-								g.hp = attackJSON.AttackerHP
-								g.status = ""
-								g.curr_cmd = "LOOK"
-								SendMessage(g.conn, "LOOK")
-							} else if attackJSON.Status == "defeated" {
-								if chatAction != nil {
-									chatAction.AddLine(g.curr_cmd + " > YOU DIED")
-								}
-								g.centerMid.RemoveRooms()
-								g.location = [2]int{1, 1}
-								g.status = ""
-								g.curr_cmd = "LOOK"
-								g.hp = attackJSON.AttackerHP
-								SendMessage(g.conn, "LOOK")
-							} else {
-								attackMsg := fmt.Sprintf("Enemy took %d damage (%d HP left)", attackJSON.Damage, attackJSON.TargetHP)
-								g.hp = attackJSON.AttackerHP
-								if chatAction != nil {
-									chatAction.AddLine(g.curr_cmd + " > " + attackMsg)
-								}
-							}
-						} else {
-							if chatAction != nil {
-								chatAction.AddLine("Server > " + msg)
-							}
-						}
-					} else {
-						if chatAction != nil {
-							chatAction.AddLine(g.curr_cmd + " > Target is not hostile")
-						}
-					}
-					g.status = ""
-
-				case "DEFEND":
 					if strings.Contains(msg, "Defeat:") || strings.Contains(msg, "defeated") {
 						chatAction.AddLine("COMBAT > YOU DIED! Respawned in room0.")
 						g.centerMid.RemoveRooms()
 						g.location = [2]int{1, 1}
 						g.status = ""
 						g.curr_cmd = "LOOK"
-						SendMessage(g.conn, "LOOK")
+						sendMessage(g.conn, "LOOK")
 						break
 					}
-					if strings.Contains(msg, "{") {
-						defenceJSON, err := ParseDefence(response)
-						if err == nil {
-							if defenceJSON.Status == "defeated" {
-								chatAction.AddLine("DEFEND > YOU DIED")
-								g.centerMid.RemoveRooms()
-								g.location = [2]int{1, 1}
-								g.curr_cmd = "LOOK"
-								SendMessage(g.conn, "LOOK")
-							} else if defenceJSON.Status == "perfect_defense" {
-								if chatAction != nil {
-									chatAction.AddLine("DEFEND > Protected! No damage taken")
-								}
-							} else if defenceJSON.Status == "weakened_defense" || defenceJSON.Status == "broken_defense" {
-								defenceMsg := fmt.Sprintf("Defense broken! %d damage taken", defenceJSON.Damage)
-								if chatAction != nil {
-									chatAction.AddLine("DEFEND > " + defenceMsg)
-								}
-							}
-							g.hp = defenceJSON.DefenderHP
+					if attackJSON, err := parseAttack(response); err == nil {
+						if attackJSON.Status == "victory" {
+							chatAction.AddLine("ATTACK > Enemy defeated!")
+							g.hp = attackJSON.AttackerHP
+							g.status = ""
+							g.curr_cmd = "LOOK"
+							sendMessage(g.conn, "LOOK")
+						} else if attackJSON.Status == "defeated" {
+							chatAction.AddLine("ATTACK > YOU DIED")
+							g.centerMid.RemoveRooms()
+							g.location = [2]int{1, 1}
+							g.status = ""
+							g.curr_cmd = "LOOK"
+							g.hp = attackJSON.AttackerHP
+							sendMessage(g.conn, "LOOK")
 						} else {
-							if chatAction != nil {
-								chatAction.AddLine("Server > " + msg)
-							}
+							chatAction.AddLine(fmt.Sprintf("ATTACK > Enemy -%d HP (%d HP remaining)", attackJSON.Damage, attackJSON.TargetHP))
+							g.hp = attackJSON.AttackerHP
 						}
-					} else {
-						if chatAction != nil {
-							chatAction.AddLine("Server > " + msg)
+					}
+					g.status = ""
+
+				case "DEFEND":
+					if defenceJSON, err := parseDefence(response); err == nil {
+						if defenceJSON.Status == "perfect_defense" {
+							chatAction.AddLine("DEFEND > Perfect defense! No damage taken.")
+						} else if defenceJSON.Status == "weakened_defense" || defenceJSON.Status == "broken_defense" {
+							chatAction.AddLine(fmt.Sprintf("DEFEND > Defense broken! %d damage taken.", defenceJSON.Damage))
 						}
+						g.hp = defenceJSON.DefenderHP
 					}
 					g.status = ""
 
@@ -247,112 +236,77 @@ func (g *Game) serverResponse() error {
 					if len(response) >= 3 {
 						talkResponse = response[3:]
 					}
-					if chatAction != nil {
-						chatAction.AddLine(g.curr_cmd + " > " + talkResponse)
-					}
+					chatAction.AddLine("TALK > " + talkResponse)
 
 				case "EQUIP":
 					if strings.Contains(msg, "equipped=") {
 						parts := strings.Split(msg, "equipped=")
 						if len(parts) > 1 {
-							itemName := strings.TrimSpace(parts[1])
-							if chatAction != nil {
-								chatAction.AddLine(g.curr_cmd + " > Equipped " + itemName)
-							}
-						}
-					} else {
-						if chatAction != nil {
-							chatAction.AddLine(g.curr_cmd + " > Equip failed")
+							chatAction.AddLine("EQUIP > Equipped: " + strings.TrimSpace(parts[1]))
 						}
 					}
 					g.status = ""
 
 				case "WHO":
-					who, err := ParseWho(response)
-					if err == nil {
-						names := ""
-
-						g.centerLeft.PlayerInvites = components.CreateList(
-							who.Room,
-							g.centerLeft.X,
-							g.centerLeft.Y,
-							g.centerLeft.W,
-						)
-
-						for _, invite := range g.centerLeft.PlayerInvites {
-							playerName := invite.Name
-							invite.Btn.OnClick = func() {
-								SendMessage(g.conn, "GROUP INVITE "+playerName)
-							}
-						}
-
-						for _, name := range who.Room {
-							names += name + " "
-						}
-						whoMsg := fmt.Sprintf("Players: %s| Server: %d", names, who.Server)
-						if chatAction != nil {
-							chatAction.AddLine(g.curr_cmd + " > " + whoMsg)
-						}
-					} else {
-						if chatAction != nil {
-							chatAction.AddLine("Server > " + msg)
-						}
-					}
-
-				case "STATUS":
-					status, err := ParseStatus(response)
-					if err == nil {
-						statusMsg := fmt.Sprintf("%d/%d HP | State: %s", status.HP, status.MaxHP, status.Status)
-						if chatAction != nil {
-							chatAction.AddLine(g.curr_cmd + " > " + statusMsg)
-						}
-					} else {
-						if chatAction != nil {
-							chatAction.AddLine("Server > " + msg)
-						}
-					}
-
-				case "QUEST":
-					quest, err := ParseQuest(response)
-					if err == nil {
-						statusMsg := fmt.Sprintf("%s | reward: %s", quest.Description, quest.Reward)
-						if chatAction != nil {
-							chatAction.AddLine(g.curr_cmd + " > " + statusMsg)
-						}
-					} else {
-						if chatAction != nil {
-							chatAction.AddLine("Server > " + msg)
-						}
-					}
-
-				case "QUESTS":
-					quests, err := ParseQuests(msg)
-					if err == nil {
-						if len(quests) == 0 {
-							if chatAction != nil {
-								chatAction.AddLine(g.curr_cmd + " > No quest has been started.")
-							}
-						} else {
-							for _, quest := range quests {
-								statusMsg := fmt.Sprintf("[%s] status: %s, progess: %s", quest.QuestID, quest.Status, quest.Progress)
-
-								if chatAction != nil {
-									chatAction.AddLine(g.curr_cmd + " > " + statusMsg)
+					if who, err := parseWho(response); err == nil {
+						if invitesPanel := g.centerLeft.GetSubPanel("INVITE PLAYER"); invitesPanel != nil {
+							invitesPanel.PlayerInvites = components.CreateList(
+								g.name,
+								who.Room,
+								invitesPanel.X,
+								invitesPanel.Y,
+								invitesPanel.W,
+							)
+							for _, invite := range invitesPanel.PlayerInvites {
+								playerName := invite.Name
+								invite.Btn.OnClick = func() {
+									g.curr_cmd = "INVITE"
+									sendMessage(g.conn, "GROUP INVITE "+playerName)
 								}
 							}
 						}
-					} else {
-						if chatAction != nil {
-							chatAction.AddLine("Server > " + msg)
+						chatAction.AddLine(fmt.Sprintf("WHO > Players in room: %v | Server: %d", who.Room, who.Server))
+					}
+
+				case "STATUS":
+					if status, err := parseStatus(response); err == nil {
+						chatAction.AddLine(fmt.Sprintf("STATUS > %d/%d HP | State: %s", status.HP, status.MaxHP, status.Status))
+					}
+
+				case "QUEST":
+					if quest, err := parseQuest(response); err == nil {
+						chatAction.AddLine(fmt.Sprintf("QUEST > %s | Reward: %s", quest.Description, quest.Reward))
+					}
+
+				case "QUESTS":
+					if quests, err := parseQuests(msg); err == nil {
+						if len(quests) == 0 {
+							chatAction.AddLine("QUESTS > No active quests.")
+						} else {
+							for _, quest := range quests {
+								chatAction.AddLine(fmt.Sprintf("QUESTS > [%s] Status: %s | Progress: %s", quest.QuestID, quest.Status, quest.Progress))
+							}
 						}
 					}
+					g.status = ""
+
+				case "CREATE", "GROUP":
+					if group, err := parseCreateGroup(msg); err == nil {
+						chatAction.AddLine("GROUP > You are now in: " + group.Group)
+					} else {
+						chatAction.AddLine("GROUP > " + msg)
+					}
+					g.status = ""
+
+				case "LEAVE":
+					chatAction.AddLine("GROUP > You left the group.")
 					g.status = ""
 
 				case "QUIT":
 					return ErrQuit
 
 				default:
-					return nil
+					chatAction.AddLine("Server > " + msg)
 				}
 			}
 

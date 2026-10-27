@@ -31,7 +31,7 @@ func NewStuff(x, y, w, h float32) *Stuff {
 	}
 }
 
-func (s *Stuff) RecalculatePositions() {
+func (s *Stuff) recalculatePositions() {
 	for i := range s.Slots {
 		itemY := s.Y + paddingTop + float32(i)*(slotHeight+gapY)
 		s.Slots[i].Button.X = s.X + paddingX
@@ -55,7 +55,7 @@ func (s *Stuff) MoveToTop(itemName string) {
 
 		remaining := append(s.Slots[:targetIdx], s.Slots[targetIdx+1:]...)
 		s.Slots = append([]ItemSlot{targetSlot}, remaining...)
-		s.RecalculatePositions()
+		s.recalculatePositions()
 	}
 }
 
@@ -75,7 +75,7 @@ func (s *Stuff) AddItem(item string, onItemClick func(string)) {
 	}
 
 	s.Slots = append(s.Slots, itemSlot)
-	s.RecalculatePositions()
+	s.recalculatePositions()
 }
 
 func (s *Stuff) RemoveItem(item string) {
@@ -86,7 +86,7 @@ func (s *Stuff) RemoveItem(item string) {
 		}
 	}
 
-	s.RecalculatePositions()
+	s.recalculatePositions()
 }
 
 func (s *Stuff) Update() {

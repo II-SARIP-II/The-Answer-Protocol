@@ -15,7 +15,7 @@ type Door struct {
 	Pos int
 }
 
-func GetHolesForRoom(Exits map[string]world.Exit, scale float32) []Hole {
+func getHolesForRoom(Exits map[string]world.Exit, scale float32) []Hole {
 	var door []Hole
 	for exit := range Exits {
 		exitPos := Hole{}
@@ -78,7 +78,7 @@ func (p *Panel) AddRoom(name string, location [2]int, exits map[string]world.Exi
 	rw := float32(roomW) * scale
 	rh := float32(roomH) * scale
 
-	holes := GetHolesForRoom(exits, scale)
+	holes := getHolesForRoom(exits, scale)
 
 	var roomPanel *Panel
 	for _, widget := range p.Content {
