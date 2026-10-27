@@ -56,11 +56,6 @@ func (p *Player) handleGroupCreate(args string) {
 	p.SendOK(fmt.Sprintf("group=%s", groupID))
 }
 
-// choix fait: tous les membres d'un groupe peuvent inviter qqun,
-// pas seulement le leader
-// le message d'EVT contient bien le nom du leader
-// pr que le player sache quel groupe l'invite
-
 func (p *Player) handleGroupInvite(args string) {
 	targetInvited := strings.TrimSpace(args)
 	if targetInvited == "" {
@@ -191,7 +186,6 @@ func (p *Player) handleGroupJoin(args string) {
 	p.SendOK(fmt.Sprintf("group=%s", p.GroupID))
 }
 
-// Retire le joueur de son groupe et dissout le groupe si c'est le leader.
 func (p *Player) leaveGroupGetModif() {
 	if p.GroupID == "" {
 		return
@@ -206,6 +200,7 @@ func (p *Player) leaveGroupGetModif() {
 			member.SendEvt(protocol.EvtGroupLeave, p.Username)
 			if isLeader {
 				member.GroupID = ""
+				member.SendEvt(protocol.EvtChatGroup, fmt.Sprintf("Server Leader %s has left. Group has been disbanded.", p.Username))
 			}
 		}
 	}
