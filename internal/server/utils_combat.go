@@ -105,8 +105,8 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 
 	p.Server.world.Rooms[p.CurrentRoom] = currentRoom
 
-	p.broadcastRoom(p.CurrentRoom, protocol.EvtChatRoom, fmt.Sprintf("Player %s has eliminated %s!", p.Username, enemy.Name))
-	p.broadcastGroup(protocol.EvtChatGroup, fmt.Sprintf("Player %s has eliminated %s!", p.Username, enemy.Name))
+	p.broadcastRoom(p.CurrentRoom, protocol.EvtChatRoom, fmt.Sprintf("Server Player %s has eliminated %s!", p.Username, enemy.Name))
+	p.broadcastGroup(protocol.EvtChatGroup, fmt.Sprintf("Server Player %s has eliminated %s!", p.Username, enemy.Name))
 
 	p.processDefeatQuest(enemyID)
 
@@ -142,8 +142,8 @@ func (p *Player) checkHostileAmbush(roomID string) {
 				"player_hp", p.HP,
 			)
 
-			p.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("%s ambushes you! You take %d damage!", npc.Name, damage))
-			p.broadcastRoom(roomID, protocol.EvtChatRoom, fmt.Sprintf("%s ambushes %s for %d damage!", npc.Name, p.Username, damage))
+			p.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server %s ambushes you! You take %d damage!", npc.Name, damage))
+			p.broadcastRoom(roomID, protocol.EvtChatRoom, fmt.Sprintf("Server %s ambushes %s for %d damage!", npc.Name, p.Username, damage))
 
 			if p.HP == 0 {
 				p.handlePlayerDeath(npc.Name)
@@ -157,8 +157,8 @@ func (p *Player) handlePlayerDeath(target string) {
 	roomWhenDeath := p.CurrentRoom
 
 	p.broadcastRoom(roomWhenDeath, protocol.EvtRoomLeave, p.Username)
-	p.broadcastRoom(roomWhenDeath, protocol.EvtChatRoom, fmt.Sprintf("Player %s has been defeated by %s!", p.Username, target))
-	p.broadcastGroup(protocol.EvtChatGroup, fmt.Sprintf("Player %s was defeated by %s!", p.Username, target))
+	p.broadcastRoom(roomWhenDeath, protocol.EvtChatRoom, fmt.Sprintf("Server Player %s has been defeated by %s!", p.Username, target))
+	p.broadcastGroup(protocol.EvtChatGroup, fmt.Sprintf("Server Player %s was defeated by %s!", p.Username, target))
 
 	p.CurrentRoom = "room0"
 	p.MaxHP /= 2
@@ -171,7 +171,7 @@ func (p *Player) handlePlayerDeath(target string) {
 	slog.Info(data)
 
 	p.broadcastRoom(p.CurrentRoom, protocol.EvtRoomEnter, p.Username)
-	p.SendEvt(protocol.EvtChatRoom, "Defeat: you were defeated and respawned in room0!")
+	p.SendEvt(protocol.EvtChatRoom, "Server Defeat: you were defeated and respawned in room0!")
 }
 
 func (p *Player) getAttackDamage(weaponNameOrID string) int {

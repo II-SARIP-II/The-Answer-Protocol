@@ -259,13 +259,17 @@ func (s *Server) handleDisconnect(player *Player) {
 	player.State = protocol.StateTerminated
 	player.leaveGroupGetModif()
 
-	room, exists := s.world.Rooms[player.CurrentRoom]
-	if exists && len(player.Inventory) > 0 {
-		room.Items = append(room.Items, player.Inventory...)
-		s.world.Rooms[player.CurrentRoom] = room
-		player.Inventory = nil
-		slog.Info("Player items dropped on disconnect", "player", player.Username, "room", player.CurrentRoom)
+	for _, itemID := range player.Inventory {
+		if origRoomID, exists := s.spawnsQuestsItems[itemID]; exists {
+			origRoom := s.world.Rooms[origRoomID]
+			origRoom.Items = append(origRoom.Items, itemID)
+			s.world.Rooms[origRoomID] = origRoom
+			s.resetPassiveEnemy(origRoomID, itemID)
+			slog.Info("World item restored to origin on disconnect", "item", itemID, "room", origRoomID)
+		}
 	}
+
+	player.Inventory = nil
 
 	delete(s.players, player.Username)
 
