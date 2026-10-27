@@ -131,7 +131,7 @@ func (p *Player) resolveActiveQuest(activeQuestID string) {
 			p.processTargetsRespawn(worldQuest.Targets)
 		}
 
-		p.broadcastRoom(p.CurrentRoom, "ROOM CHAT", fmt.Sprintf("Player %s completed the quest: %s!", p.Username, activeQuestID))
+		p.broadcastRoom(p.CurrentRoom, protocol.EvtChatRoom, fmt.Sprintf("Player %s completed the quest: %s!", p.Username, activeQuestID))
 
 		p.resolveFinalVictory()
 
@@ -143,42 +143,6 @@ func (p *Player) resolveActiveQuest(activeQuestID string) {
 		p.SendOK(fmt.Sprintf(`{"quest_id":"%s","description":"%s","reward":"%s","status":"active","progress":"%d/%d"}`,
 			activeQuestID, worldQuest.Description, worldQuest.Reward, playerQuest.CompletedSteps, playerQuest.Steps))
 		return
-	}
-}
-
-func (p *Player) processTargetsRespawn(questTargets []string) {
-
-	for _, target := range questTargets {
-		foundIndex := -1
-		for index, playerItem := range p.Inventory {
-			if strings.EqualFold(target, playerItem) {
-				foundIndex = index
-				break
-			}
-		}
-		if foundIndex == -1 {
-			continue
-		}
-
-		if p.Inventory[foundIndex] == p.EquippedWeapon {
-			p.EquippedWeapon = ""
-		}
-
-		p.Inventory = append(p.Inventory[:foundIndex], p.Inventory[foundIndex+1:]...)
-
-		initialRoomID := p.Server.spawnsQuestsItems[target]
-		roomData, exists := p.Server.world.Rooms[initialRoomID]
-		if !exists {
-			p.Server.mu.Unlock()
-			p.SendErr(protocol.CodeNPCNotFound, protocol.MsgNPCNotFound)
-			return
-		}
-		roomData.Items = append(roomData.Items, target)
-		p.Server.world.Rooms[initialRoomID] = roomData
-
-		slog.Info("Item respawn after quest completion", "item", target, "player", p.Username)
-		p.broadcastRoom(initialRoomID, "ROOM CHAT", fmt.Sprintf("A %s has reappeared !", target))
-
 	}
 }
 
@@ -231,5 +195,5 @@ func (p *Player) resolveFinalVictory() {
 		}
 	}
 	slog.Info("Player achieved final game victory", "player", p.Username)
-	p.broadcastGlobal("GLOBAL CHAT", fmt.Sprintf("Player %s has completed all the quests. Congratulations !", p.Username))
+	p.broadcastGlobal(protocol.EvtChatGlobal, fmt.Sprintf("Player %s has completed all the quests. Congratulations !", p.Username))
 }

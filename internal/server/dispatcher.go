@@ -6,7 +6,11 @@ import (
 	"tap/internal/protocol"
 )
 
-func (p *Player) HandleCommand(rawLine string) {
+func (p *Player) handleCommand(rawLine string) {
+	line := strings.TrimSpace(rawLine)
+	if line == "" {
+		return
+	}
 	parts := strings.SplitN(rawLine, " ", 2)
 	command := strings.ToUpper(parts[0])
 	args := ""

@@ -23,11 +23,21 @@ type DefendResponse struct {
 	Status     string `json:"status"`
 }
 
+type CombatRoundResult struct {
+	DamageDealt int
+	DamageTaken int
+	TargetHP    int
+	Status      string
+}
+
 func (p *Player) handleAttack(args string) {
 	if strings.TrimSpace(args) == "" {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
 		return
 	}
+
+	p.Server.mu.Lock()
+	defer p.Server.mu.Unlock()
 
 	enemyID, enemyData, ok := p.findAndValidateEnemy(args)
 	if !ok {
@@ -37,44 +47,17 @@ func (p *Player) handleAttack(args string) {
 	p.Status = protocol.StatusCombat
 	p.DefendCount = 0
 
-	damageDealt := p.getAttackDamage(p.EquippedWeapon)
-
-	enemyData.Life -= damageDealt
-	if enemyData.Life < 0 {
-		enemyData.Life = 0
-	}
-	p.Server.world.NPCs[enemyID] = enemyData
-
-	damageTaken := 0
-	if enemyData.Life > 0 && enemyData.Item != nil {
-		damageTaken = p.getAttackDamage(*enemyData.Item)
-	}
-
-	p.HP -= damageTaken
-	if p.HP < 0 {
-		p.HP = 0
-	}
-
-	combatStatus := protocol.StatusCombat
-	if enemyData.Life == 0 {
-		combatStatus = "victory"
-		p.Status = protocol.StatusVictory
-		p.handleEnemyDeath(enemyID)
-	} else if p.HP == 0 {
-		combatStatus = "defeated"
-		p.handlePlayerDeath(enemyData.Name)
-	}
+	combatRoundResult := p.handleDamage(enemyID, enemyData)
 
 	response := AttackResponse{
 		AttackerHP: p.HP,
-		TargetHP:   enemyData.Life,
-		Damage:     damageDealt,
-		Status:     combatStatus,
+		TargetHP:   combatRoundResult.TargetHP,
+		Damage:     combatRoundResult.DamageDealt,
+		Status:     combatRoundResult.Status,
 	}
 
 	data, err := json.Marshal(response)
 	if err != nil {
-		p.Server.mu.Unlock()
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgBadRequest)
 		return
 	}
@@ -82,54 +65,26 @@ func (p *Player) handleAttack(args string) {
 	slog.Info("Combat turn",
 		"player", p.Username,
 		"target", enemyID,
-		"damage_dealt", damageDealt,
-		"damage_taken", damageTaken,
+		"damage_dealt", combatRoundResult.DamageDealt,
+		"damage_taken", combatRoundResult.DamageTaken,
 		"player_hp", p.HP,
-		"target_hp", enemyData.Life,
-		"result", combatStatus,
+		"target_hp", combatRoundResult.TargetHP,
+		"result", combatRoundResult.Status,
 	)
 
-	p.Server.mu.Unlock()
 	p.SendOK(string(data))
 }
 
 func (p *Player) handleDefend(args string) {
+	p.Server.mu.Lock()
+	defer p.Server.mu.Unlock()
+
 	_, enemyData, ok := p.findAndValidateEnemy(args)
 	if !ok {
 		return
 	}
 
-	p.Status = protocol.StatusPerfectDefense
-
-	theoricalDamageTaken := protocol.FistFightDamage
-	if enemyData.Item != nil {
-		theoricalDamageTaken = p.getAttackDamage(*enemyData.Item)
-	}
-
-	damageTaken := 0
-	switch p.DefendCount {
-	case 0:
-		damageTaken = 0
-		p.DefendCount++
-		p.Status = protocol.StatusPerfectDefense
-	case 1:
-		damageTaken = theoricalDamageTaken / 2
-		p.DefendCount++
-		p.Status = protocol.StatusWeakenedDefense
-	default:
-		damageTaken = theoricalDamageTaken
-		p.Status = protocol.StatusBrokenDefense
-	}
-
-	p.HP -= damageTaken
-	if p.HP < 0 {
-		p.HP = 0
-	}
-
-	if p.HP == 0 {
-		p.Status = "defeated"
-		p.handlePlayerDeath(enemyData.Name)
-	}
+	damageTaken := p.applyDefense(enemyData)
 
 	response := DefendResponse{
 		DefenderHP: p.HP,
@@ -140,7 +95,6 @@ func (p *Player) handleDefend(args string) {
 
 	data, err := json.Marshal(response)
 	if err != nil {
-		p.Server.mu.Unlock()
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgBadRequest)
 		return
 	}
@@ -154,7 +108,6 @@ func (p *Player) handleDefend(args string) {
 		"status", p.Status,
 	)
 
-	p.Server.mu.Unlock()
 	p.SendOK(string(data))
 }
 
@@ -165,6 +118,7 @@ func (p *Player) handleFlee(args string) {
 	}
 
 	p.Server.mu.Lock()
+	defer p.Server.mu.Unlock()
 
 	room := p.Server.world.Rooms[p.CurrentRoom]
 	availableDirections := make([]string, 0, len(room.Exits))
@@ -173,7 +127,6 @@ func (p *Player) handleFlee(args string) {
 	}
 
 	if len(availableDirections) == 0 {
-		p.Server.mu.Unlock()
 		p.SendErr(protocol.CodeNoExit, protocol.MsgNoExit)
 		return
 	}
@@ -184,7 +137,7 @@ func (p *Player) handleFlee(args string) {
 	oldRoom := p.CurrentRoom
 
 	p.broadcastRoom(oldRoom, protocol.EvtRoomLeave, p.Username)
-	p.broadcastRoom(oldRoom, "ROOM CHAT", fmt.Sprintf("Server Player %s fled towards %s!", p.Username, randomDirection))
+	p.broadcastRoom(oldRoom, protocol.EvtChatRoom, fmt.Sprintf("Server Player %s fled towards %s!", p.Username, randomDirection))
 	p.broadcastRoom(newRoom, protocol.EvtRoomEnter, p.Username)
 
 	p.CurrentRoom = newRoom
@@ -197,8 +150,6 @@ func (p *Player) handleFlee(args string) {
 		"to_room", newRoom,
 		"direction", randomDirection,
 	)
-
-	p.Server.mu.Unlock()
 
 	p.SendOK(fmt.Sprintf("room=%s", newRoom))
 }

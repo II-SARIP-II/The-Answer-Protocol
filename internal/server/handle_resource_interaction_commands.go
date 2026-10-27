@@ -54,7 +54,7 @@ func (p *Player) handleTake(args string) {
 			npc.Role = "enemy"
 			p.Server.world.NPCs[npcID] = npc
 
-			damage = protocol.FistFightDamage
+			damage = FistFightDamage
 			if npc.Item != nil {
 				damage = p.getAttackDamage(*npc.Item)
 			}
@@ -84,8 +84,8 @@ func (p *Player) handleTake(args string) {
 	p.SendOK(fmt.Sprintf("taken=%s", takenItem))
 
 	if provokedPassiveEnemy != nil {
-		p.SendEvt("ROOM CHAT", fmt.Sprintf("%s is enraged: \"No one has the right to touch my knives!\" He attacks you for %d damage!", provokedPassiveEnemy.Name, damage))
-		p.broadcastRoom(p.CurrentRoom, "ROOM CHAT", fmt.Sprintf("%s is enraged that %s took %s! He attacks for %d damage!", provokedPassiveEnemy.Name, p.Username, takenItem, damage))
+		p.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("%s is enraged: \"No one has the right to touch my knives!\" He attacks you for %d damage!", provokedPassiveEnemy.Name, damage))
+		p.broadcastRoom(p.CurrentRoom, protocol.EvtChatRoom, fmt.Sprintf("%s is enraged that %s took %s! He attacks for %d damage!", provokedPassiveEnemy.Name, p.Username, takenItem, damage))
 
 		if p.HP == 0 {
 			p.Server.mu.Lock()
