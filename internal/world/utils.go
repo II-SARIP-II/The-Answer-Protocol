@@ -101,11 +101,11 @@ func (world *GameData) CheckNPCExists() error {
 		if npc.Item != nil && *npc.Item != "" {
 			foundItem := false
 			for itemID, itemDefined := range world.Items {
-		if strings.EqualFold(*npc.Item, itemID) || strings.EqualFold(*npc.Item, itemDefined.Name) {
-			foundItem = true
-			break
-		}
-	}
+				if strings.EqualFold(*npc.Item, itemID) || strings.EqualFold(*npc.Item, itemDefined.Name) {
+					foundItem = true
+					break
+				}
+			}
 			if !foundItem {
 				return fmt.Errorf("NPC '%s' holds non-existent item '%s'", npc.Name, *npc.Item)
 			}
