@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
-	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
-
+	server.SetLogger()
+	
 	serv, err := server.NewServer("data/world.json")
 	if err != nil {
 		slog.Error("Failed to initialize server", "error", err)
@@ -28,3 +28,4 @@ func main() {
 		os.Exit(1)
 	}
 }
+
