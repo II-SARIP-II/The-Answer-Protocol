@@ -41,7 +41,7 @@ func CreateList(name string, playerList []string, panelX, panelY, panelW float32
 	return listPlayerInvite
 }
 
-func DrawList(screen *ebiten.Image, playerList []*PlayerInvite) {
+func drawList(screen *ebiten.Image, playerList []*PlayerInvite) {
 	for _, player := range playerList {
 		if player != nil && player.Btn != nil {
 			player.Btn.Draw(screen)

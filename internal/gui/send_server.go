@@ -2,6 +2,7 @@ package gui
 
 import (
 	"net"
+
 	"tap/internal/gui/components"
 )
 
@@ -13,8 +14,8 @@ func (g *Game) sendServerDirection(conn net.Conn) {
 			case "North":
 				btn.OnClick = func() {
 					if g.status == "AWAITING_MOVE_DIR" {
-						msg := "MOVE North"
-						SendMessage(conn, msg)
+						g.curr_cmd = "MOVE North"
+						sendMessage(conn, g.curr_cmd)
 						g.direction = 0
 						g.status = ""
 					}
@@ -22,8 +23,8 @@ func (g *Game) sendServerDirection(conn net.Conn) {
 			case "East":
 				btn.OnClick = func() {
 					if g.status == "AWAITING_MOVE_DIR" {
-						msg := "MOVE East"
-						SendMessage(conn, msg)
+						g.curr_cmd = "MOVE East"
+						sendMessage(conn, g.curr_cmd)
 						g.direction = 1
 						g.status = ""
 					}
@@ -31,8 +32,8 @@ func (g *Game) sendServerDirection(conn net.Conn) {
 			case "South":
 				btn.OnClick = func() {
 					if g.status == "AWAITING_MOVE_DIR" {
-						msg := "MOVE South"
-						SendMessage(conn, msg)
+						g.curr_cmd = "MOVE South"
+						sendMessage(conn, g.curr_cmd)
 						g.direction = 2
 						g.status = ""
 					}
@@ -40,8 +41,8 @@ func (g *Game) sendServerDirection(conn net.Conn) {
 			case "West":
 				btn.OnClick = func() {
 					if g.status == "AWAITING_MOVE_DIR" {
-						msg := "MOVE West"
-						SendMessage(conn, msg)
+						g.curr_cmd = "MOVE West"
+						sendMessage(conn, g.curr_cmd)
 						g.direction = 3
 						g.status = ""
 					}
@@ -96,14 +97,14 @@ func (g *Game) sendActionButton(conn net.Conn, chat *components.ChatWidget) {
 			case "DEFEND":
 				btn.OnClick = func() {
 					g.curr_cmd = "DEFEND"
-					SendMessage(conn, "DEFEND")
+					sendMessage(conn, "DEFEND")
 				}
 
 			case "STATUS":
 				btn.OnClick = func() {
 					g.status = ""
 					g.curr_cmd = "STATUS"
-					SendMessage(conn, "STATUS")
+					sendMessage(conn, "STATUS")
 				}
 
 			case "QUEST":
@@ -114,19 +115,19 @@ func (g *Game) sendActionButton(conn net.Conn, chat *components.ChatWidget) {
 
 			case "QUESTS":
 				btn.OnClick = func() {
-					g.status = "AWAITING_QUEST_NPC"
+					g.status = ""
 					g.curr_cmd = "QUESTS"
 					if chat != nil {
 						chat.AddLine(g.name + " > QUESTS")
 					}
-					SendMessage(conn, "QUESTS")
+					sendMessage(conn, "QUESTS")
 				}
 
 			case "WHO":
 				btn.OnClick = func() {
-					g.status = "WHO"
+					g.status = ""
 					g.curr_cmd = "WHO"
-					SendMessage(conn, "WHO")
+					sendMessage(conn, "WHO")
 				}
 
 			default:
@@ -138,7 +139,7 @@ func (g *Game) sendActionButton(conn net.Conn, chat *components.ChatWidget) {
 							chat.AddLine(g.name + " > " + btn.Label)
 						}
 					}
-					SendMessage(conn, btn.Label)
+					sendMessage(conn, btn.Label)
 				}
 			}
 		}
@@ -154,15 +155,13 @@ func (g *Game) sendGroupButton(conn net.Conn, chat *components.ChatWidget) {
 			case "CREATE":
 				btn.OnClick = func() {
 					g.curr_cmd = "CREATE GROUP"
-					msg := "group create"
-					SendMessage(conn, msg)
+					sendMessage(conn, "group create")
 				}
 
 			case "LEAVE":
 				btn.OnClick = func() {
 					g.curr_cmd = "LEAVE GROUP"
-					msg := "group leave"
-					SendMessage(conn, msg)
+					sendMessage(conn, "group leave")
 				}
 			}
 		}

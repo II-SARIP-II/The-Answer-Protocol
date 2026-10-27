@@ -5,7 +5,7 @@ import (
 	"tap/internal/gui/components/panels"
 )
 
-func InitPanels(winWidth int, winHeight int) (*components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel) {
+func initPanels(winWidth int, winHeight int) (*components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel, *components.Panel) {
 	w := float32(winWidth)
 	h := float32(winHeight)
 

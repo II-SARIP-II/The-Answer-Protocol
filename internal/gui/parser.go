@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-
-	"tap/internal/server"
 )
 
 type AttackResponse struct {
@@ -62,13 +60,13 @@ type EventChatMessage struct {
 }
 
 type EventInvite struct {
-	Type    string // "EVT"
-	Cmd   string // "GROUP"
-	Invite string // "INVITE"
+	Type   string // "EVT"
+	Cmd    string // "GROUP"
+	Action string // "INVITE"
 	Group  string // "group_name"
 }
 
-func ParseInvite(raw string) (EventInvite, error) {
+func parseInvite(raw string) (EventInvite, error) {
 	raw = strings.TrimSpace(raw)
 
 	parts := strings.SplitN(raw, " ", 4)
@@ -77,15 +75,14 @@ func ParseInvite(raw string) (EventInvite, error) {
 	}
 
 	return EventInvite{
-		Type:    parts[0],
-		Cmd:   parts[1],
-		Invite: parts[2],
+		Type:   parts[0],
+		Cmd:    parts[1],
+		Action: parts[2],
 		Group:  parts[3],
 	}, nil
 }
 
-
-func ParseEventChat(raw string) (EventChatMessage, error) {
+func parseEventChat(raw string) (EventChatMessage, error) {
 	raw = strings.TrimSpace(raw)
 
 	parts := strings.SplitN(raw, " ", 5)
@@ -117,23 +114,23 @@ func parseJSON[T any](raw string) (T, error) {
 	return target, nil
 }
 
-func ParseAttack(strAttack string) (AttackResponse, error) {
+func parseAttack(strAttack string) (AttackResponse, error) {
 	return parseJSON[AttackResponse](strAttack)
 }
 
-func ParseDefence(strDefence string) (DefendResponse, error) {
+func parseDefence(strDefence string) (DefendResponse, error) {
 	return parseJSON[DefendResponse](strDefence)
 }
 
-func ParseStatus(strStatus string) (StatusResponse, error) {
+func parseStatus(strStatus string) (StatusResponse, error) {
 	return parseJSON[StatusResponse](strStatus)
 }
 
-func ParseQuest(strQuest string) (QuestResponse, error) {
+func parseQuest(strQuest string) (QuestResponse, error) {
 	return parseJSON[QuestResponse](strQuest)
 }
 
-func ParseQuests(strQuests string) ([]QuestsItemResponse, error) {
+func parseQuests(strQuests string) ([]QuestsItemResponse, error) {
 	var quests []QuestsItemResponse
 	fmt.Print(strQuests)
 	jsonStart := strings.Index(strQuests, "[")
@@ -149,11 +146,11 @@ func ParseQuests(strQuests string) ([]QuestsItemResponse, error) {
 	return quests, nil
 }
 
-func ParseWho(strWho string) (WhoResponse, error) {
+func parseWho(strWho string) (WhoResponse, error) {
 	return parseJSON[WhoResponse](strWho)
 }
 
-func ParseCreateGroup(raw string) (CreateGroupResponse, error) {
+func parseCreateGroup(raw string) (CreateGroupResponse, error) {
 	raw = strings.TrimSpace(raw)
 
 	if strings.Contains(raw, "group=") {
@@ -165,7 +162,4 @@ func ParseCreateGroup(raw string) (CreateGroupResponse, error) {
 	}
 
 	return CreateGroupResponse{}, fmt.Errorf("impossible d'extraire le nom du groupe depuis: %q", raw)
-}
-func ParsePlayer(strPlayer string) (server.Player, error) {
-	return parseJSON[server.Player](strPlayer)
 }
