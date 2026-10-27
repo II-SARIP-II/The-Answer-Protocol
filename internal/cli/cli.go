@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bufio"
+	_ "embed"
 	"fmt"
 	"net"
 	"os"
@@ -92,6 +93,11 @@ func handleCommands(conn net.Conn, serverScanner *bufio.Scanner, stdinScanner *b
 			<-quitChan
 			fmt.Println("Disconnected.")
 			return nil
+		}
+
+		if strings.EqualFold(input, "HELP") || input == "?" {
+			fmt.Print(helpMessage)
+			continue
 		}
 
 		fmt.Fprintf(conn, "%s\n", input)

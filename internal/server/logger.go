@@ -1,8 +1,8 @@
 package server
 
 import (
-	"log/slog"
 	"bytes"
+	"log/slog"
 	"os"
 )
 
@@ -18,4 +18,3 @@ func (w logWriter) Write(p []byte) (int, error) {
 	}
 	return os.Stdout.Write(p)
 }
-
