@@ -26,7 +26,7 @@ type ServerLookResponse struct {
 	NPCs    []string   `json:"npcs"`
 }
 
-func (resp ServerLookResponse) ToWorldRoom() world.Room {
+func (resp ServerLookResponse) toWorldRoom() world.Room {
 	exits := make(map[string]world.Exit)
 	for dir, target := range resp.Room.Exits {
 		exits[dir] = world.Exit{
@@ -48,7 +48,7 @@ func (resp ServerLookResponse) ToWorldRoom() world.Room {
 	}
 }
 
-func ParseLookResponse(msg string) (ServerLookResponse, error) {
+func parseLookResponse(msg string) (ServerLookResponse, error) {
 	startIdx := strings.Index(msg, "{")
 	endIdx := strings.LastIndex(msg, "}")
 

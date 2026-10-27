@@ -1,7 +1,6 @@
 package components
 
 import (
-	"fmt"
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -54,18 +53,16 @@ func (p *Panel) GetButtons() []*Button {
 	return buttons
 }
 
-func (p *Panel) GetPlayerInvitesButton() []*Button {
+func (p *Panel) GetSubPanel(name string) *Panel {
 	if p == nil {
 		return nil
 	}
-	var buttons []*Button
-	for _, player := range p.PlayerInvites {
-		if player != nil && player.Btn != nil {
-			fmt.Print(player.Name)
-			buttons = append(buttons, player.Btn)
+	for _, widget := range p.Content {
+		if subPanel, ok := widget.(*Panel); ok && subPanel.Name == name {
+			return subPanel
 		}
 	}
-	return buttons
+	return nil
 }
 
 type Panel struct {
@@ -80,6 +77,7 @@ type Panel struct {
 	BorderColor   color.Color
 	TextSize      float32
 	PlayerInvites []*PlayerInvite
+	AcceptInvites []*PlayerInvite
 }
 
 func (p *Panel) Update() {
@@ -96,13 +94,18 @@ func (p *Panel) Update() {
 			invite.Btn.Update()
 		}
 	}
+	for _, invite := range p.AcceptInvites {
+		if invite != nil && invite.Btn != nil {
+			invite.Btn.Update()
+		}
+	}
 }
 
-func PrintTitle(screen *ebiten.Image, x float32, y float32, w float32, h float32, name string, size float32, textColor color.Color) {
+func printTitle(screen *ebiten.Image, x float32, y float32, w float32, h float32, name string, size float32, textColor color.Color) {
 	startX := x + (w / 2.0) - (float32(len(name)) * size * 0.5 / 2.0)
 	startY := y + size/2
 	fontType := "Title"
-	DrawText(screen, name, float64(startX), float64(startY), float64(size), textColor, fontType)
+	drawText(screen, name, float64(startX), float64(startY), float64(size), textColor, fontType)
 }
 
 func (p *Panel) Draw(screen *ebiten.Image) {
@@ -110,11 +113,11 @@ func (p *Panel) Draw(screen *ebiten.Image) {
 		return
 	}
 
-	DrawFilledRect(screen, p.X, p.Y, p.W, p.H, p.BgColor)
-	DrawStrokeRect(screen, p.X, p.Y, p.W, p.H, 1, p.BorderColor, p.BorderHoles)
+	drawFilledRect(screen, p.X, p.Y, p.W, p.H, p.BgColor)
+	drawStrokeRect(screen, p.X, p.Y, p.W, p.H, 1, p.BorderColor, p.BorderHoles)
 
 	if p.DisplayName {
-		PrintTitle(screen, p.X, p.Y, p.W, p.H, p.Name, p.TextSize, p.TextColor)
+		printTitle(screen, p.X, p.Y, p.W, p.H, p.Name, p.TextSize, p.TextColor)
 	}
 
 	for _, widget := range p.Content {
@@ -124,7 +127,10 @@ func (p *Panel) Draw(screen *ebiten.Image) {
 	}
 
 	if len(p.PlayerInvites) > 0 {
-		DrawList(screen, p.PlayerInvites)
+		drawList(screen, p.PlayerInvites)
+	}
+	if len(p.AcceptInvites) > 0 {
+		drawList(screen, p.AcceptInvites)
 	}
 }
 

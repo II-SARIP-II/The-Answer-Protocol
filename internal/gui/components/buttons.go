@@ -71,17 +71,17 @@ func (b *Button) Draw(screen *ebiten.Image) {
 		borderWidth = 2
 	}
 
-	DrawFilledRect(screen, b.X, b.Y, b.W, b.H, currentColor)
+	drawFilledRect(screen, b.X, b.Y, b.W, b.H, currentColor)
 
 	var hole []Hole = []Hole{}
-	DrawStrokeRect(screen, b.X, b.Y, b.W, b.H, borderWidth, b.BorderColor, hole)
+	drawStrokeRect(screen, b.X, b.Y, b.W, b.H, borderWidth, b.BorderColor, hole)
 
 	if b.IsHovered {
-		DrawFilledRect(screen, b.X, b.Y, 4, 4, color.RGBA{R: 255, G: 255, B: 255, A: 255})
-		DrawFilledRect(screen, b.X+b.W-4, b.Y+b.H-4, 4, 4, color.RGBA{R: 255, G: 255, B: 255, A: 255})
+		drawFilledRect(screen, b.X, b.Y, 4, 4, color.RGBA{R: 255, G: 255, B: 255, A: 255})
+		drawFilledRect(screen, b.X+b.W-4, b.Y+b.H-4, 4, 4, color.RGBA{R: 255, G: 255, B: 255, A: 255})
 	}
 
 	textX := int(b.X) + int(b.W)/2 - (len(b.Label)*10)/2
 	textY := int(b.Y) + int(b.H)/2 - 6
-	DrawText(screen, b.Label, float64(textX), float64(textY), 20, textColor, "Title")
+	drawText(screen, b.Label, float64(textX), float64(textY), 20, textColor, "Title")
 }

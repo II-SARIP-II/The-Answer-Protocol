@@ -35,8 +35,8 @@ type Game struct {
 	status       string
 }
 
-func NewGame(winWidth int, winHeight int, conn net.Conn, name string) *Game {
-	t, cl, cm, cr, bl, bc, br := InitPanels(winWidth, winHeight)
+func newGame(winWidth int, winHeight int, conn net.Conn, name string) *Game {
+	t, cl, cm, cr, bl, bc, br := initPanels(winWidth, winHeight)
 	messagesChan := make(chan string, 100)
 
 	g := &Game{
@@ -55,21 +55,34 @@ func NewGame(winWidth int, winHeight int, conn net.Conn, name string) *Game {
 		curr_cmd:     "",
 	}
 
-	go ListenServer(conn, messagesChan)
+	go listenServer(conn, messagesChan)
 
 	if chatTeam := g.bottomCenter.GetChat(); chatTeam != nil {
 		chatTeam.OnSubmit = func(text string) {
-			SendMessage(conn, text)
+			text = strings.TrimSpace(text)
+			if text == "" {
+				return
+			}
+			cmd := fmt.Sprintf("CHAT %s %s", chatTeam.Mode, text)
+			sendMessage(conn, cmd)
 		}
 	}
 
 	if chatAction := g.bottomRight.GetChat(); chatAction != nil {
 		chatAction.OnSubmit = func(text string) {
-			parts := strings.Split(text, " ")
-			g.curr_cmd = strings.ToUpper(parts[0])
+			text = strings.TrimSpace(text)
+			if text == "" {
+				return
+			}
 
-			SendMessage(conn, text)
+			fields := strings.Fields(text)
+			if len(fields) > 0 {
+				g.curr_cmd = strings.ToUpper(fields[0])
+			}
+
+			sendMessage(conn, text)
 		}
+
 		g.sendActionButton(conn, chatAction)
 		g.sendGroupButton(conn, chatAction)
 	}
@@ -180,7 +193,7 @@ func Run(addr string) error {
 	ebiten.SetWindowTitle("The Answer Protocol")
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 
-	newGame := NewGame(windowWidth, windowHeight, conn, username)
+	newGame := newGame(windowWidth, windowHeight, conn, username)
 	if err := ebiten.RunGame(newGame); err != nil {
 		return fmt.Errorf("game error: %w", err)
 	}
