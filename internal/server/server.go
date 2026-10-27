@@ -16,6 +16,11 @@ import (
 	"time"
 )
 
+type connNumber struct {
+	timeElapsed time.Time
+	count       int
+}
+
 // Server manages game state, connected players, and TCP listening.
 type Server struct {
 	mu                sync.Mutex
@@ -24,6 +29,7 @@ type Server struct {
 	port              string
 	world             *world.GameData
 	spawnsQuestsItems map[string]string
+	connTracker       map[string]connNumber
 }
 
 // NewServer initializes and returns a new Server instance with world data.
@@ -44,6 +50,7 @@ func NewServer(worldPath string) (*Server, error) {
 		players:           make(map[string]*Player),
 		world:             w,
 		spawnsQuestsItems: spawnsQuestsItems,
+		connTracker:       make(map[string]connNumber),
 	}, nil
 }
 
@@ -87,8 +94,34 @@ func (s *Server) Start(port string) error {
 			return err
 		}
 
+		s.trackConnection(conn.RemoteAddr().String())
 		go s.handleClientSession(conn)
 	}
+}
+
+// trackConnection logs a warning if the same IP opens more than 5 connections within 2 seconds.
+func (s *Server) trackConnection(remoteAddr string) {
+	host, _, _ := net.SplitHostPort(remoteAddr)
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	now := time.Now()
+	connNumber := s.connTracker[host]
+
+	if now.Sub(connNumber.timeElapsed) < 2*time.Second {
+		connNumber.count++
+		if connNumber.count > 5 {
+			slog.Warn("Potential abuse detected: rapid connections",
+				"ip", host,
+				"connections_in_window", connNumber.count,
+			)
+		}
+	} else {
+		connNumber.timeElapsed = now
+		connNumber.count = 1
+	}
+	s.connTracker[host] = connNumber
 }
 
 func (s *Server) Stop() {
@@ -142,11 +175,19 @@ func (s *Server) handleClientSession(conn net.Conn) {
 
 func (s *Server) newPlayer(conn net.Conn, clientScanner *bufio.Scanner) (*Player, error) {
 	var player *Player
+	failedAttempts := 0
 	for clientScanner.Scan() {
 		p, err := s.authenticate(conn, clientScanner.Text())
 		if err == nil {
 			player = p
 			break
+		}
+		failedAttempts++
+		if failedAttempts >= 3 {
+			slog.Warn("Potential abuse detected: repeated authentication failures",
+				"addr", conn.RemoteAddr().String(),
+				"failed_attempts", failedAttempts,
+			)
 		}
 	}
 	if player == nil {
