@@ -95,7 +95,7 @@ func (g *Game) serverResponse() error {
 
 				fields := strings.Fields(g.curr_cmd)
 				if len(fields) == 0 {
-				    continue
+					continue
 				}
 				verb := strings.ToUpper(fields[0])
 
