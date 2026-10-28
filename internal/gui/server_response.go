@@ -132,7 +132,7 @@ func (g *Game) serverResponse() error {
 								g.status = ""
 							},
 						)
-						chatAction.AddLine("LOOK > " + lookResp.Room.Description)
+						chatAction.AddLine("LOOK > " + lookResp.Room.Name + ": " + lookResp.Room.Description)
 					}
 
 				case "MOVE":
