@@ -8,6 +8,8 @@ import (
 )
 
 func main() {
+	server.SetLogger()
+
 	serv, err := server.NewServer("data/world.json")
 	if err != nil {
 		slog.Error("Failed to initialize server", "error", err)

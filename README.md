@@ -7,3 +7,8 @@ documented in your README.
 
 Any deviation from the protocol must be clearly documented and
 explained in your README.
+
+Design Choice: Your group must design and implement turn-based combat
+mechanics, including damage formulas, initiative order, and additional combat
+commands (DEFEND, FLEE, etc.). Document and justify your choices in the
+README.

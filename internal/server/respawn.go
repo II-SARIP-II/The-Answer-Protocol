@@ -64,7 +64,33 @@ func (p *Player) processTargetsRespawn(targets []string) {
 		}
 		roomData.Items = append(roomData.Items, target)
 		p.Server.world.Rooms[initialRoomID] = roomData
+		p.Server.resetPassiveEnemy(initialRoomID, target)
 
 		slog.Info("Item respawn", "item", target, "room", initialRoomID)
+	}
+}
+
+func (s *Server) resetPassiveEnemy(roomID, itemID string) {
+	room, exists := s.world.Rooms[roomID]
+	if !exists {
+		return
+	}
+	for _, npcID := range room.NPCs {
+		npc := s.world.NPCs[npcID]
+		if npc.Item != nil && *npc.Item == itemID {
+			wasHostile := (npc.Role == "enemy")
+			npc.Role = "passive enemy"
+			npc.Life = npc.MaxLife
+			s.world.NPCs[npcID] = npc
+			slog.Info("Passive enemy calmed and reset", "npc", npcID, "item", itemID, "room", roomID)
+
+			if wasHostile {
+				for _, player := range s.players {
+					if strings.EqualFold(player.CurrentRoom, roomID) {
+						player.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server %s has calmed down.", npc.Name))
+					}
+				}
+			}
+		}
 	}
 }
