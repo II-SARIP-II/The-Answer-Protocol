@@ -102,7 +102,7 @@ func (s *Stuff) RemoveItem(item string) {
 }
 
 func (s *Stuff) Clear() {
-    s.Slots = []ItemSlot{}
+	s.Slots = []ItemSlot{}
 }
 
 func (s *Stuff) Update() {

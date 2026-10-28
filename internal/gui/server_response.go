@@ -134,43 +134,43 @@ func (g *Game) serverResponse() error {
 					}
 
 				case "MOVE":
-    				if strings.Contains(msg, "room=") {
-    				    parts := strings.Split(msg, "room=")
-    				    if len(parts) > 1 {
-    				        room := strings.TrimSpace(parts[1])
+					if strings.Contains(msg, "room=") {
+						parts := strings.Split(msg, "room=")
+						if len(parts) > 1 {
+							room := strings.TrimSpace(parts[1])
 
-    				        if len(fields) > 1 {
-    				            direction := strings.ToUpper(fields[1])
-    				            switch direction {
-    				            case "NORTH":
-    				                g.location[1] -= 1
-    				                g.direction = 0
-    				            case "EAST":
-    				                g.location[0] += 1
-    				                g.direction = 1
-    				            case "SOUTH":
-    				                g.location[1] += 1
-    				                g.direction = 2
-    				            case "WEST":
-    				                g.location[0] -= 1
-    				                g.direction = 3
-    				            }
-    				        } else {
-    				            switch g.direction {
-    				            case 0:
-    				                g.location[1] -= 1
-    				            case 1:
-    				                g.location[0] += 1
-    				            case 2:
-    				                g.location[1] += 1
-    				            case 3:
-    				                g.location[0] -= 1
-    				            }
-    				        }
+							if len(fields) > 1 {
+								direction := strings.ToUpper(fields[1])
+								switch direction {
+								case "NORTH":
+									g.location[1] -= 1
+									g.direction = 0
+								case "EAST":
+									g.location[0] += 1
+									g.direction = 1
+								case "SOUTH":
+									g.location[1] += 1
+									g.direction = 2
+								case "WEST":
+									g.location[0] -= 1
+									g.direction = 3
+								}
+							} else {
+								switch g.direction {
+								case 0:
+									g.location[1] -= 1
+								case 1:
+									g.location[0] += 1
+								case 2:
+									g.location[1] += 1
+								case 3:
+									g.location[0] -= 1
+								}
+							}
 
-    				        chatAction.AddLine("MOVE > Moved into " + room)
-    				    }
-    				}
+							chatAction.AddLine("MOVE > Moved into " + room)
+						}
+					}
 
 				case "TAKE":
 					if strings.Contains(msg, "taken=") {
@@ -317,32 +317,32 @@ func (g *Game) serverResponse() error {
 					g.status = ""
 
 				case "INVENTORY":
-				    if inventory, err := parseInventory(msg); err == nil {
-				        if stuff := g.bottomLeft.GetStuff(); stuff != nil {
-				            stuff.Clear() 
+					if inventory, err := parseInventory(msg); err == nil {
+						if stuff := g.bottomLeft.GetStuff(); stuff != nil {
+							stuff.Clear()
 
-				            for _, item := range inventory {
-				                itemName := item
-				                stuff.AddItem(
-				                    itemName,
-				                    func(selectedItem string) {
-				                        if g.status == "AWAITING_DROP_ITEM" {
-				                            g.curr_cmd = "DROP"
-				                            stuff.RemoveItem(selectedItem)
-				                            sendMessage(g.conn, "DROP "+selectedItem)
-				                            g.status = ""
-				                        } else if g.status == "AWAITING_EQUIP_ITEM" {
-				                            g.curr_cmd = "EQUIP"
-				                            stuff.MoveToTop(selectedItem)
-				                            sendMessage(g.conn, "EQUIP "+selectedItem)
-				                            g.status = ""
-				                        }
-				                    },
-				                )
-				            }
-				        }
-				    }
-				    g.status = ""
+							for _, item := range inventory {
+								itemName := item
+								stuff.AddItem(
+									itemName,
+									func(selectedItem string) {
+										if g.status == "AWAITING_DROP_ITEM" {
+											g.curr_cmd = "DROP"
+											stuff.RemoveItem(selectedItem)
+											sendMessage(g.conn, "DROP "+selectedItem)
+											g.status = ""
+										} else if g.status == "AWAITING_EQUIP_ITEM" {
+											g.curr_cmd = "EQUIP"
+											stuff.MoveToTop(selectedItem)
+											sendMessage(g.conn, "EQUIP "+selectedItem)
+											g.status = ""
+										}
+									},
+								)
+							}
+						}
+					}
+					g.status = ""
 
 				case "CREATE", "GROUP":
 					if group, err := parseCreateGroup(msg); err == nil {
