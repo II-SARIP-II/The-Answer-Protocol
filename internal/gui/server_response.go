@@ -280,6 +280,8 @@ func (g *Game) serverResponse() error {
 				case "QUEST":
 					if quest, err := parseQuest(response); err == nil {
 						chatAction.AddLine(fmt.Sprintf("QUEST > %s | Reward: %s", quest.Description, quest.Reward))
+						g.curr_cmd = "INVENTORY"
+						sendMessage(g.conn, "INVENTORY")
 					}
 
 				case "QUESTS":
@@ -293,6 +295,41 @@ func (g *Game) serverResponse() error {
 						}
 					}
 					g.status = ""
+
+				case "INVENTORY":
+				    if inventory, err := parseInventory(msg); err == nil {
+				        if stuff := g.bottomLeft.GetStuff(); stuff != nil {
+				            stuff.Clear() 
+
+				            for _, item := range inventory {
+				                itemName := item
+				                stuff.AddItem(
+				                    itemName,
+				                    func(selectedItem string) {
+				                        if g.status == "AWAITING_DROP_ITEM" {
+				                            g.curr_cmd = "DROP"
+				                            stuff.RemoveItem(selectedItem)
+				                            sendMessage(g.conn, "DROP "+selectedItem)
+				                            g.status = ""
+				                        } else if g.status == "AWAITING_EQUIP_ITEM" {
+				                            g.curr_cmd = "EQUIP"
+				                            stuff.MoveToTop(selectedItem)
+				                            sendMessage(g.conn, "EQUIP "+selectedItem)
+				                            g.status = ""
+				                        }
+				                    },
+				                )
+				            }
+				        }
+				        if chatAction != nil {
+				            chatAction.AddLine(fmt.Sprintf("INVENTORY > %v", inventory))
+				        }
+				    } else {
+				        if chatAction != nil {
+				            chatAction.AddLine("Server > " + msg)
+				        }
+				    }
+				    g.status = ""
 
 				case "CREATE", "GROUP":
 					if group, err := parseCreateGroup(msg); err == nil {

@@ -101,6 +101,10 @@ func (s *Stuff) RemoveItem(item string) {
 	s.recalculatePositions()
 }
 
+func (s *Stuff) Clear() {
+    s.Slots = []ItemSlot{}
+}
+
 func (s *Stuff) Update() {
 	for i := range s.Slots {
 		s.Slots[i].Button.Update()
