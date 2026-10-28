@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net"
 	"tap/internal/protocol"
+	"time"
 )
 
 type Player struct {
@@ -22,6 +23,8 @@ type Player struct {
 	GroupID          string
 	GroupInvitations []string
 	Quests           map[string]Quest
+	lastCmdWindow    time.Time
+	cmdCountInSec    int
 }
 
 type Quest struct {
@@ -36,7 +39,7 @@ func NewPlayer(username string, conn net.Conn) *Player {
 		Username:         username,
 		Conn:             conn,
 		State:            protocol.StateAuthenticated,
-		CurrentRoom:      "room0",
+		CurrentRoom:      "hotel_entrance",
 		Inventory:        make([]string, 0),
 		MaxHP:            100,
 		HP:               100,
@@ -46,6 +49,8 @@ func NewPlayer(username string, conn net.Conn) *Player {
 		GroupInvitations: make([]string, 0),
 		Status:           "healthy",
 		Quests:           make(map[string]Quest),
+		lastCmdWindow:    time.Now(),
+		cmdCountInSec:    0,
 	}
 }
 

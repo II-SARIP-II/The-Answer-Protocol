@@ -67,53 +67,29 @@ func ReadJson(filepath string) (*GameData, error) {
 		return nil, fmt.Errorf("JSON parsing error: %w", err)
 	}
 
-	if err := data.ValidateItem(); err != nil {
+	if err := data.CheckEmptyWorld(); err != nil {
+		return nil, fmt.Errorf("world validation error: %w", err)
+	}
+
+	if err := data.ValidateNoDuplicateItem(); err != nil {
+		return nil, fmt.Errorf("world validation error: %w", err)
+	}
+
+	if err := data.CheckItemExists(); err != nil {
+		return nil, fmt.Errorf("world validation error: %w", err)
+	}
+
+	if err := data.ValidateExit(); err != nil {
+		return nil, fmt.Errorf("world validation error: %w", err)
+	}
+
+	if err := data.CheckNPCExists(); err != nil {
+		return nil, fmt.Errorf("world validation error: %w", err)
+	}
+
+	if err := data.ValidateQuests(); err != nil {
 		return nil, fmt.Errorf("world validation error: %w", err)
 	}
 
 	return &data, nil
-}
-
-func ParseExit(str_exit string) Exit {
-	str := []byte(str_exit)
-
-	var exit Exit
-	err := json.Unmarshal(str, &exit)
-	if err != nil {
-		panic(err)
-	}
-	return exit
-}
-
-func ParseRoom(str_room string) Room {
-	str := []byte(str_room)
-
-	var room Room
-	err := json.Unmarshal(str, &room)
-	if err != nil {
-		panic(err)
-	}
-	return room
-}
-
-func ParseNpc(str_npc string) NPC {
-	str := []byte(str_npc)
-
-	var npc NPC
-	err := json.Unmarshal(str, &npc)
-	if err != nil {
-		panic(err)
-	}
-	return npc
-}
-
-func ParseItem(str_item string) Item {
-	str := []byte(str_item)
-
-	var item Item
-	err := json.Unmarshal(str, &item)
-	if err != nil {
-		panic(err)
-	}
-	return item
 }

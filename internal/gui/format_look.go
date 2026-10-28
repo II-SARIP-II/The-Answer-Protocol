@@ -53,7 +53,7 @@ func parseLookResponse(msg string) (ServerLookResponse, error) {
 	endIdx := strings.LastIndex(msg, "}")
 
 	if startIdx == -1 || endIdx == -1 || startIdx >= endIdx {
-		return ServerLookResponse{}, fmt.Errorf("aucun objet JSON valide trouvé")
+		return ServerLookResponse{}, fmt.Errorf("no valid JSON object found")
 	}
 
 	cleanJSON := msg[startIdx : endIdx+1]
@@ -61,7 +61,7 @@ func parseLookResponse(msg string) (ServerLookResponse, error) {
 	var resp ServerLookResponse
 	err := json.Unmarshal([]byte(cleanJSON), &resp)
 	if err != nil {
-		return ServerLookResponse{}, fmt.Errorf("erreur unmarshal: %w", err)
+		return ServerLookResponse{}, fmt.Errorf("unmarshal error: %w", err)
 	}
 
 	return resp, nil

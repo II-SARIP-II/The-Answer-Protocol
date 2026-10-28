@@ -216,7 +216,7 @@ func (g *Game) serverResponse() error {
 
 				case "ATTACK":
 					if strings.Contains(msg, "Defeat:") || strings.Contains(msg, "defeated") {
-						chatAction.AddLine("COMBAT > YOU DIED! Respawned in room0.")
+						chatAction.AddLine("COMBAT > YOU DIED! Respawned in hotel_entrance.")
 						g.centerMid.RemoveRooms()
 						g.location = [2]int{1, 1}
 						g.status = ""
