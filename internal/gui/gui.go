@@ -136,11 +136,11 @@ func getUsername(serverScanner *bufio.Scanner, conn net.Conn) (string, error) {
 		username := strings.TrimSpace(stdinScanner.Text())
 
 		if username == "" {
-			fmt.Println("Error: Username cannot be empty. Please try again.")
+			fmt.Println("WARN: Username cannot be empty. Please try again.")
 			continue
 		}
 		if strings.Contains(username, " ") {
-			fmt.Println("Error: Username cannot contain spaces. Please try again.")
+			fmt.Println("WARN: Username cannot contain spaces. Please try again.")
 			continue
 		}
 
@@ -157,9 +157,9 @@ func getUsername(serverScanner *bufio.Scanner, conn net.Conn) (string, error) {
 		}
 
 		if response == "ERR 201 NAME_IN_USE" {
-			fmt.Println("Error: This username is already taken by another player. Please choose another one.")
+			fmt.Println("WARN: This username is already taken by another player. Please choose another one.")
 		} else {
-			fmt.Printf("Error (%s). Please try again.\n", response)
+			fmt.Printf("WARN: (%s). Please try again.\n", response)
 		}
 	}
 }
