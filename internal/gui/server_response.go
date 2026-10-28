@@ -39,6 +39,7 @@ func (g *Game) serverResponse() error {
 	for {
 		select {
 		case msg := <-g.messagesChan:
+			fmt.Print(msg)
 			if chatStruct, errChat := parseEventChat(msg); errChat == nil && chatStruct.Type == "EVT" {
 				if chat := g.bottomCenter.GetChat(); chat != nil {
 					chat.AddLine("[" + chatStruct.Scope + "] " + chatStruct.Sender + " > " + chatStruct.Message)
@@ -131,6 +132,7 @@ func (g *Game) serverResponse() error {
 								g.status = ""
 							},
 						)
+						chatAction.AddLine("LOOK > " + lookResp.Room.Description)
 					}
 
 				case "MOVE":
