@@ -73,7 +73,7 @@ func (g *Game) serverResponse() error {
 					continue
 				} else if inviteStruct.Action == "JOIN" {
 					if chat := g.bottomCenter.GetChat(); chat != nil {
-						chat.AddLine("[INVITATION] > You joined group: '" + inviteStruct.Group + "'")
+						chat.AddLine("[INVITATION] > '" + inviteStruct.Group + "' joined the group")
 					}
 					continue
 				}
@@ -134,23 +134,43 @@ func (g *Game) serverResponse() error {
 					}
 
 				case "MOVE":
-					if strings.Contains(msg, "room=") {
-						parts := strings.Split(msg, "room=")
-						if len(parts) > 1 {
-							room := strings.TrimSpace(parts[1])
-							switch g.direction {
-							case 0:
-								g.location[1] -= 1
-							case 1:
-								g.location[0] += 1
-							case 2:
-								g.location[1] += 1
-							case 3:
-								g.location[0] -= 1
-							}
-							chatAction.AddLine("MOVE > Moved into " + room)
-						}
-					}
+    				if strings.Contains(msg, "room=") {
+    				    parts := strings.Split(msg, "room=")
+    				    if len(parts) > 1 {
+    				        room := strings.TrimSpace(parts[1])
+
+    				        if len(fields) > 1 {
+    				            direction := strings.ToUpper(fields[1])
+    				            switch direction {
+    				            case "NORTH":
+    				                g.location[1] -= 1
+    				                g.direction = 0
+    				            case "EAST":
+    				                g.location[0] += 1
+    				                g.direction = 1
+    				            case "SOUTH":
+    				                g.location[1] += 1
+    				                g.direction = 2
+    				            case "WEST":
+    				                g.location[0] -= 1
+    				                g.direction = 3
+    				            }
+    				        } else {
+    				            switch g.direction {
+    				            case 0:
+    				                g.location[1] -= 1
+    				            case 1:
+    				                g.location[0] += 1
+    				            case 2:
+    				                g.location[1] += 1
+    				            case 3:
+    				                g.location[0] -= 1
+    				            }
+    				        }
+
+    				        chatAction.AddLine("MOVE > Moved into " + room)
+    				    }
+    				}
 
 				case "TAKE":
 					if strings.Contains(msg, "taken=") {
@@ -321,21 +341,18 @@ func (g *Game) serverResponse() error {
 				                )
 				            }
 				        }
-				        if chatAction != nil {
-				            chatAction.AddLine(fmt.Sprintf("INVENTORY > %v", inventory))
-				        }
-				    } else {
-				        if chatAction != nil {
-				            chatAction.AddLine("Server > " + msg)
-				        }
 				    }
 				    g.status = ""
 
 				case "CREATE", "GROUP":
 					if group, err := parseCreateGroup(msg); err == nil {
-						chatAction.AddLine("GROUP > You are now in: " + group.Group)
+						if chat := g.bottomCenter.GetChat(); chat != nil {
+							chat.AddLine("[INVITATION] > You are now in: " + group.Group)
+						}
 					} else {
-						chatAction.AddLine("GROUP > " + msg)
+						if chat := g.bottomCenter.GetChat(); chat != nil {
+							chat.AddLine("[INVITATION] > " + msg)
+						}
 					}
 					g.status = ""
 

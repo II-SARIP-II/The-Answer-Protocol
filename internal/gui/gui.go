@@ -75,10 +75,7 @@ func newGame(winWidth int, winHeight int, conn net.Conn, name string) *Game {
 				return
 			}
 
-			fields := strings.Fields(text)
-			if len(fields) > 0 {
-				g.curr_cmd = strings.ToUpper(fields[0])
-			}
+			g.curr_cmd = text
 
 			sendMessage(conn, text)
 		}

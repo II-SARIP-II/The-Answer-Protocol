@@ -122,7 +122,6 @@ func (c *ChatWidget) Update() {
 			if c.OnSubmit != nil {
 				c.OnSubmit(c.Text)
 			}
-
 			c.Text = ""
 		}
 	}
