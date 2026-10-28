@@ -1,6 +1,8 @@
 package components
 
 import (
+	"image/color"
+
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -57,6 +59,16 @@ func (s *Stuff) MoveToTop(itemName string) {
 		s.Slots = append([]ItemSlot{targetSlot}, remaining...)
 		s.recalculatePositions()
 	}
+	for i, item := range s.Slots {
+		if i == 0 {
+			item.Button.NormalColor = color.RGBA{R: 0, G: 180, B: 216, A: 180}
+			item.Button.TextColor = color.RGBA{R: 0, G: 0, B: 0, A: 180}
+
+		} else {
+			item.Button.NormalColor = color.RGBA{R: 12, G: 24, B: 36, A: 220}
+			item.Button.TextColor = color.RGBA{R: 0, G: 180, B: 216, A: 180}
+		}
+	}
 }
 
 func (s *Stuff) AddItem(item string, onItemClick func(string)) {
@@ -87,6 +99,10 @@ func (s *Stuff) RemoveItem(item string) {
 	}
 
 	s.recalculatePositions()
+}
+
+func (s *Stuff) Clear() {
+	s.Slots = []ItemSlot{}
 }
 
 func (s *Stuff) Update() {

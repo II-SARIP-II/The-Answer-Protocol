@@ -75,7 +75,7 @@
       "name": "VIP Room",
       "description": "A private VIP lounge with leather armchairs and cigar smoke in the air.",
       "exits": {
-        "north": { "target": "secret_corridor" },
+        "south": { "target": "secret_corridor" },
         "west": { "target": "corridor_2" }
       },
       "items": [],
@@ -86,7 +86,7 @@
       "description": "A secret corridor hidden behind wood paneling, protected by electronic locks.",
       "exits": {
         "east": { "target": "secret_room" },
-        "south": { "target": "VIP_Room" }
+        "north": { "target": "VIP_Room" }
       },
       "items": [],
       "npcs": []

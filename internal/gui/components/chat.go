@@ -53,6 +53,9 @@ func NewChatWidget(x, y, w, h, textSize float32, col color.Color, inputTitle str
 			if chat.Mode == "GROUP" {
 				chat.Mode = "GLOBAL"
 				chat.ModeButton.Label = "GLOBAL"
+			} else if chat.Mode == "GLOBAL" {
+				chat.Mode = "ROOM"
+				chat.ModeButton.Label = "ROOM"
 			} else {
 				chat.Mode = "GROUP"
 				chat.ModeButton.Label = "GROUP"
@@ -116,12 +119,9 @@ func (c *ChatWidget) Update() {
 				c.AddLine(c.InputTitle + c.Text)
 			}
 
-			if c.HasBtn && c.OnSubmit != nil {
-				c.OnSubmit("CHAT " + c.Mode + " " + c.Text)
-			} else if c.OnSubmit != nil {
+			if c.OnSubmit != nil {
 				c.OnSubmit(c.Text)
 			}
-
 			c.Text = ""
 		}
 	}
