@@ -131,6 +131,11 @@ func (p *Player) handleFlee(args string) {
 		return
 	}
 
+	if !p.applyOpportunityAttack() {
+		p.SendOK(fmt.Sprintf("room=%s", p.CurrentRoom))
+		return
+	}
+
 	randomDirection := availableDirections[rand.IntN(len(availableDirections))]
 	exit := room.Exits[randomDirection]
 	newRoom := exit.Target
@@ -149,6 +154,7 @@ func (p *Player) handleFlee(args string) {
 		"from_room", oldRoom,
 		"to_room", newRoom,
 		"direction", randomDirection,
+		"hp_remaining", p.HP,
 	)
 
 	p.SendOK(fmt.Sprintf("room=%s", newRoom))

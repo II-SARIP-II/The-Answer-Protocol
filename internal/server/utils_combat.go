@@ -264,3 +264,40 @@ func (p *Player) processDefeatQuest(enemyID string) {
 		}
 	}
 }
+
+func (p *Player) applyOpportunityAttack() bool {
+	room := p.Server.world.Rooms[p.CurrentRoom]
+	var attackingNPCName string
+	fleeDamage := 0
+	for _, npcID := range room.NPCs {
+		npc := p.Server.world.NPCs[npcID]
+		if npc.Life > 0 && (npc.Role == "enemy" || npc.Role == "target") {
+			damage := FistFightDamage
+			if npc.Item != nil {
+				damage = p.getAttackDamage(*npc.Item)
+			}
+			fleeDamage = damage
+			attackingNPCName = npc.Name
+			break
+		}
+	}
+
+	if attackingNPCName == "" {
+		return true
+	}
+
+	p.HP -= fleeDamage
+	if p.HP < 0 {
+		p.HP = 0
+	}
+
+	p.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server %s strikes you in the back as you flee! You take %d damage (%d HP left).", attackingNPCName, fleeDamage, p.HP))
+	p.broadcastRoom(p.CurrentRoom, protocol.EvtChatRoom, fmt.Sprintf("Server %s strikes %s in the back as they flee for %d damage!", attackingNPCName, p.Username, fleeDamage))
+
+	if p.HP == 0 {
+		p.handlePlayerDeath(attackingNPCName)
+		return false
+	}
+
+	return true
+}

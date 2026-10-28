@@ -83,7 +83,10 @@ func (p *Player) handleMove(args string) {
 		return
 	}
 
-	if p.Status == protocol.StatusCombat {
+	if p.Status == protocol.StatusCombat ||
+		p.Status == protocol.StatusPerfectDefense ||
+		p.Status == protocol.StatusWeakenedDefense ||
+		p.Status == protocol.StatusBrokenDefense {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgMoveError)
 		return
 	}
