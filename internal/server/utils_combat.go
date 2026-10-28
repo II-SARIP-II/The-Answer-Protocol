@@ -160,7 +160,7 @@ func (p *Player) handlePlayerDeath(target string) {
 	p.broadcastRoom(roomWhenDeath, protocol.EvtChatRoom, fmt.Sprintf("Server Player %s has been defeated by %s!", p.Username, target))
 	p.broadcastGroup(protocol.EvtChatGroup, fmt.Sprintf("Server Player %s was defeated by %s!", p.Username, target))
 
-	p.CurrentRoom = "room0"
+	p.CurrentRoom = "hotel_entrance"
 	p.MaxHP /= 2
 	if p.MaxHP < 25 {
 		p.MaxHP = 25
@@ -171,7 +171,7 @@ func (p *Player) handlePlayerDeath(target string) {
 	slog.Info(data)
 
 	p.broadcastRoom(p.CurrentRoom, protocol.EvtRoomEnter, p.Username)
-	p.SendEvt(protocol.EvtChatRoom, "Server Defeat: you were defeated and respawned in room0!")
+	p.SendEvt(protocol.EvtChatRoom, "Server Defeat: you were defeated and respawned in hotel_entrance!")
 }
 
 func (p *Player) getAttackDamage(weaponNameOrID string) int {

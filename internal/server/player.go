@@ -39,7 +39,7 @@ func NewPlayer(username string, conn net.Conn) *Player {
 		Username:         username,
 		Conn:             conn,
 		State:            protocol.StateAuthenticated,
-		CurrentRoom:      "room0",
+		CurrentRoom:      "hotel_entrance",
 		Inventory:        make([]string, 0),
 		MaxHP:            100,
 		HP:               100,
