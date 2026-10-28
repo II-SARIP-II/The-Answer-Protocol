@@ -17,7 +17,7 @@ func handleServerError(chat *components.ChatWidget, cmd, msg string) {
 	case strings.HasPrefix(msg, "ERR 401"):
 		chat.AddLine(cmd + " > You are not in a group.")
 	case strings.HasPrefix(msg, "ERR 402"):
-		chat.AddLine(cmd + " > You are already in a group.")
+		chat.AddLine(cmd + " > Already in a group.")
 	case strings.HasPrefix(msg, "ERR 403"):
 		chat.AddLine(cmd + " > Player not found.")
 	case strings.HasPrefix(msg, "ERR 404 ITEM_NOT_FOUND"):
