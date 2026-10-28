@@ -58,8 +58,8 @@ func (world *GameData) CheckItemExists() error {
 }
 
 func (world *GameData) ValidateExit() error {
-	if _, exists := world.Rooms["room0"]; !exists {
-		return fmt.Errorf("mandatory starting room 'room0' is missing from world")
+	if _, exists := world.Rooms["hotel_entrance"]; !exists {
+		return fmt.Errorf("mandatory starting room 'hotel_entrance' is missing from world")
 	}
 	for roomID, room := range world.Rooms {
 		for dir, exit := range room.Exits {

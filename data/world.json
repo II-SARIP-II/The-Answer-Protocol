@@ -1,101 +1,101 @@
 {
   "rooms": {
-    "room0": {
+    "hotel_entrance": {
       "name": "Hotel Entrance",
       "description": "The hotel entrance with a revolving glass door. Red carpets lead east to reception, and a door leads south to a broom closet.",
       "exits": {
-        "east": { "target": "room2" },
-        "south": { "target": "room1" }
+        "east": { "target": "hotel_reception" },
+        "south": { "target": "broom_closet" }
       },
       "items": [],
       "npcs": ["undercover_agent"]
     },
-    "room1": {
+    "broom_closet": {
       "name": "Broom Closet",
       "description": "A small broom closet smelling of bleach.",
       "exits": {
-        "north": { "target": "room0" }
+        "north": { "target": "hotel_entrance" }
       },
       "items": ["colt_1911"],
       "npcs": []
     },
-    "room2": {
+    "hotel_reception": {
       "name": "Hotel Reception",
       "description": "The hotel reception with a mahogany counter. Corridors lead east to the kitchen and south to the guest rooms.",
       "exits": {
-        "east": { "target": "room3" },
-        "south": { "target": "room5" },
-        "west": { "target": "room0" }
+        "east": { "target": "hotel_kitchen" },
+        "south": { "target": "corridor_1" },
+        "west": { "target": "hotel_entrance" }
       },
       "items": [],
       "npcs": ["receptionist"]
     },
-    "room3": {
+    "hotel_kitchen": {
       "name": "Hotel Kitchen",
       "description": "The hotel kitchen with hot stoves and steel tables. Smells of food fill the room.",
       "exits": {
-        "south": { "target": "room4" },
-        "west": { "target": "room2" }
+        "south": { "target": "dining_room" },
+        "west": { "target": "hotel_reception" }
       },
       "items": ["knife"],
       "npcs": ["chef"]
     },
-    "room4": {
+    "dining_room": {
       "name": "Dining Room",
       "description": "A quiet dining room with round tables and soft jazz playing in the background.",
       "exits": {
-        "north": { "target": "room3" },
-        "west": { "target": "room5" }
+        "north": { "target": "hotel_kitchen" },
+        "west": { "target": "corridor_1" }
       },
       "items": [],
       "npcs": []
     },
-    "room5": {
+    "corridor_1": {
       "name": "Corridor 1",
       "description": "A carpeted hallway in the south wing. Security cameras are mounted on the ceiling.",
       "exits": {
-        "north": { "target": "room2" },
-        "east": { "target": "room4" },
-        "south": { "target": "room6" }
+        "north": { "target": "hotel_reception" },
+        "east": { "target": "dining_room" },
+        "south": { "target": "corridor_2" }
       },
       "items": [],
       "npcs": ["bodyguard_1"]
     },
-    "room6": {
+    "corridor_2": {
       "name": "Corridor 2",
       "description": "A shadowy corridor leading toward the private suites.",
       "exits": {
-        "north": { "target": "room5" },
-        "east": { "target": "room7" }
+        "north": { "target": "corridor_1" },
+        "east": { "target": "VIP_Room" }
       },
       "items": [],
       "npcs": []
     },
-    "room7": {
+    "VIP_Room": {
       "name": "VIP Room",
       "description": "A private VIP lounge with leather armchairs and cigar smoke in the air.",
       "exits": {
-        "north": { "target": "room8" },
-        "west": { "target": "room6" }
+        "south": { "target": "secret_corridor" },
+        "west": { "target": "corridor_2" }
       },
       "items": [],
       "npcs": ["bodyguard_2"]
     },
-    "room8": {
+    "secret_corridor": {
       "name": "Secret Corridor",
       "description": "A secret corridor hidden behind wood paneling, protected by electronic locks.",
       "exits": {
-        "east": { "target": "room9" },
-        "south": { "target": "room7" }
+        "east": { "target": "secret_room" },
+        "north": { "target": "VIP_Room" }
       },
       "items": [],
       "npcs": []
     },
-    "room9": {
+    "secret_room": {
       "name": "Secret Room",
       "description": "The secret office of the syndicate boss, filled with security monitors and contraband crates.",
       "exits": {
-        "west": { "target": "room8" }
+        "west": { "target": "secret_corridor" }
       },
       "items": [],
       "npcs": ["target"]
@@ -185,6 +185,10 @@
     "M16": {
       "name": "M16",
       "damage": 12
+    },
+    "agent_badge": {
+      "name": "Best Secret Agent Badge",
+      "damage": 0
     }
   },
   "quests": {
@@ -212,7 +216,7 @@
       "type": "defeat",
       "targets": ["target"],
       "count": 1,
-      "reward": "colt_1911",
+      "reward": "agent_badge",
       "prerequisite": "neutralize_guards"
     }
   }

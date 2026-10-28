@@ -17,7 +17,7 @@ func handleServerError(chat *components.ChatWidget, cmd, msg string) {
 	case strings.HasPrefix(msg, "ERR 401"):
 		chat.AddLine(cmd + " > You are not in a group.")
 	case strings.HasPrefix(msg, "ERR 402"):
-		chat.AddLine(cmd + " > You are already in a group.")
+		chat.AddLine(cmd + " > Already in a group.")
 	case strings.HasPrefix(msg, "ERR 403"):
 		chat.AddLine(cmd + " > Player not found.")
 	case strings.HasPrefix(msg, "ERR 404 ITEM_NOT_FOUND"):
@@ -39,6 +39,7 @@ func (g *Game) serverResponse() error {
 	for {
 		select {
 		case msg := <-g.messagesChan:
+			fmt.Print(msg)
 			if chatStruct, errChat := parseEventChat(msg); errChat == nil && chatStruct.Type == "EVT" {
 				if chat := g.bottomCenter.GetChat(); chat != nil {
 					chat.AddLine("[" + chatStruct.Scope + "] " + chatStruct.Sender + " > " + chatStruct.Message)
@@ -73,7 +74,7 @@ func (g *Game) serverResponse() error {
 					continue
 				} else if inviteStruct.Action == "JOIN" {
 					if chat := g.bottomCenter.GetChat(); chat != nil {
-						chat.AddLine("[INVITATION] > You joined group: '" + inviteStruct.Group + "'")
+						chat.AddLine("[INVITATION] > '" + inviteStruct.Group + "' joined the group")
 					}
 					continue
 				}
@@ -93,7 +94,11 @@ func (g *Game) serverResponse() error {
 				}
 				stuff := g.bottomLeft.GetStuff()
 
-				verb := strings.ToUpper(strings.Fields(g.curr_cmd)[0])
+				fields := strings.Fields(g.curr_cmd)
+				if len(fields) == 0 {
+					continue
+				}
+				verb := strings.ToUpper(fields[0])
 
 				switch verb {
 				case "LOOK":
@@ -127,6 +132,7 @@ func (g *Game) serverResponse() error {
 								g.status = ""
 							},
 						)
+						chatAction.AddLine("LOOK > " + lookResp.Room.Name + ": " + lookResp.Room.Description)
 					}
 
 				case "MOVE":
@@ -134,16 +140,36 @@ func (g *Game) serverResponse() error {
 						parts := strings.Split(msg, "room=")
 						if len(parts) > 1 {
 							room := strings.TrimSpace(parts[1])
-							switch g.direction {
-							case 0:
-								g.location[1] -= 1
-							case 1:
-								g.location[0] += 1
-							case 2:
-								g.location[1] += 1
-							case 3:
-								g.location[0] -= 1
+
+							if len(fields) > 1 {
+								direction := strings.ToUpper(fields[1])
+								switch direction {
+								case "NORTH":
+									g.location[1] -= 1
+									g.direction = 0
+								case "EAST":
+									g.location[0] += 1
+									g.direction = 1
+								case "SOUTH":
+									g.location[1] += 1
+									g.direction = 2
+								case "WEST":
+									g.location[0] -= 1
+									g.direction = 3
+								}
+							} else {
+								switch g.direction {
+								case 0:
+									g.location[1] -= 1
+								case 1:
+									g.location[0] += 1
+								case 2:
+									g.location[1] += 1
+								case 3:
+									g.location[0] -= 1
+								}
 							}
+
 							chatAction.AddLine("MOVE > Moved into " + room)
 						}
 					}
@@ -190,7 +216,7 @@ func (g *Game) serverResponse() error {
 
 				case "ATTACK":
 					if strings.Contains(msg, "Defeat:") || strings.Contains(msg, "defeated") {
-						chatAction.AddLine("COMBAT > YOU DIED! Respawned in room0.")
+						chatAction.AddLine("COMBAT > YOU DIED! Respawned in hotel_entrance.")
 						g.centerMid.RemoveRooms()
 						g.location = [2]int{1, 1}
 						g.status = ""
@@ -276,6 +302,8 @@ func (g *Game) serverResponse() error {
 				case "QUEST":
 					if quest, err := parseQuest(response); err == nil {
 						chatAction.AddLine(fmt.Sprintf("QUEST > %s | Reward: %s", quest.Description, quest.Reward))
+						g.curr_cmd = "INVENTORY"
+						sendMessage(g.conn, "INVENTORY")
 					}
 
 				case "QUESTS":
@@ -290,11 +318,43 @@ func (g *Game) serverResponse() error {
 					}
 					g.status = ""
 
+				case "INVENTORY":
+					if inventory, err := parseInventory(msg); err == nil {
+						if stuff := g.bottomLeft.GetStuff(); stuff != nil {
+							stuff.Clear()
+
+							for _, item := range inventory {
+								itemName := item
+								stuff.AddItem(
+									itemName,
+									func(selectedItem string) {
+										if g.status == "AWAITING_DROP_ITEM" {
+											g.curr_cmd = "DROP"
+											stuff.RemoveItem(selectedItem)
+											sendMessage(g.conn, "DROP "+selectedItem)
+											g.status = ""
+										} else if g.status == "AWAITING_EQUIP_ITEM" {
+											g.curr_cmd = "EQUIP"
+											stuff.MoveToTop(selectedItem)
+											sendMessage(g.conn, "EQUIP "+selectedItem)
+											g.status = ""
+										}
+									},
+								)
+							}
+						}
+					}
+					g.status = ""
+
 				case "CREATE", "GROUP":
 					if group, err := parseCreateGroup(msg); err == nil {
-						chatAction.AddLine("GROUP > You are now in: " + group.Group)
+						if chat := g.bottomCenter.GetChat(); chat != nil {
+							chat.AddLine("[INVITATION] > You are now in: " + group.Group)
+						}
 					} else {
-						chatAction.AddLine("GROUP > " + msg)
+						if chat := g.bottomCenter.GetChat(); chat != nil {
+							chat.AddLine("[INVITATION] > " + msg)
+						}
 					}
 					g.status = ""
 

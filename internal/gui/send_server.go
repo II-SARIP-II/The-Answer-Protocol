@@ -14,7 +14,7 @@ func (g *Game) sendServerDirection(conn net.Conn) {
 			case "North":
 				btn.OnClick = func() {
 					if g.status == "AWAITING_MOVE_DIR" {
-						g.curr_cmd = "MOVE North"
+						g.curr_cmd = "MOVE NORTH"
 						sendMessage(conn, g.curr_cmd)
 						g.direction = 0
 						g.status = ""
@@ -23,7 +23,7 @@ func (g *Game) sendServerDirection(conn net.Conn) {
 			case "East":
 				btn.OnClick = func() {
 					if g.status == "AWAITING_MOVE_DIR" {
-						g.curr_cmd = "MOVE East"
+						g.curr_cmd = "MOVE EAST"
 						sendMessage(conn, g.curr_cmd)
 						g.direction = 1
 						g.status = ""
@@ -32,7 +32,7 @@ func (g *Game) sendServerDirection(conn net.Conn) {
 			case "South":
 				btn.OnClick = func() {
 					if g.status == "AWAITING_MOVE_DIR" {
-						g.curr_cmd = "MOVE South"
+						g.curr_cmd = "MOVE SOUTH"
 						sendMessage(conn, g.curr_cmd)
 						g.direction = 2
 						g.status = ""
@@ -41,7 +41,7 @@ func (g *Game) sendServerDirection(conn net.Conn) {
 			case "West":
 				btn.OnClick = func() {
 					if g.status == "AWAITING_MOVE_DIR" {
-						g.curr_cmd = "MOVE West"
+						g.curr_cmd = "MOVE WEST"
 						sendMessage(conn, g.curr_cmd)
 						g.direction = 3
 						g.status = ""

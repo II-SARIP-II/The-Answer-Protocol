@@ -44,7 +44,7 @@ func (p *Player) handleTake(args string) {
 	room.Items = append(room.Items[:foundIndex], room.Items[foundIndex+1:]...)
 	p.Server.world.Rooms[p.CurrentRoom] = room
 
-	p.processFetchQuest()
+	// p.processFetchQuest()
 
 	var provokedPassiveEnemy *world.NPC
 	var damage int
@@ -92,6 +92,11 @@ func (p *Player) handleTake(args string) {
 			p.handlePlayerDeath(provokedPassiveEnemy.Name)
 			p.Server.mu.Unlock()
 		}
+	}
+	if p.HP > 0 {
+		p.Server.mu.Lock()
+		p.processFetchQuest()
+		p.Server.mu.Unlock()
 	}
 }
 
