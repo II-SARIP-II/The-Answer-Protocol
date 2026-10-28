@@ -83,6 +83,11 @@ func (p *Player) handleMove(args string) {
 		return
 	}
 
+	if p.Status == protocol.StatusCombat {
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgMoveError)
+		return
+	}
+
 	room := p.Server.world.Rooms[p.CurrentRoom]
 	direction := strings.ToLower(strings.TrimSpace(args))
 	exit, exists := room.Exits[direction]

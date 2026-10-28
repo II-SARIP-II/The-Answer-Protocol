@@ -109,6 +109,7 @@ const (
 	MsgAlreadyAuthenticated = "ALREADY_AUTHENTICATED" // ajout
 	MsgNoInvitation         = "NO_INVITATION"         // ajout
 	MsgGroupNotFound        = "GROUP_NOT_FOUND"       // ajout
+	MsgMoveError            = "NO_MOVE_DURING_COMBAT" //ajout
 )
 
 // FormatCmd formats a client command with optional arguments into a newline-terminated string.
