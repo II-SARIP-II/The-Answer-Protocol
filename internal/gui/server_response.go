@@ -93,7 +93,11 @@ func (g *Game) serverResponse() error {
 				}
 				stuff := g.bottomLeft.GetStuff()
 
-				verb := strings.ToUpper(strings.Fields(g.curr_cmd)[0])
+				fields := strings.Fields(g.curr_cmd)
+				if len(fields) == 0 {
+				    continue
+				}
+				verb := strings.ToUpper(fields[0])
 
 				switch verb {
 				case "LOOK":
