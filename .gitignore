@@ -6,6 +6,3 @@ bin/
 *.out
 .vscode/
 .idea/
-
-subject/
-.antigravity/
