@@ -244,6 +244,12 @@ func (s *Server) authenticate(conn net.Conn, command string) (*Player, error) {
 		return nil, errors.New("space in username.")
 	}
 
+	if len(username) > 32 {
+		fmt.Fprint(conn, protocol.FormatErr(protocol.CodeBadRequest, protocol.MsgArgsError))
+		slog.Warn("Authentication failed: username too long", "addr", conn.RemoteAddr().String(), "code", protocol.CodeBadRequest, "length", len(username))
+		return nil, errors.New("username too long")
+	}
+
 	s.mu.Lock()
 	if _, exists := s.players[username]; exists {
 		s.mu.Unlock()

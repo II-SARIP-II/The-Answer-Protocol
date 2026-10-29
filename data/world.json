@@ -131,8 +131,8 @@
       "max_life": 15,
       "item": "knife",
       "dialogue": [
-        "Out of my kitchen !!",
-        "Try to touch my knives and you'll end up in tomorrow's stew!"
+        "Out of my kitchen! I don't trust any of you visitors!",
+        "Someone tried to steal my knives! The next one who comes near me ends up in tomorrow's stew!"
       ]
     },
     "bodyguard_1": {

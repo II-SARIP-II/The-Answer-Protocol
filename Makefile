@@ -21,10 +21,10 @@ build:
 server:
 	@go build -o $(SERVER_BIN) $(SERVER_SRC)
 
-client_cli:
+client-cli:
 	@go build -o $(CLI_BIN) $(CLI_SRC)
 
-client_gui:
+client-gui:
 	@go build -o $(GUI_BIN) $(GUI_SRC)
 
 run-server:
@@ -41,14 +41,12 @@ run_cli: run-client
 run_gui: run-client-gui
 
 lint:
-	@echo "Checking with go vet..."
-	@go vet ./...
-
-lint-strict:
 	@echo "Checking formatting with gofmt..."
 	@test -z "$$(gofmt -l .)" || (echo "Unformatted files found (run 'make fmt' to fix):" && gofmt -l . && exit 1)
 	@echo "Running go vet..."
 	@go vet ./...
+
+lint-strict: lint
 	@if command -v golangci-lint >/dev/null 2>&1; then \
 		echo "Running golangci-lint..."; \
 		GOTOOLCHAIN=go1.25.6 golangci-lint run ./...; \
@@ -67,4 +65,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all install install-dependencies build server client_cli client_gui run-server run-client run-client-gui run_server run_cli run_gui lint lint-strict fmt clean fclean re
+.PHONY: all install install-dependencies build server client-cli client-gui client_cli client_gui run-server run-client run-client-gui run_server run_cli run_gui lint lint-strict fmt clean fclean re
