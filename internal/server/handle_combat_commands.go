@@ -76,8 +76,22 @@ func (p *Player) handleAttack(args string) {
 }
 
 func (p *Player) handleDefend(args string) {
+	if strings.TrimSpace(args) != "" {
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
+		return
+	}
+
 	p.Server.mu.Lock()
 	defer p.Server.mu.Unlock()
+
+	isFighting := p.Status == protocol.StatusCombat ||
+		p.Status == protocol.StatusPerfectDefense ||
+		p.Status == protocol.StatusWeakenedDefense ||
+		p.Status == protocol.StatusBrokenDefense
+	if !isFighting {
+		p.SendErr(protocol.CodeBadRequest, "NOT_IN_COMBAT")
+		return
+	}
 
 	_, enemyData, ok := p.findAndValidateEnemy(args)
 	if !ok {

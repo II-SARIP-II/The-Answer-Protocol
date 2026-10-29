@@ -28,7 +28,7 @@ type StatusResponse struct {
 
 type WhoResponse struct {
 	Room   []string `json:"room"`
-	Server int      `json:"Server"`
+	Server int      `json:"server"`
 }
 
 type QuestResponse struct {

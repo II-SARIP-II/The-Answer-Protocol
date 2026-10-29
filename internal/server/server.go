@@ -39,6 +39,11 @@ func NewServer(worldPath string) (*Server, error) {
 		return nil, err
 	}
 
+	for id, npc := range w.NPCs {
+		npc.InitialRole = npc.Role
+		w.NPCs[id] = npc
+	}
+
 	spawnsQuestsItems := make(map[string]string)
 	for roomID, room := range w.Rooms {
 		for _, itemID := range room.Items {
@@ -146,6 +151,7 @@ func (s *Server) handleClientSession(conn net.Conn) {
 	fmt.Fprint(conn, protocol.MsgHello)
 
 	clientScanner := bufio.NewScanner(conn)
+	clientScanner.Buffer(make([]byte, 1024), 1024)
 
 	player, err := s.newPlayer(conn, clientScanner)
 	if err != nil {
@@ -188,6 +194,8 @@ func (s *Server) newPlayer(conn net.Conn, clientScanner *bufio.Scanner) (*Player
 				"addr", conn.RemoteAddr().String(),
 				"failed_attempts", failedAttempts,
 			)
+			fmt.Fprint(conn, protocol.FormatErr(protocol.CodeConnectionFailed, protocol.MsgConnectionFailed))
+			return nil, errors.New("too many failed authentication attempts")
 		}
 	}
 	if player == nil {
@@ -286,4 +294,5 @@ func (s *Server) handleDisconnect(player *Player) {
 
 	slog.Info("Client disconnected", "username", player.Username, "addr", player.Conn.RemoteAddr().String(), "state", player.State)
 	s.mu.Unlock()
+	close(player.sendChan)
 }

@@ -25,12 +25,13 @@ type Room struct {
 }
 
 type NPC struct {
-	Role     string   `json:"role"`
-	Name     string   `json:"name"`
-	Life     int      `json:"life"`
-	MaxLife  int      `json:"maxlife"`
-	Item     *string  `json:"item"`
-	Dialogue []string `json:"dialogue"`
+	Role        string   `json:"role"`
+	Name        string   `json:"name"`
+	Life        int      `json:"life"`
+	MaxLife     int      `json:"maxlife"`
+	Item        *string  `json:"item"`
+	Dialogue    []string `json:"dialogue"`
+	InitialRole string   `json:"-"`
 }
 
 type Item struct {

@@ -89,13 +89,13 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 	currentRoom := p.Server.world.Rooms[p.CurrentRoom]
 	enemy := p.Server.world.NPCs[enemyID]
 
-	UpdatedNPCsInRoom := make([]string, 0, len(currentRoom.NPCs))
+	updatedNPCsInRoom := make([]string, 0, len(currentRoom.NPCs))
 	for _, id := range currentRoom.NPCs {
 		if id != enemyID {
-			UpdatedNPCsInRoom = append(UpdatedNPCsInRoom, id)
+			updatedNPCsInRoom = append(updatedNPCsInRoom, id)
 		}
 	}
-	currentRoom.NPCs = UpdatedNPCsInRoom
+	currentRoom.NPCs = updatedNPCsInRoom
 
 	for _, otherPlayer := range p.Server.players {
 		if otherPlayer.CurrentRoom == p.CurrentRoom && otherPlayer.Status == "combat" && otherPlayer.Username != p.Username {
@@ -192,7 +192,6 @@ func (p *Player) findAndValidateEnemy(target string) (string, world.NPC, bool) {
 	var foundID string
 
 	if cleanTarget == "" {
-		// Pas de cible précisée : prend le premier ennemi hostile de la pièce
 		for _, npcID := range p.Server.world.Rooms[p.CurrentRoom].NPCs {
 			npc := p.Server.world.NPCs[npcID]
 			if npc.Life > 0 && (npc.Role == "enemy" || npc.Role == "target") {
@@ -201,7 +200,6 @@ func (p *Player) findAndValidateEnemy(target string) (string, world.NPC, bool) {
 			}
 		}
 	} else {
-		// Cible précisée pour attack ou defense
 		for _, targetID := range p.Server.world.Rooms[p.CurrentRoom].NPCs {
 			if p.matchNameOrID(targetID, cleanTarget) {
 				foundID = targetID

@@ -9,6 +9,7 @@ const (
 	CmdQuit      = "QUIT"
 	CmdChat      = "CHAT"
 	CmdWho       = "WHO"
+	CmdWhoAll    = "WHO_ALL"
 	CmdGroup     = "GROUP"
 	CmdTake      = "TAKE"
 	CmdDrop      = "DROP"
@@ -59,29 +60,29 @@ const (
 )
 
 const (
-	StatusCombat          = "combat"           // ajout
-	StatusHealthy         = "healthy"          // ajout
-	StatusPerfectDefense  = "perfect_defense"  // ajout
-	StatusWeakenedDefense = "weakened_defense" // ajout
-	StatusBrokenDefense   = "broken_defense"   // ajout
-	StatusFlee            = "flee"             //ajout
-	StatusDefeated        = "defeated"         //ajout
-	StatusVictory         = "victory"          //ajout
+	StatusCombat          = "combat"
+	StatusHealthy         = "healthy"
+	StatusPerfectDefense  = "perfect_defense"
+	StatusWeakenedDefense = "weakened_defense"
+	StatusBrokenDefense   = "broken_defense"
+	StatusFlee            = "flee"
+	StatusDefeated        = "defeated"
+	StatusVictory         = "victory"
 )
 
 const (
 	CodeNameInUse          = 201
 	CodeNoExit             = 301
-	CodeBadRequest         = 400 // ajout
+	CodeBadRequest         = 400
 	CodeNotInGroup         = 401
 	CodeAlreadyInGroup     = 402
-	CodeUnknownPlayer      = 403 //ajout
+	CodeUnknownPlayer      = 403
 	CodeItemNotFound       = 404
 	CodeItemNotInInventory = 404
 	CodeNPCNotFound        = 404
-	CodeUnknownGroup       = 405 //ajout
-	CodeNPCNotHostile      = 406
-	CodeNoQuestAvailable   = 407
+	CodeNPCNotHostile      = 405
+	CodeNoQuestAvailable   = 406
+	CodeUnknownGroup       = 407
 	CodeConnectionFailed   = 900
 	CodeSendFailed         = 901
 )
@@ -89,27 +90,26 @@ const (
 const (
 	MsgNameInUse          = "NAME_IN_USE"
 	MsgNoExit             = "NO_EXIT"
-	MsgBadRequest         = "BAD_REQUEST" //ajout
+	MsgBadRequest         = "BAD_REQUEST"
 	MsgNotInGroup         = "NOT_IN_GROUP"
 	MsgAlreadyInGroup     = "ALREADY_IN_GROUP"
-	MsgUnknownPlayer      = "UNKNOWN_PLAYER" //ajout
+	MsgUnknownPlayer      = "UNKNOWN_PLAYER"
 	MsgItemNotFound       = "ITEM_NOT_FOUND"
 	MsgItemNotInInventory = "ITEM_NOT_IN_INVENTORY"
-	MsgUnknownGroup       = "UNKNOWN_GROUP" //ajout
+	MsgUnknownGroup       = "UNKNOWN_GROUP"
 	MsgNPCNotFound        = "NPC_NOT_FOUND"
 	MsgNPCNotHostile      = "NPC_NOT_HOSTILE"
 	MsgNoQuestAvailable   = "NO_QUEST_AVAILABLE"
 	MsgConnectionFailed   = "CONNECTION_FAILED"
 	MsgSendFailed         = "SEND_FAILED"
 
-	// code 400 BAD_REQUEST
-	MsgArgsError            = "ARGS_ERROR"            // ajout
-	MsgUnknownCommand       = "UNKNOWN_COMMAND"       // ajout
-	MsgNotAuthenticated     = "NOT_AUTHENTICATED"     // ajout
-	MsgAlreadyAuthenticated = "ALREADY_AUTHENTICATED" // ajout
-	MsgNoInvitation         = "NO_INVITATION"         // ajout
-	MsgGroupNotFound        = "GROUP_NOT_FOUND"       // ajout
-	MsgMoveError            = "NO_MOVE_DURING_COMBAT" //ajout
+	MsgArgsError            = "ARGS_ERROR"
+	MsgUnknownCommand       = "UNKNOWN_COMMAND"
+	MsgNotAuthenticated     = "NOT_AUTHENTICATED"
+	MsgAlreadyAuthenticated = "ALREADY_AUTHENTICATED"
+	MsgNoInvitation         = "NO_INVITATION"
+	MsgGroupNotFound        = "GROUP_NOT_FOUND"
+	MsgMoveError            = "NO_MOVE_DURING_COMBAT"
 )
 
 // FormatCmd formats a client command with optional arguments into a newline-terminated string.

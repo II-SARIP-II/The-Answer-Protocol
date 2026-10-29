@@ -11,6 +11,9 @@ all: build
 
 install:
 	@go mod tidy
+	@go mod download
+
+install-dependencies: install
 
 build:
 	@go build -o $(BIN_DIR)/ ./cmd/...
@@ -24,14 +27,18 @@ client_cli:
 client_gui:
 	@go build -o $(GUI_BIN) $(GUI_SRC)
 
-run_server:
+run-server:
 	@go run $(SERVER_SRC) $(ARGS)
 
-run_cli:
+run-client:
 	@go run $(CLI_SRC) $(ARGS)
 
-run_gui:
+run-client-gui:
 	@go run $(GUI_SRC) $(ARGS)
+
+run_server: run-server
+run_cli: run-client
+run_gui: run-client-gui
 
 lint:
 	@echo "Checking with go vet..."
@@ -60,5 +67,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all install build server client_cli client_gui run_server run_cli run_gui lint lint-strict fmt clean fclean re
-
+.PHONY: all install install-dependencies build server client_cli client_gui run-server run-client run-client-gui run_server run_cli run_gui lint lint-strict fmt clean fclean re
