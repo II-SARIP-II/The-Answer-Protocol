@@ -24,9 +24,10 @@ Communication & Groups:
   CHAT room <message>         - Chat with players in the same room
   CHAT global <message>       - Broadcast message to all players
   CHAT group <message>        - Chat with your group members
-  INVITE <player>             - Invite a player to your group
-  JOIN <leader>               - Join a group after receiving an invite
-  LEAVE                       - Leave your current group
+  GROUP CREATE                  Create a group
+  GROUP INVITE <player>         Invite a player to your group
+  GROUP JOIN <leader>           Join a group after receiving an invite
+  GROUP LEAVE                   Leave your current group
 
 Session & Help:
   HELP                        - Display this help message

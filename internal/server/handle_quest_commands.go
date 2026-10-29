@@ -12,13 +12,13 @@ func (p *Player) handleQuest(args string) {
 	targetNpc := strings.TrimSpace(args)
 
 	p.Server.mu.Lock()
+	defer p.Server.mu.Unlock()
 	questGiverID := p.findQuestGiver(targetNpc)
 	if questGiverID == "" {
 		return
 	}
 
 	if p.Server.world.Quests == nil {
-		p.Server.mu.Unlock()
 		p.SendErr(protocol.CodeNoQuestAvailable, protocol.MsgNoQuestAvailable)
 		return
 	}
@@ -39,9 +39,11 @@ func (p *Player) handleQuest(args string) {
 }
 
 type QuestResponse struct {
-	QuestID  string `json:"quest_id"`
-	Status   string `json:"status"`
-	Progress string `json:"progress,omitempty"`
+	QuestID     string `json:"quest_id"`
+	Status      string `json:"status"`
+	Progress    string `json:"progress,omitempty"`
+	Description string `json:"description,omitempty"`
+	Reward      string `json:"reward,omitempty"`
 }
 
 func (p *Player) handleQuests(args string) {
@@ -100,14 +102,12 @@ func (p *Player) findQuestGiver(targetNpc string) string {
 	}
 
 	if questGiverID == "" {
-		p.Server.mu.Unlock()
 		p.SendErr(protocol.CodeNPCNotFound, protocol.MsgNPCNotFound)
 		return ""
 	}
 
 	questGiverData := p.Server.world.NPCs[questGiverID]
 	if questGiverData.Role != "quest-giver" {
-		p.Server.mu.Unlock()
 		p.SendErr(protocol.CodeNoQuestAvailable, protocol.MsgNoQuestAvailable)
 		return ""
 	}
@@ -145,13 +145,35 @@ func (p *Player) resolveActiveQuest(activeQuestID string) {
 
 		p.resolveFinalVictory()
 
-		p.Server.mu.Unlock()
-		p.SendOK(fmt.Sprintf(`{"quest_id":"%s", "description": "%s", "reward":"%s", "status":"completed"}`, activeQuestID, worldQuest.Description, reward))
+		responseCompletedQuest := QuestResponse{
+			QuestID:     activeQuestID,
+			Description: worldQuest.Description,
+			Reward:      reward,
+			Status:      playerQuest.Status,
+		}
+
+		dataCompletedQuest, err := json.Marshal(responseCompletedQuest)
+		if err != nil {
+			p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
+			return
+		}
+		p.SendOK(string(dataCompletedQuest))
 		return
 	} else {
-		p.Server.mu.Unlock()
-		p.SendOK(fmt.Sprintf(`{"quest_id":"%s","description":"%s","reward":"%s","status":"active","progress":"%d/%d"}`,
-			activeQuestID, worldQuest.Description, worldQuest.Reward, playerQuest.CompletedSteps, playerQuest.Steps))
+		responseProgressQuest := QuestResponse{
+			QuestID:     activeQuestID,
+			Description: worldQuest.Description,
+			Reward:      worldQuest.Reward,
+			Status:      playerQuest.Status,
+			Progress:    fmt.Sprintf("%d/%d", playerQuest.CompletedSteps, playerQuest.Steps),
+		}
+
+		dataProgressQuest, err := json.Marshal(responseProgressQuest)
+		if err != nil {
+			p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
+			return
+		}
+		p.SendOK(string(dataProgressQuest))
 		return
 	}
 }
@@ -177,7 +199,6 @@ func (p *Player) processNextQuest(questGiverID string) {
 		}
 	}
 	if nextQuestID == "" {
-		p.Server.mu.Unlock()
 		p.SendErr(protocol.CodeNoQuestAvailable, protocol.MsgNoQuestAvailable)
 		return
 	}
@@ -194,8 +215,19 @@ func (p *Player) processNextQuest(questGiverID string) {
 		Steps:          nextQuestData.Count,
 		CompletedSteps: initialSteps,
 	}
-	p.Server.mu.Unlock()
-	p.SendOK(fmt.Sprintf(`{"quest_id":"%s", "description": "%s", "reward":"%s", "status":"active"}`, nextQuestID, nextQuestData.Description, nextQuestData.Reward))
+
+	response := QuestResponse{
+		QuestID:     nextQuestID,
+		Description: nextQuestData.Description,
+		Reward:      nextQuestData.Reward,
+		Status:      "active",
+	}
+	data, err := json.Marshal(response)
+	if err != nil {
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgBadRequest)
+		return
+	}
+	p.SendOK(string(data))
 }
 
 func (p *Player) resolveFinalVictory() {

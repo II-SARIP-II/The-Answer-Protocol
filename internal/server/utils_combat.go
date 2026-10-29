@@ -89,13 +89,13 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 	currentRoom := p.Server.world.Rooms[p.CurrentRoom]
 	enemy := p.Server.world.NPCs[enemyID]
 
-	UpdatedNPCsInRoom := make([]string, 0, len(currentRoom.NPCs))
+	updatedNPCsInRoom := make([]string, 0, len(currentRoom.NPCs))
 	for _, id := range currentRoom.NPCs {
 		if id != enemyID {
-			UpdatedNPCsInRoom = append(UpdatedNPCsInRoom, id)
+			updatedNPCsInRoom = append(updatedNPCsInRoom, id)
 		}
 	}
-	currentRoom.NPCs = UpdatedNPCsInRoom
+	currentRoom.NPCs = updatedNPCsInRoom
 
 	for _, otherPlayer := range p.Server.players {
 		if otherPlayer.CurrentRoom == p.CurrentRoom && otherPlayer.Status == "combat" && otherPlayer.Username != p.Username {
@@ -192,7 +192,6 @@ func (p *Player) findAndValidateEnemy(target string) (string, world.NPC, bool) {
 	var foundID string
 
 	if cleanTarget == "" {
-		// Pas de cible précisée : prend le premier ennemi hostile de la pièce
 		for _, npcID := range p.Server.world.Rooms[p.CurrentRoom].NPCs {
 			npc := p.Server.world.NPCs[npcID]
 			if npc.Life > 0 && (npc.Role == "enemy" || npc.Role == "target") {
@@ -201,7 +200,6 @@ func (p *Player) findAndValidateEnemy(target string) (string, world.NPC, bool) {
 			}
 		}
 	} else {
-		// Cible précisée pour attack ou defense
 		for _, targetID := range p.Server.world.Rooms[p.CurrentRoom].NPCs {
 			if p.matchNameOrID(targetID, cleanTarget) {
 				foundID = targetID
@@ -263,4 +261,41 @@ func (p *Player) processDefeatQuest(enemyID string) {
 			}
 		}
 	}
+}
+
+func (p *Player) applyOpportunityAttack() bool {
+	room := p.Server.world.Rooms[p.CurrentRoom]
+	var attackingNPCName string
+	fleeDamage := 0
+	for _, npcID := range room.NPCs {
+		npc := p.Server.world.NPCs[npcID]
+		if npc.Life > 0 && (npc.Role == "enemy" || npc.Role == "target") {
+			damage := FistFightDamage
+			if npc.Item != nil {
+				damage = p.getAttackDamage(*npc.Item)
+			}
+			fleeDamage = damage
+			attackingNPCName = npc.Name
+			break
+		}
+	}
+
+	if attackingNPCName == "" {
+		return true
+	}
+
+	p.HP -= fleeDamage
+	if p.HP < 0 {
+		p.HP = 0
+	}
+
+	p.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server %s strikes you in the back as you flee! You take %d damage (%d HP left).", attackingNPCName, fleeDamage, p.HP))
+	p.broadcastRoom(p.CurrentRoom, protocol.EvtChatRoom, fmt.Sprintf("Server %s strikes %s in the back as they flee for %d damage!", attackingNPCName, p.Username, fleeDamage))
+
+	if p.HP == 0 {
+		p.handlePlayerDeath(attackingNPCName)
+		return false
+	}
+
+	return true
 }

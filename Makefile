@@ -11,6 +11,9 @@ all: build
 
 install:
 	@go mod tidy
+	@go mod download
+
+install-dependencies: install
 
 build:
 	@go build -o $(BIN_DIR)/ ./cmd/...
@@ -18,30 +21,32 @@ build:
 server:
 	@go build -o $(SERVER_BIN) $(SERVER_SRC)
 
-client_cli:
+client-cli:
 	@go build -o $(CLI_BIN) $(CLI_SRC)
 
-client_gui:
+client-gui:
 	@go build -o $(GUI_BIN) $(GUI_SRC)
 
-run_server:
+run-server:
 	@go run $(SERVER_SRC) $(ARGS)
 
-run_cli:
+run-client:
 	@go run $(CLI_SRC) $(ARGS)
 
-run_gui:
+run-client-gui:
 	@go run $(GUI_SRC) $(ARGS)
 
-lint:
-	@echo "Checking with go vet..."
-	@go vet ./...
+run_server: run-server
+run_cli: run-client
+run_gui: run-client-gui
 
-lint-strict:
+lint:
 	@echo "Checking formatting with gofmt..."
 	@test -z "$$(gofmt -l .)" || (echo "Unformatted files found (run 'make fmt' to fix):" && gofmt -l . && exit 1)
 	@echo "Running go vet..."
 	@go vet ./...
+
+lint-strict: lint
 	@if command -v golangci-lint >/dev/null 2>&1; then \
 		echo "Running golangci-lint..."; \
 		GOTOOLCHAIN=go1.25.6 golangci-lint run ./...; \
@@ -60,5 +65,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all install build server client_cli client_gui run_server run_cli run_gui lint lint-strict fmt clean fclean re
-
+.PHONY: all install install-dependencies build server client-cli client-gui client_cli client_gui run-server run-client run-client-gui run_server run_cli run_gui lint lint-strict fmt clean fclean re

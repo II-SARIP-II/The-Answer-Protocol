@@ -45,7 +45,6 @@ func (p *Player) handleLook(args string) {
 			playersInRoom = append(playersInRoom, otherPlayer.Username)
 		}
 	}
-	p.Server.mu.Unlock()
 
 	items := room.Items
 	if items == nil {
@@ -55,6 +54,7 @@ func (p *Player) handleLook(args string) {
 	if npcs == nil {
 		npcs = []string{}
 	}
+	p.Server.mu.Unlock()
 
 	response := LookResponse{
 		Room: LookInfoRoom{
@@ -80,6 +80,14 @@ func (p *Player) handleLook(args string) {
 func (p *Player) handleMove(args string) {
 	if args == "" {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
+		return
+	}
+
+	if p.Status == protocol.StatusCombat ||
+		p.Status == protocol.StatusPerfectDefense ||
+		p.Status == protocol.StatusWeakenedDefense ||
+		p.Status == protocol.StatusBrokenDefense {
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgMoveError)
 		return
 	}
 
@@ -115,11 +123,12 @@ func (p *Player) handleMove(args string) {
 		}
 	}
 
-	p.SendOK(fmt.Sprintf("room=%s", newRoom))
-
 	p.checkHostileAmbush(newRoom)
 
 	p.Server.mu.Unlock()
+
+	p.SendOK(fmt.Sprintf("room=%s", newRoom))
+
 }
 
 func (p *Player) handleQuit(args string) {

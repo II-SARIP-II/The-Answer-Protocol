@@ -76,8 +76,22 @@ func (p *Player) handleAttack(args string) {
 }
 
 func (p *Player) handleDefend(args string) {
+	if strings.TrimSpace(args) != "" {
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
+		return
+	}
+
 	p.Server.mu.Lock()
 	defer p.Server.mu.Unlock()
+
+	isFighting := p.Status == protocol.StatusCombat ||
+		p.Status == protocol.StatusPerfectDefense ||
+		p.Status == protocol.StatusWeakenedDefense ||
+		p.Status == protocol.StatusBrokenDefense
+	if !isFighting {
+		p.SendErr(protocol.CodeBadRequest, "NOT_IN_COMBAT")
+		return
+	}
 
 	_, enemyData, ok := p.findAndValidateEnemy(args)
 	if !ok {
@@ -131,6 +145,11 @@ func (p *Player) handleFlee(args string) {
 		return
 	}
 
+	if !p.applyOpportunityAttack() {
+		p.SendOK(fmt.Sprintf("room=%s", p.CurrentRoom))
+		return
+	}
+
 	randomDirection := availableDirections[rand.IntN(len(availableDirections))]
 	exit := room.Exits[randomDirection]
 	newRoom := exit.Target
@@ -149,6 +168,7 @@ func (p *Player) handleFlee(args string) {
 		"from_room", oldRoom,
 		"to_room", newRoom,
 		"direction", randomDirection,
+		"hp_remaining", p.HP,
 	)
 
 	p.SendOK(fmt.Sprintf("room=%s", newRoom))
