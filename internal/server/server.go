@@ -41,6 +41,9 @@ func NewServer(worldPath string) (*Server, error) {
 
 	for id, npc := range w.NPCs {
 		npc.InitialRole = npc.Role
+		if npc.MaxLife == 0 && npc.Life > 0 {
+			npc.MaxLife = npc.Life
+		}
 		w.NPCs[id] = npc
 	}
 
@@ -286,6 +289,7 @@ func (s *Server) handleDisconnect(player *Player) {
 			origRoom := s.world.Rooms[origRoomID]
 			origRoom.Items = append(origRoom.Items, itemID)
 			s.world.Rooms[origRoomID] = origRoom
+			s.resetPassiveEnemy(origRoomID, itemID)
 			slog.Info("World item restored to origin on disconnect", "item", itemID, "room", origRoomID)
 		}
 	}

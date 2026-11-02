@@ -87,6 +87,23 @@ func (p *Player) handleTake(args string) {
 
 		if p.HP == 0 {
 			p.Server.mu.Lock()
+			room := p.CurrentRoom
+			roomData := p.Server.world.Rooms[room]
+			roomData.Items = append(roomData.Items, takenItem)
+			p.Server.world.Rooms[room] = roomData
+
+			if p.EquippedWeapon == takenItem {
+				p.EquippedWeapon = ""
+			}
+
+			for i, item := range p.Inventory {
+				if item == takenItem {
+					p.Inventory = append(p.Inventory[:i], p.Inventory[i+1:]...)
+					break
+				}
+			}
+
+			p.Server.resetPassiveEnemy(room, takenItem)
 			p.handlePlayerDeath(provokedPassiveEnemy.Name)
 			p.Server.mu.Unlock()
 		}

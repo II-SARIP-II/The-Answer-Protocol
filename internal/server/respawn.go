@@ -18,16 +18,44 @@ func (s *Server) scheduleNPCRespawn(enemyID string, roomID string) {
 		npc.Life = npc.MaxLife
 		npc.Role = npc.InitialRole
 		s.world.NPCs[enemyID] = npc
-
 		room := s.world.Rooms[roomID]
-		room.NPCs = append(room.NPCs, enemyID)
-		s.world.Rooms[roomID] = room
 
-		slog.Info("NPC respawned", "npc", enemyID, "room", roomID)
+		if npc.InitialRole == "passive enemy" && npc.Item != nil {
+			itemPresent := false
+			for _, it := range room.Items {
+				if it == *npc.Item {
+					itemPresent = true
+					break
+				}
+			}
+			if !itemPresent {
+				npc.Role = "enemy"
+			}
+		}
+		s.world.NPCs[enemyID] = npc
+
+		alreadyPresent := false
+		for _, id := range room.NPCs {
+			if id == enemyID {
+				alreadyPresent = true
+				break
+			}
+		}
+		if !alreadyPresent {
+			room.NPCs = append(room.NPCs, enemyID)
+			s.world.Rooms[roomID] = room
+		}
+
+		slog.Info("NPC respawned", "npc", enemyID, "room", roomID, "role", npc.Role)
 
 		for _, player := range s.players {
 			if strings.EqualFold(player.CurrentRoom, roomID) {
-				player.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server %s has reappeared!", npc.Name))
+				if npc.Role == "enemy" {
+					player.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server %s has reappeared and is enraged!", npc.Name))
+					player.checkHostileAmbush(roomID)
+				} else {
+					player.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server %s has reappeared!", npc.Name))
+				}
 			}
 		}
 	})
