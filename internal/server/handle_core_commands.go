@@ -123,11 +123,12 @@ func (p *Player) handleMove(args string) {
 		}
 	}
 
+	p.SendOK(fmt.Sprintf("room=%s", newRoom))
 	p.checkHostileAmbush(newRoom)
 
 	p.Server.mu.Unlock()
 
-	p.SendOK(fmt.Sprintf("room=%s", newRoom))
+
 
 }
 
