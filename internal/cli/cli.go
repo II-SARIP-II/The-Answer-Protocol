@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bufio"
+	_ "embed"
 	"fmt"
 	"net"
 	"os"
@@ -44,19 +45,10 @@ func authenticate(conn net.Conn, serverScanner *bufio.Scanner, stdinScanner *buf
 
 		username := strings.TrimSpace(stdinScanner.Text())
 
-		if username == "" {
-			fmt.Println("Error: Username cannot be empty. Please try again.")
-			continue
-		}
-		if strings.Contains(username, " ") {
-			fmt.Println("Error: Username cannot contain spaces. Please try again.")
-			continue
-		}
-
 		fmt.Fprint(conn, protocol.FormatCmd(protocol.CmdConnect, username))
 
 		if !serverScanner.Scan() {
-			return fmt.Errorf("connection lost with server")
+			return fmt.Errorf("connection closed by server")
 		}
 
 		response := serverScanner.Text()
@@ -65,10 +57,20 @@ func authenticate(conn net.Conn, serverScanner *bufio.Scanner, stdinScanner *buf
 			return nil
 		}
 
+		if strings.HasPrefix(response, "ERR 900") {
+			return fmt.Errorf("disconnected by server: %s", response)
+		}
+
 		if response == "ERR 201 NAME_IN_USE" {
-			fmt.Println("Error: This username is already taken by another player. Please choose another one.")
+			fmt.Println("WARN: This username is already taken by another player. Please choose another one.")
+		} else if username == "" {
+			fmt.Println("WARN: Username cannot be empty. Please try again.")
+		} else if strings.Contains(username, " ") {
+			fmt.Println("WARN: Username cannot contain spaces. Please try again.")
+		} else if len(username) > 32 {
+			fmt.Println("WARN: Username is too long (maximum 32 characters). Please try again.")
 		} else {
-			fmt.Printf("Server Error (%s). Please try again.\n", response)
+			fmt.Printf("Server Warning (%s). Please try again.\n", response)
 		}
 	}
 }
@@ -92,6 +94,11 @@ func handleCommands(conn net.Conn, serverScanner *bufio.Scanner, stdinScanner *b
 			<-quitChan
 			fmt.Println("Disconnected.")
 			return nil
+		}
+
+		if strings.EqualFold(input, "HELP") || input == "?" {
+			fmt.Print(helpMessage)
+			continue
 		}
 
 		fmt.Fprintf(conn, "%s\n", input)

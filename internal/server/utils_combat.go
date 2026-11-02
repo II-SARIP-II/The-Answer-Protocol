@@ -89,13 +89,13 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 	currentRoom := p.Server.world.Rooms[p.CurrentRoom]
 	enemy := p.Server.world.NPCs[enemyID]
 
-	UpdatedNPCsInRoom := make([]string, 0, len(currentRoom.NPCs))
+	updatedNPCsInRoom := make([]string, 0, len(currentRoom.NPCs))
 	for _, id := range currentRoom.NPCs {
 		if id != enemyID {
-			UpdatedNPCsInRoom = append(UpdatedNPCsInRoom, id)
+			updatedNPCsInRoom = append(updatedNPCsInRoom, id)
 		}
 	}
-	currentRoom.NPCs = UpdatedNPCsInRoom
+	currentRoom.NPCs = updatedNPCsInRoom
 
 	for _, otherPlayer := range p.Server.players {
 		if otherPlayer.CurrentRoom == p.CurrentRoom && otherPlayer.Status == "combat" && otherPlayer.Username != p.Username {
@@ -105,8 +105,8 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 
 	p.Server.world.Rooms[p.CurrentRoom] = currentRoom
 
-	p.broadcastRoom(p.CurrentRoom, protocol.EvtChatRoom, fmt.Sprintf("Player %s has eliminated %s!", p.Username, enemy.Name))
-	p.broadcastGroup(protocol.EvtChatGroup, fmt.Sprintf("Player %s has eliminated %s!", p.Username, enemy.Name))
+	p.broadcastRoom(p.CurrentRoom, protocol.EvtChatRoom, fmt.Sprintf("Server Player %s has eliminated %s!", p.Username, enemy.Name))
+	p.broadcastGroup(protocol.EvtChatGroup, fmt.Sprintf("Server Player %s has eliminated %s!", p.Username, enemy.Name))
 
 	p.processDefeatQuest(enemyID)
 
@@ -142,8 +142,8 @@ func (p *Player) checkHostileAmbush(roomID string) {
 				"player_hp", p.HP,
 			)
 
-			p.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("%s ambushes you! You take %d damage!", npc.Name, damage))
-			p.broadcastRoom(roomID, protocol.EvtChatRoom, fmt.Sprintf("%s ambushes %s for %d damage!", npc.Name, p.Username, damage))
+			p.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server %s ambushes you! You take %d damage!", npc.Name, damage))
+			p.broadcastRoom(roomID, protocol.EvtChatRoom, fmt.Sprintf("Server %s ambushes %s for %d damage!", npc.Name, p.Username, damage))
 
 			if p.HP == 0 {
 				p.handlePlayerDeath(npc.Name)
@@ -157,10 +157,10 @@ func (p *Player) handlePlayerDeath(target string) {
 	roomWhenDeath := p.CurrentRoom
 
 	p.broadcastRoom(roomWhenDeath, protocol.EvtRoomLeave, p.Username)
-	p.broadcastRoom(roomWhenDeath, protocol.EvtChatRoom, fmt.Sprintf("Player %s has been defeated by %s!", p.Username, target))
-	p.broadcastGroup(protocol.EvtChatGroup, fmt.Sprintf("Player %s was defeated by %s!", p.Username, target))
+	p.broadcastRoom(roomWhenDeath, protocol.EvtChatRoom, fmt.Sprintf("Server Player %s has been defeated by %s!", p.Username, target))
+	p.broadcastGroup(protocol.EvtChatGroup, fmt.Sprintf("Server Player %s was defeated by %s!", p.Username, target))
 
-	p.CurrentRoom = "room0"
+	p.CurrentRoom = "hotel_entrance"
 	p.MaxHP /= 2
 	if p.MaxHP < 25 {
 		p.MaxHP = 25
@@ -171,7 +171,7 @@ func (p *Player) handlePlayerDeath(target string) {
 	slog.Info(data)
 
 	p.broadcastRoom(p.CurrentRoom, protocol.EvtRoomEnter, p.Username)
-	p.SendEvt(protocol.EvtChatRoom, "Defeat: you were defeated and respawned in room0!")
+	p.SendEvt(protocol.EvtChatRoom, "Server Defeat: you were defeated and respawned in hotel_entrance!")
 }
 
 func (p *Player) getAttackDamage(weaponNameOrID string) int {
@@ -192,7 +192,6 @@ func (p *Player) findAndValidateEnemy(target string) (string, world.NPC, bool) {
 	var foundID string
 
 	if cleanTarget == "" {
-		// Pas de cible précisée : prend le premier ennemi hostile de la pièce
 		for _, npcID := range p.Server.world.Rooms[p.CurrentRoom].NPCs {
 			npc := p.Server.world.NPCs[npcID]
 			if npc.Life > 0 && (npc.Role == "enemy" || npc.Role == "target") {
@@ -201,7 +200,6 @@ func (p *Player) findAndValidateEnemy(target string) (string, world.NPC, bool) {
 			}
 		}
 	} else {
-		// Cible précisée pour attack ou defense
 		for _, targetID := range p.Server.world.Rooms[p.CurrentRoom].NPCs {
 			if p.matchNameOrID(targetID, cleanTarget) {
 				foundID = targetID
@@ -263,4 +261,41 @@ func (p *Player) processDefeatQuest(enemyID string) {
 			}
 		}
 	}
+}
+
+func (p *Player) applyOpportunityAttack() bool {
+	room := p.Server.world.Rooms[p.CurrentRoom]
+	var attackingNPCName string
+	fleeDamage := 0
+	for _, npcID := range room.NPCs {
+		npc := p.Server.world.NPCs[npcID]
+		if npc.Life > 0 && (npc.Role == "enemy" || npc.Role == "target") {
+			damage := FistFightDamage
+			if npc.Item != nil {
+				damage = p.getAttackDamage(*npc.Item)
+			}
+			fleeDamage = damage
+			attackingNPCName = npc.Name
+			break
+		}
+	}
+
+	if attackingNPCName == "" {
+		return true
+	}
+
+	p.HP -= fleeDamage
+	if p.HP < 0 {
+		p.HP = 0
+	}
+
+	p.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server %s strikes you in the back as you flee! You take %d damage (%d HP left).", attackingNPCName, fleeDamage, p.HP))
+	p.broadcastRoom(p.CurrentRoom, protocol.EvtChatRoom, fmt.Sprintf("Server %s strikes %s in the back as they flee for %d damage!", attackingNPCName, p.Username, fleeDamage))
+
+	if p.HP == 0 {
+		p.handlePlayerDeath(attackingNPCName)
+		return false
+	}
+
+	return true
 }

@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"strings"
 	"tap/internal/protocol"
+	"time"
 )
 
 func (p *Player) handleCommand(rawLine string) {
@@ -16,6 +17,23 @@ func (p *Player) handleCommand(rawLine string) {
 	args := ""
 	if len(parts) > 1 {
 		args = strings.TrimSpace(parts[1])
+	}
+
+	// Monitor potential abuse patterns: command flooding (> 20 commands/sec)
+	now := time.Now()
+	if now.Sub(p.lastCmdWindow) < time.Second {
+		p.cmdCountInSec++
+		if p.cmdCountInSec > 20 {
+			slog.Warn("Potential abuse detected: command flooding",
+				"player", p.Username,
+				"command", command,
+				"rate_per_sec", p.cmdCountInSec,
+			)
+			return
+		}
+	} else {
+		p.lastCmdWindow = now
+		p.cmdCountInSec = 1
 	}
 
 	slog.Info("Command received",
@@ -41,6 +59,8 @@ func (p *Player) handleCommand(rawLine string) {
 		p.handleChat(args)
 	case protocol.CmdWho:
 		p.handleWho(args)
+	case protocol.CmdWhoAll:
+		p.handleWhoAll(args)
 	case protocol.CmdGroup:
 		p.handleGroup(args)
 	case protocol.CmdTake:

@@ -44,8 +44,6 @@ func (p *Player) handleTake(args string) {
 	room.Items = append(room.Items[:foundIndex], room.Items[foundIndex+1:]...)
 	p.Server.world.Rooms[p.CurrentRoom] = room
 
-	p.processFetchQuest()
-
 	var provokedPassiveEnemy *world.NPC
 	var damage int
 	for _, npcID := range room.NPCs {
@@ -84,14 +82,19 @@ func (p *Player) handleTake(args string) {
 	p.SendOK(fmt.Sprintf("taken=%s", takenItem))
 
 	if provokedPassiveEnemy != nil {
-		p.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("%s is enraged: \"No one has the right to touch my knives!\" He attacks you for %d damage!", provokedPassiveEnemy.Name, damage))
-		p.broadcastRoom(p.CurrentRoom, protocol.EvtChatRoom, fmt.Sprintf("%s is enraged that %s took %s! He attacks for %d damage!", provokedPassiveEnemy.Name, p.Username, takenItem, damage))
+		p.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server %s is enraged: \"No one has the right to touch my knives!\" He attacks you for %d damage!", provokedPassiveEnemy.Name, damage))
+		p.broadcastRoom(p.CurrentRoom, protocol.EvtChatRoom, fmt.Sprintf("Server %s is enraged that %s took %s! He attacks for %d damage!", provokedPassiveEnemy.Name, p.Username, takenItem, damage))
 
 		if p.HP == 0 {
 			p.Server.mu.Lock()
 			p.handlePlayerDeath(provokedPassiveEnemy.Name)
 			p.Server.mu.Unlock()
 		}
+	}
+	if p.HP > 0 {
+		p.Server.mu.Lock()
+		p.processFetchQuest()
+		p.Server.mu.Unlock()
 	}
 }
 
@@ -127,6 +130,7 @@ func (p *Player) handleDrop(args string) {
 	room := p.Server.world.Rooms[p.CurrentRoom]
 	room.Items = append(room.Items, droppedItem)
 	p.Server.world.Rooms[p.CurrentRoom] = room
+	p.Server.resetPassiveEnemy(p.CurrentRoom, droppedItem)
 
 	p.Inventory = append(p.Inventory[:foundIndex], p.Inventory[foundIndex+1:]...)
 	p.Server.mu.Unlock()
@@ -174,8 +178,8 @@ func (p *Player) handleEquip(args string) {
 	}
 
 	if foundWeapon == "" {
-		p.SendErr(protocol.CodeItemNotInInventory, protocol.MsgItemNotInInventory)
 		p.Server.mu.Unlock()
+		p.SendErr(protocol.CodeItemNotInInventory, protocol.MsgItemNotInInventory)
 		return
 	}
 	p.Server.mu.Unlock()

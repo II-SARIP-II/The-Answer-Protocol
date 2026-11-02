@@ -16,6 +16,11 @@ import (
 	"time"
 )
 
+type connNumber struct {
+	timeElapsed time.Time
+	count       int
+}
+
 // Server manages game state, connected players, and TCP listening.
 type Server struct {
 	mu                sync.Mutex
@@ -24,6 +29,7 @@ type Server struct {
 	port              string
 	world             *world.GameData
 	spawnsQuestsItems map[string]string
+	connTracker       map[string]connNumber
 }
 
 // NewServer initializes and returns a new Server instance with world data.
@@ -31,6 +37,11 @@ func NewServer(worldPath string) (*Server, error) {
 	w, err := world.ReadJson(worldPath)
 	if err != nil {
 		return nil, err
+	}
+
+	for id, npc := range w.NPCs {
+		npc.InitialRole = npc.Role
+		w.NPCs[id] = npc
 	}
 
 	spawnsQuestsItems := make(map[string]string)
@@ -44,6 +55,7 @@ func NewServer(worldPath string) (*Server, error) {
 		players:           make(map[string]*Player),
 		world:             w,
 		spawnsQuestsItems: spawnsQuestsItems,
+		connTracker:       make(map[string]connNumber),
 	}, nil
 }
 
@@ -87,8 +99,34 @@ func (s *Server) Start(port string) error {
 			return err
 		}
 
+		s.trackConnection(conn.RemoteAddr().String())
 		go s.handleClientSession(conn)
 	}
+}
+
+// trackConnection logs a warning if the same IP opens more than 5 connections within 2 seconds.
+func (s *Server) trackConnection(remoteAddr string) {
+	host, _, _ := net.SplitHostPort(remoteAddr)
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	now := time.Now()
+	connNumber := s.connTracker[host]
+
+	if now.Sub(connNumber.timeElapsed) < 2*time.Second {
+		connNumber.count++
+		if connNumber.count > 5 {
+			slog.Warn("Potential abuse detected: rapid connections",
+				"ip", host,
+				"connections_in_window", connNumber.count,
+			)
+		}
+	} else {
+		connNumber.timeElapsed = now
+		connNumber.count = 1
+	}
+	s.connTracker[host] = connNumber
 }
 
 func (s *Server) Stop() {
@@ -113,6 +151,7 @@ func (s *Server) handleClientSession(conn net.Conn) {
 	fmt.Fprint(conn, protocol.MsgHello)
 
 	clientScanner := bufio.NewScanner(conn)
+	clientScanner.Buffer(make([]byte, 1024), 1024)
 
 	player, err := s.newPlayer(conn, clientScanner)
 	if err != nil {
@@ -142,11 +181,21 @@ func (s *Server) handleClientSession(conn net.Conn) {
 
 func (s *Server) newPlayer(conn net.Conn, clientScanner *bufio.Scanner) (*Player, error) {
 	var player *Player
+	failedAttempts := 0
 	for clientScanner.Scan() {
 		p, err := s.authenticate(conn, clientScanner.Text())
 		if err == nil {
 			player = p
 			break
+		}
+		failedAttempts++
+		if failedAttempts >= 3 {
+			slog.Warn("Potential abuse detected: repeated authentication failures",
+				"addr", conn.RemoteAddr().String(),
+				"failed_attempts", failedAttempts,
+			)
+			fmt.Fprint(conn, protocol.FormatErr(protocol.CodeConnectionFailed, protocol.MsgConnectionFailed))
+			return nil, errors.New("too many failed authentication attempts")
 		}
 	}
 	if player == nil {
@@ -195,6 +244,12 @@ func (s *Server) authenticate(conn net.Conn, command string) (*Player, error) {
 		return nil, errors.New("space in username.")
 	}
 
+	if len(username) > 32 {
+		fmt.Fprint(conn, protocol.FormatErr(protocol.CodeBadRequest, protocol.MsgArgsError))
+		slog.Warn("Authentication failed: username too long", "addr", conn.RemoteAddr().String(), "code", protocol.CodeBadRequest, "length", len(username))
+		return nil, errors.New("username too long")
+	}
+
 	s.mu.Lock()
 	if _, exists := s.players[username]; exists {
 		s.mu.Unlock()
@@ -218,13 +273,17 @@ func (s *Server) handleDisconnect(player *Player) {
 	player.State = protocol.StateTerminated
 	player.leaveGroupGetModif()
 
-	room, exists := s.world.Rooms[player.CurrentRoom]
-	if exists && len(player.Inventory) > 0 {
-		room.Items = append(room.Items, player.Inventory...)
-		s.world.Rooms[player.CurrentRoom] = room
-		player.Inventory = nil
-		slog.Info("Player items dropped on disconnect", "player", player.Username, "room", player.CurrentRoom)
+	for _, itemID := range player.Inventory {
+		if origRoomID, exists := s.spawnsQuestsItems[itemID]; exists {
+			origRoom := s.world.Rooms[origRoomID]
+			origRoom.Items = append(origRoom.Items, itemID)
+			s.world.Rooms[origRoomID] = origRoom
+			s.resetPassiveEnemy(origRoomID, itemID)
+			slog.Info("World item restored to origin on disconnect", "item", itemID, "room", origRoomID)
+		}
 	}
+
+	player.Inventory = nil
 
 	delete(s.players, player.Username)
 
@@ -241,4 +300,5 @@ func (s *Server) handleDisconnect(player *Player) {
 
 	slog.Info("Client disconnected", "username", player.Username, "addr", player.Conn.RemoteAddr().String(), "state", player.State)
 	s.mu.Unlock()
+	close(player.sendChan)
 }

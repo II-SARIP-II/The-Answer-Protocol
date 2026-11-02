@@ -4,8 +4,7 @@ import (
 	"strings"
 )
 
-// vérifie si une entité (item ou PNJ) présente dans le monde
-// correspond à la saisie du joueur, qu'il ait tapé l'ID ou le nom affiché.
+// matchNameOrID checks if a world entity matches user input by canonical ID or display name.
 func (p *Player) matchNameOrID(worldEntity, userInput string) bool {
 	if strings.EqualFold(worldEntity, userInput) {
 		return true
@@ -15,8 +14,7 @@ func (p *Player) matchNameOrID(worldEntity, userInput string) bool {
 	return strings.EqualFold(id1, id2)
 }
 
-// associe un nom ou un ID à son identifiant canonique (items ou PNJ).
-// TODO ajouter pour quest/quests?
+// resolveID maps a display name or ID to its canonical identifier.
 func (p *Player) resolveID(input string) string {
 	for id, itemData := range p.Server.world.Items {
 		if strings.EqualFold(input, id) || strings.EqualFold(input, itemData.Name) {

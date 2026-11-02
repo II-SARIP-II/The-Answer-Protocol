@@ -28,7 +28,7 @@ type StatusResponse struct {
 
 type WhoResponse struct {
 	Room   []string `json:"room"`
-	Server int      `json:"Server"`
+	Server int      `json:"server"`
 }
 
 type QuestResponse struct {
@@ -162,4 +162,16 @@ func parseCreateGroup(raw string) (CreateGroupResponse, error) {
 	}
 
 	return CreateGroupResponse{}, fmt.Errorf("impossible d'extraire le nom du groupe depuis: %q", raw)
+}
+
+func parseInventory(raw string) ([]string, error) {
+	var items []string
+
+	jsonStart := strings.Index(raw, "[")
+	if jsonStart == -1 {
+		return nil, fmt.Errorf("no inventory JSON array found in: %q", raw)
+	}
+
+	err := json.Unmarshal([]byte(raw[jsonStart:]), &items)
+	return items, err
 }

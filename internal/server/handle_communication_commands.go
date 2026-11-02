@@ -74,6 +74,17 @@ func (p *Player) handleWho(args string) {
 		return
 	}
 	p.Server.mu.Lock()
+	count := len(p.Server.players)
+	p.Server.mu.Unlock()
+	p.SendOK(fmt.Sprintf("players=%d", count))
+}
+
+func (p *Player) handleWhoAll(args string) {
+	if args != "" {
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
+		return
+	}
+	p.Server.mu.Lock()
 	usernamesList := make([]string, 0, len(p.Server.players))
 	for username := range p.Server.players {
 		usernamesList = append(usernamesList, username)
@@ -82,10 +93,9 @@ func (p *Player) handleWho(args string) {
 	playersNumber := len(p.Server.players)
 	p.Server.mu.Unlock()
 
-	// utilisation d'une structure anonyme dans la méthode comme elle ne sert que cette fois-là
 	response := struct {
 		Room   []string `json:"room"`
-		Server int      `json:"Server"`
+		Server int      `json:"server"`
 	}{
 		Room:   usernamesList,
 		Server: playersNumber,

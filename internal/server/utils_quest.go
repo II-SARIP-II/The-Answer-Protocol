@@ -44,7 +44,7 @@ func (p *Player) processFetchQuest() {
 	}
 }
 
-// compte combien d'items à recuperer lors de la quête sont déjà dans l'inventaire du player ( s íl en a ramassé avant de commencer la quête...)
+// countHeldTargets counts how many target items are already present in the player's inventory.
 func (p *Player) countHeldTargets(targets []string) int {
 	count := 0
 	for _, target := range targets {

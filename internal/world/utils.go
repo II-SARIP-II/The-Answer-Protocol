@@ -36,7 +36,7 @@ func (world *GameData) ValidateNoDuplicateItem() error {
 func (world *GameData) CheckItemExists() error {
 	for roomID, room := range world.Rooms {
 		for _, targetItem := range room.Items {
-			targetItem = strings.TrimSpace(targetItem)
+			targetItem = strings.ToLower(strings.TrimSpace(targetItem))
 			if targetItem == "" {
 				continue
 			}
@@ -58,8 +58,8 @@ func (world *GameData) CheckItemExists() error {
 }
 
 func (world *GameData) ValidateExit() error {
-	if _, exists := world.Rooms["room0"]; !exists {
-		return fmt.Errorf("mandatory starting room 'room0' is missing from world")
+	if _, exists := world.Rooms["hotel_entrance"]; !exists {
+		return fmt.Errorf("mandatory starting room 'hotel_entrance' is missing from world")
 	}
 	for roomID, room := range world.Rooms {
 		for dir, exit := range room.Exits {
@@ -78,7 +78,7 @@ func (world *GameData) ValidateExit() error {
 func (world *GameData) CheckNPCExists() error {
 	for roomID, room := range world.Rooms {
 		for _, targetNPC := range room.NPCs {
-			targetNPC = strings.TrimSpace(targetNPC)
+			targetNPC = strings.ToLower(strings.TrimSpace(targetNPC))
 			if targetNPC == "" {
 				continue
 			}
@@ -96,6 +96,22 @@ func (world *GameData) CheckNPCExists() error {
 			}
 		}
 	}
+
+	for _, npc := range world.NPCs {
+		if npc.Item != nil && *npc.Item != "" {
+			foundItem := false
+			for itemID, itemDefined := range world.Items {
+				if strings.EqualFold(*npc.Item, itemID) || strings.EqualFold(*npc.Item, itemDefined.Name) {
+					foundItem = true
+					break
+				}
+			}
+			if !foundItem {
+				return fmt.Errorf("NPC '%s' holds non-existent item '%s'", npc.Name, *npc.Item)
+			}
+		}
+	}
+
 	return nil
 }
 
