@@ -10,24 +10,15 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
-//go:embed assets/Title.ttf
-var fontTitle []byte
-
 //go:embed assets/Text.ttf
 var fontText []byte
 
 var (
-	TitleSource *text.GoTextFaceSource
-	TextSource  *text.GoTextFaceSource
+	TextSource *text.GoTextFaceSource
 )
 
 func init() {
 	var err error
-
-	TitleSource, err = text.NewGoTextFaceSource(bytes.NewReader(fontTitle))
-	if err != nil {
-		log.Fatalf("Error while loading Title font: %v", err)
-	}
 
 	TextSource, err = text.NewGoTextFaceSource(bytes.NewReader(fontText))
 	if err != nil {
@@ -35,18 +26,9 @@ func init() {
 	}
 }
 
-func drawText(screen *ebiten.Image, msg string, x float64, y float64, size float64, clr color.Color, fontType string) {
-	var source *text.GoTextFaceSource
-
-	switch fontType {
-	case "title":
-		source = TitleSource
-	default:
-		source = TextSource
-	}
-
+func DrawText(screen *ebiten.Image, msg string, x float64, y float64, size float64, clr color.Color) {
 	face := &text.GoTextFace{
-		Source: source,
+		Source: TextSource,
 		Size:   size,
 	}
 
@@ -55,4 +37,54 @@ func drawText(screen *ebiten.Image, msg string, x float64, y float64, size float
 	op.ColorScale.ScaleWithColor(clr)
 
 	text.Draw(screen, msg, face, op)
+}
+
+type TextWidget struct {
+	X, Y     float32
+	Size     float32
+	Text     string
+	FontType string
+	Color    color.Color
+	Visible  bool
+
+	Blink      bool
+	blinkTicks int
+}
+
+func NewTextWidget(x, y, size float32, text string, clr color.Color) *TextWidget {
+	return &TextWidget{
+		X:        x,
+		Y:        y,
+		Size:     size,
+		Text:     text,
+		FontType: "default",
+		Color:    clr,
+		Visible:  true,
+	}
+}
+
+func (tw *TextWidget) SetText(newText string) {
+	tw.Text = newText
+}
+
+func (tw *TextWidget) Update() {
+	if !tw.Visible {
+		return
+	}
+
+	if tw.Blink {
+		tw.blinkTicks++
+	}
+}
+
+func (tw *TextWidget) Draw(screen *ebiten.Image) {
+	if !tw.Visible {
+		return
+	}
+
+	if tw.Blink && (tw.blinkTicks/30)%2 == 0 {
+		return
+	}
+
+	DrawText(screen, tw.Text, float64(tw.X), float64(tw.Y), float64(tw.Size), tw.Color)
 }

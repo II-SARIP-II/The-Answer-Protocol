@@ -47,7 +47,11 @@ func (g *Game) serverResponse() error {
 				return ErrQuit
 			}
 			if chatStruct, errChat := parseEventChat(msg); errChat == nil && chatStruct.Type == "EVT" {
-				if chat := g.bottomCenter.GetChat(); chat != nil {
+				if chatStruct.Sender == "Server" {
+					if chatAction := g.bottomRight.GetChat(); chatAction != nil {
+						chatAction.AddLine(chatStruct.Message)
+					}
+				} else if chat := g.bottomCenter.GetChat(); chat != nil {
 					chat.AddLine("[" + chatStruct.Scope + "] " + chatStruct.Sender + " > " + chatStruct.Message)
 				}
 				continue
@@ -109,6 +113,11 @@ func (g *Game) serverResponse() error {
 				switch verb {
 				case "LOOK":
 					if lookResp, err := parseLookResponse(msg); err == nil {
+						g.PlayerInRoom = len(lookResp.Players)
+						texts := g.top.GetTextWidgets()
+						if len(texts) > 1 && texts[1] != nil {
+							texts[1].SetText(fmt.Sprintf("Players in Room: %d", g.PlayerInRoom))
+						}
 						room := lookResp.toWorldRoom()
 						g.centerMid.AddRoom(
 							room.Name,
@@ -229,8 +238,7 @@ func (g *Game) serverResponse() error {
 						g.curr_cmd = "LOOK"
 						sendMessage(g.conn, "LOOK")
 						break
-					}
-					if attackJSON, err := parseAttack(response); err == nil {
+					} else if attackJSON, err := parseAttack(response); err == nil {
 						if attackJSON.Status == "victory" {
 							chatAction.AddLine("ATTACK > Enemy defeated!")
 							g.hp = attackJSON.AttackerHP
@@ -253,7 +261,15 @@ func (g *Game) serverResponse() error {
 					g.status = ""
 
 				case "DEFEND":
-					if defenceJSON, err := parseDefence(response); err == nil {
+					if strings.Contains(msg, "Defeat:") || strings.Contains(msg, "defeated") {
+						chatAction.AddLine("COMBAT > YOU DIED! Respawned in hotel_entrance.")
+						g.centerMid.RemoveRooms()
+						g.location = [2]int{1, 1}
+						g.status = ""
+						g.curr_cmd = "LOOK"
+						sendMessage(g.conn, "LOOK")
+						break
+					} else if defenceJSON, err := parseDefence(response); err == nil {
 						if defenceJSON.Status == "perfect_defense" {
 							chatAction.AddLine("DEFEND > Perfect defense! No damage taken.")
 						} else if defenceJSON.Status == "weakened_defense" || defenceJSON.Status == "broken_defense" {
@@ -281,10 +297,18 @@ func (g *Game) serverResponse() error {
 
 				case "WHO_ALL":
 					if who, err := parseWho(response); err == nil {
+						g.PlayerInGame = len(who.All)
+
+						texts := g.top.GetTextWidgets()
+
+						if len(texts) > 0 && texts[0] != nil {
+							texts[0].SetText(fmt.Sprintf("Players in Game: %d", g.PlayerInGame))
+						}
+
 						if invitesPanel := g.centerLeft.GetSubPanel("INVITE PLAYER"); invitesPanel != nil {
 							invitesPanel.PlayerInvites = components.CreateList(
 								g.name,
-								who.Room,
+								who.All,
 								invitesPanel.X,
 								invitesPanel.Y,
 								invitesPanel.W,
@@ -297,7 +321,7 @@ func (g *Game) serverResponse() error {
 								}
 							}
 						}
-						chatAction.AddLine(fmt.Sprintf("WHO > Players in room: %v | Server: %d", who.Room, who.Server))
+						chatAction.AddLine(fmt.Sprintf("WHO > Players in game: %v | Server: %d", who.All, who.Server))
 					}
 
 				case "STATUS":
@@ -367,6 +391,23 @@ func (g *Game) serverResponse() error {
 				case "LEAVE":
 					chatAction.AddLine("GROUP > You left the group.")
 					g.status = ""
+
+				case "FLEE":
+					fleeData, err := parseFlee(response)
+					if err == nil {
+						switch fleeData.Direction {
+						case "north":
+							g.location[1] -= 1
+						case "east":
+							fmt.Print("EASTTTTT")
+							g.location[0] += 1
+						case "south":
+							fmt.Print("SOOUTUHTOTHT")
+							g.location[1] += 1
+						case "west":
+							g.location[0] -= 1
+						}
+					}
 
 				case "QUIT":
 					return ErrQuit
