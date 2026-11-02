@@ -17,6 +17,7 @@ func listenServer(conn net.Conn, messagesChan chan string) {
 	if err := serverScanner.Err(); err != nil {
 		messagesChan <- "Connection lost: " + err.Error()
 	}
+	messagesChan <- "SERVER_DISCONNECTED"
 }
 
 func sendMessage(conn net.Conn, text string) {

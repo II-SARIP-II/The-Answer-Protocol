@@ -30,6 +30,11 @@ type CombatRoundResult struct {
 	Status      string
 }
 
+type FleeResponse struct {
+	Direction string `json:"direction"`
+	Room      string `json:"room"`
+}
+
 func (p *Player) handleAttack(args string) {
 	if strings.TrimSpace(args) == "" {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
@@ -171,5 +176,16 @@ func (p *Player) handleFlee(args string) {
 		"hp_remaining", p.HP,
 	)
 
-	p.SendOK(fmt.Sprintf("room=%s", newRoom))
+	response := FleeResponse{
+		Direction: randomDirection,
+		Room:      newRoom,
+	}
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgBadRequest)
+		return
+	}
+
+	p.SendOK(string(data))
 }
