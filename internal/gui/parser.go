@@ -37,13 +37,11 @@ type FleeResponse struct {
 }
 
 type QuestResponse struct {
-	Giver        string   `json:"giver"`
-	Description  string   `json:"description"`
-	Type         string   `json:"type"`
-	Targets      []string `json:"targets"`
-	Count        int      `json:"count"`
-	Reward       string   `json:"reward"`
-	Prerequisite string   `json:"prerequisite"`
+	QuestID     string `json:"quest_id"`
+	Status      string `json:"status"`
+	Progress    string `json:"progress,omitempty"`
+	Description string `json:"description,omitempty"`
+	Reward      string `json:"reward,omitempty"`
 }
 
 type QuestsItemResponse struct {
