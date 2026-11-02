@@ -130,6 +130,13 @@ func (g *Game) sendActionButton(conn net.Conn, chat *components.ChatWidget) {
 					sendMessage(conn, "WHO_ALL")
 				}
 
+			case "FLEE":
+				btn.OnClick = func() {
+					g.status = ""
+					g.curr_cmd = "FLEE"
+					sendMessage(conn, "FLEE")
+				}
+
 			default:
 				btn.OnClick = func() {
 					g.status = "IDLE"
