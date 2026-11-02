@@ -25,6 +25,7 @@ type Player struct {
 	Quests           map[string]Quest
 	lastCmdWindow    time.Time
 	cmdCountInSec    int
+	sendChan         chan string
 }
 
 type Quest struct {
@@ -35,7 +36,7 @@ type Quest struct {
 }
 
 func NewPlayer(username string, conn net.Conn) *Player {
-	return &Player{
+	player := &Player{
 		Username:         username,
 		Conn:             conn,
 		State:            protocol.StateAuthenticated,
@@ -51,20 +52,33 @@ func NewPlayer(username string, conn net.Conn) *Player {
 		Quests:           make(map[string]Quest),
 		lastCmdWindow:    time.Now(),
 		cmdCountInSec:    0,
+		sendChan:         make(chan string, 128),
+	}
+
+	go player.writeMessages()
+	return player
+}
+
+func (p *Player) writeMessages() {
+	for msg := range p.sendChan {
+		if _, err := fmt.Fprint(p.Conn, msg); err != nil {
+			slog.Warn("TCP write error", "player", p.Username, "error", err)
+			return
+		}
 	}
 }
 
 func (p *Player) SendOK(data string) {
-	fmt.Fprint(p.Conn, protocol.FormatOK(data))
+	p.sendChan <- protocol.FormatOK(data)
 	slog.Info("Response sent", "player", p.Username, "response", "OK", "data", data)
 }
 
 func (p *Player) SendErr(code int, msg string) {
-	fmt.Fprint(p.Conn, protocol.FormatErr(code, msg))
+	p.sendChan <- protocol.FormatErr(code, msg)
 	slog.Warn("Error response sent", "player", p.Username, "code", code, "message", msg)
 }
 
 func (p *Player) SendEvt(eventType string, eventData string) {
-	fmt.Fprint(p.Conn, protocol.FormatEvt(eventType, eventData))
+	p.sendChan <- protocol.FormatEvt(eventType, eventData)
 	slog.Info("Event pushed", "player", p.Username, "event type", eventType, "event data", eventData)
 }

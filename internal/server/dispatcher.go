@@ -29,6 +29,7 @@ func (p *Player) handleCommand(rawLine string) {
 				"command", command,
 				"rate_per_sec", p.cmdCountInSec,
 			)
+			return
 		}
 	} else {
 		p.lastCmdWindow = now
@@ -58,6 +59,8 @@ func (p *Player) handleCommand(rawLine string) {
 		p.handleChat(args)
 	case protocol.CmdWho:
 		p.handleWho(args)
+	case protocol.CmdWhoAll:
+		p.handleWhoAll(args)
 	case protocol.CmdGroup:
 		p.handleGroup(args)
 	case protocol.CmdTake:

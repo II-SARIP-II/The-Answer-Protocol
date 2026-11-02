@@ -16,9 +16,7 @@ func (s *Server) scheduleNPCRespawn(enemyID string, roomID string) {
 
 		npc := s.world.NPCs[enemyID]
 		npc.Life = npc.MaxLife
-		if enemyID == "chef" {
-			npc.Role = "passive enemy"
-		}
+		npc.Role = npc.InitialRole
 		s.world.NPCs[enemyID] = npc
 
 		room := s.world.Rooms[roomID]
@@ -58,7 +56,6 @@ func (p *Player) processTargetsRespawn(targets []string) {
 		initialRoomID := p.Server.spawnsQuestsItems[target]
 		roomData, exists := p.Server.world.Rooms[initialRoomID]
 		if !exists {
-			p.Server.mu.Unlock()
 			p.SendErr(protocol.CodeNPCNotFound, protocol.MsgNPCNotFound)
 			return
 		}
