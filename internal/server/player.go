@@ -6,6 +6,7 @@ import (
 	"net"
 	"tap/internal/protocol"
 	"time"
+	"sync"
 )
 
 type Player struct {
@@ -25,7 +26,8 @@ type Player struct {
 	Quests           map[string]Quest
 	lastCmdWindow    time.Time
 	cmdCountInSec    int
-	sendChan         chan string
+	sendChan chan    string
+    closeOnce        sync.Once
 }
 
 type Quest struct {

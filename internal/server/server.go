@@ -67,7 +67,6 @@ func (s *Server) Start(port string) error {
 		slog.Error("Cannot open port", "port", port, "err", err)
 		return err
 	}
-	defer ln.Close()
 	s.listener = ln
 	slog.Info("TAP server started", "port", port)
 
@@ -130,20 +129,24 @@ func (s *Server) trackConnection(remoteAddr string) {
 }
 
 func (s *Server) Stop() {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+    s.mu.Lock()
+    defer s.mu.Unlock()
 
-	for _, player := range s.players {
-		player.Conn.Close()
-	}
+    if s.listener != nil {
+        _ = s.listener.Close()
+        s.listener = nil
+    }
 
-	if s.listener != nil {
-		s.listener.Close()
-	}
+    for _, player := range s.players {
+        if player.State == protocol.StateTerminated {
+            continue
+        }
+        player.State = protocol.StateTerminated
+        _ = player.Conn.Close()
+    }
 }
 
 func (s *Server) handleClientSession(conn net.Conn) {
-	defer conn.Close()
 
 	state := protocol.StateConnected
 	slog.Info("Client connected", "addr", conn.RemoteAddr().String(), "state", state)
@@ -269,36 +272,45 @@ func (s *Server) authenticate(conn net.Conn, command string) (*Player, error) {
 }
 
 func (s *Server) handleDisconnect(player *Player) {
-	s.mu.Lock()
-	player.State = protocol.StateTerminated
-	player.leaveGroupGetModif()
+    s.mu.Lock()
+    if _, exists := s.players[player.Username]; !exists {
+        s.mu.Unlock()
+        return
+    }
 
-	for _, itemID := range player.Inventory {
-		if origRoomID, exists := s.spawnsQuestsItems[itemID]; exists {
-			origRoom := s.world.Rooms[origRoomID]
-			origRoom.Items = append(origRoom.Items, itemID)
-			s.world.Rooms[origRoomID] = origRoom
-			s.resetPassiveEnemy(origRoomID, itemID)
-			slog.Info("World item restored to origin on disconnect", "item", itemID, "room", origRoomID)
-		}
-	}
+    player.State = protocol.StateTerminated
+    player.leaveGroupGetModif()
 
-	player.Inventory = nil
+    for _, itemID := range player.Inventory {
+        if origRoomID, exists := s.spawnsQuestsItems[itemID]; exists {
+            origRoom := s.world.Rooms[origRoomID]
+            origRoom.Items = append(origRoom.Items, itemID)
+            s.world.Rooms[origRoomID] = origRoom
+            s.resetPassiveEnemy(origRoomID, itemID)
+        }
+    }
 
-	delete(s.players, player.Username)
+    player.Inventory = nil
+    delete(s.players, player.Username)
 
-	for _, otherPlayer := range s.players {
-		if otherPlayer.CurrentRoom == player.CurrentRoom {
-			otherPlayer.SendEvt(protocol.EvtRoomLeave, player.Username)
-		}
-	}
+    for _, otherPlayer := range s.players {
+        if otherPlayer.CurrentRoom == player.CurrentRoom {
+            otherPlayer.SendEvt(protocol.EvtRoomLeave, player.Username)
+        }
+    }
 
-	data := fmt.Sprintf("players=%d", len(s.players))
-	for _, otherPlayer := range s.players {
-		otherPlayer.SendEvt(protocol.EvtPlayers, data)
-	}
+    data := fmt.Sprintf("players=%d", len(s.players))
+    for _, otherPlayer := range s.players {
+        otherPlayer.SendEvt(protocol.EvtPlayers, data)
+    }
 
-	slog.Info("Client disconnected", "username", player.Username, "addr", player.Conn.RemoteAddr().String(), "state", player.State)
-	s.mu.Unlock()
-	close(player.sendChan)
+    s.mu.Unlock()
+
+    player.closeOnce.Do(func() {
+        close(player.sendChan)
+        _ = player.Conn.Close()
+    })
 }
+
+
+
