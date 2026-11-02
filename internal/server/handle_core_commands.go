@@ -131,22 +131,21 @@ func (p *Player) handleMove(args string) {
 
 }
 
-
 func (p *Player) handleQuit(args string) {
-    if args != "" {
-        p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
-        return
-    }
+	if args != "" {
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
+		return
+	}
 
-    if p.State == protocol.StateTerminated {
-        return
-    }
+	if p.State == protocol.StateTerminated {
+		return
+	}
 
-    p.State = protocol.StateTerminated
+	p.State = protocol.StateTerminated
 
-    _, _ = fmt.Fprintf(p.Conn, "OK bye\n")
+	_, _ = fmt.Fprintf(p.Conn, "OK bye\n")
 
-    p.Server.handleDisconnect(p)
+	p.Server.handleDisconnect(p)
 }
 
 func (p *Player) handleStatus(args string) {
