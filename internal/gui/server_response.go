@@ -44,7 +44,11 @@ func (g *Game) serverResponse() error {
 		case msg := <-g.messagesChan:
 			fmt.Print(msg)
 			if chatStruct, errChat := parseEventChat(msg); errChat == nil && chatStruct.Type == "EVT" {
-				if chat := g.bottomCenter.GetChat(); chat != nil {
+				if chatStruct.Sender == "Server" {
+					if chatAction := g.bottomRight.GetChat(); chatAction != nil {
+						chatAction.AddLine(chatStruct.Message)
+				}
+				} else if chat := g.bottomCenter.GetChat(); chat != nil {
 					chat.AddLine("[" + chatStruct.Scope + "] " + chatStruct.Sender + " > " + chatStruct.Message)
 				}
 				continue
