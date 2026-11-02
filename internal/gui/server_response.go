@@ -106,6 +106,11 @@ func (g *Game) serverResponse() error {
 				switch verb {
 				case "LOOK":
 					if lookResp, err := parseLookResponse(msg); err == nil {
+						g.PlayerInRoom = len(lookResp.Players)
+						texts := g.top.GetTextWidgets()
+						if len(texts) > 1 && texts[1] != nil {
+							texts[1].SetText(fmt.Sprintf("Players in Room: %d", g.PlayerInRoom))
+						}
 						room := lookResp.toWorldRoom()
 						g.centerMid.AddRoom(
 							room.Name,
@@ -278,17 +283,18 @@ func (g *Game) serverResponse() error {
 
 				case "WHO_ALL":
 					if who, err := parseWho(response); err == nil {
-						g.PlayerInRoom = len(who.Room)
-						g.PlayerInGame = who.Server
+						g.PlayerInGame = len(who.All)
 
-						if textWidget := g.top.GetTextWidget(); textWidget != nil {
-							newMsg := fmt.Sprintf("Players in Game: %d | Players in Room: %d", g.PlayerInGame, g.PlayerInRoom)
-							textWidget.SetText(newMsg)
+						texts := g.top.GetTextWidgets()
+
+						if len(texts) > 0 && texts[0] != nil {
+							texts[0].SetText(fmt.Sprintf("Players in Game: %d", g.PlayerInGame))
 						}
+
 						if invitesPanel := g.centerLeft.GetSubPanel("INVITE PLAYER"); invitesPanel != nil {
 							invitesPanel.PlayerInvites = components.CreateList(
 								g.name,
-								who.Room,
+								who.All,
 								invitesPanel.X,
 								invitesPanel.Y,
 								invitesPanel.W,
@@ -301,7 +307,7 @@ func (g *Game) serverResponse() error {
 								}
 							}
 						}
-						chatAction.AddLine(fmt.Sprintf("WHO > Players in game: %v | Server: %d", who.Room, who.Server))
+						chatAction.AddLine(fmt.Sprintf("WHO > Players in game: %v | Server: %d", who.All, who.Server))
 					}
 
 				case "STATUS":

@@ -65,7 +65,7 @@ func (p *Panel) GetSubPanel(name string) *Panel {
 	return nil
 }
 
-func (p *Panel) GetTextWidget() *TextWidget {
+func (p *Panel) GetFirstTextWidget() *TextWidget {
 	if p == nil {
 		return nil
 	}
@@ -75,6 +75,19 @@ func (p *Panel) GetTextWidget() *TextWidget {
 		}
 	}
 	return nil
+}
+
+func (p *Panel) GetTextWidgets() []*TextWidget {
+	if p == nil {
+		return nil
+	}
+	var widgets []*TextWidget
+	for _, widget := range p.Content {
+		if textWidget, ok := widget.(*TextWidget); ok {
+			widgets = append(widgets, textWidget)
+		}
+	}
+	return widgets
 }
 
 type Panel struct {

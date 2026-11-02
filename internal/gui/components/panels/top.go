@@ -8,9 +8,23 @@ import (
 )
 
 func CreateTopPanel(w, topH float32, playerInGame, playerInRoom int) *components.Panel {
-	text := fmt.Sprintf("Players in Game: %d | Players in Room: %d", playerInGame, playerInRoom)
-	
-	statusText := components.NewTextWidget(20, 20, 16, text, color.RGBA{R: 0, G: 255, B: 180, A: 255})
+	textColor := color.RGBA{R: 0, G: 255, B: 180, A: 255}
+
+	inGameText := components.NewTextWidget(
+		20, 
+		15, 
+		16, 
+		fmt.Sprintf("Players in Game: %d", playerInGame), 
+		textColor,
+	)
+
+	inRoomText := components.NewTextWidget(
+		280, 
+		15, 
+		16, 
+		fmt.Sprintf("Players in Room: %d", playerInRoom), 
+		textColor,
+	)
 
 	top := &components.Panel{
 		Name:        "Top Panel",
@@ -21,7 +35,7 @@ func CreateTopPanel(w, topH float32, playerInGame, playerInRoom int) *components
 		Y:           0,
 		W:           w,
 		H:           topH,
-		Content:     []components.Widget{statusText},
+		Content:     []components.Widget{inGameText, inRoomText},
 		BgColor:     color.RGBA{R: 10, G: 16, B: 26, A: 240},
 		BorderColor: color.RGBA{R: 0, G: 180, B: 220, A: 255},
 		TextSize:    float32(20.0),
