@@ -138,7 +138,6 @@ func parseQuest(strQuest string) (QuestResponse, error) {
 
 func parseQuests(strQuests string) ([]QuestsItemResponse, error) {
 	var quests []QuestsItemResponse
-	fmt.Print(strQuests)
 	jsonStart := strings.Index(strQuests, "[")
 	if jsonStart == -1 {
 		return nil, fmt.Errorf("No array found: %q", strQuests)

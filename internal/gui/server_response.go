@@ -43,7 +43,6 @@ func (g *Game) serverResponse() error {
 	for {
 		select {
 		case msg := <-g.messagesChan:
-			fmt.Print(msg)
 			if msg == "SERVER_DISCONNECTED" {
 				return ErrQuit
 			}
@@ -392,10 +391,8 @@ func (g *Game) serverResponse() error {
 						case "north":
 							g.location[1] -= 1
 						case "east":
-							fmt.Print("EASTTTTT")
 							g.location[0] += 1
 						case "south":
-							fmt.Print("SOOUTUHTOTHT")
 							g.location[1] += 1
 						case "west":
 							g.location[0] -= 1
