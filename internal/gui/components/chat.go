@@ -139,7 +139,7 @@ func (c *ChatWidget) Draw(screen *ebiten.Image) {
 
 	for i, line := range c.Lines {
 		lineY := float64(c.Y) + (float64(i) * c.Spacing)
-		drawText(screen, line, float64(c.X), lineY, float64(c.TextSize), c.Color, "Title")
+		DrawText(screen, line, float64(c.X), lineY, float64(c.TextSize), c.Color)
 	}
 
 	boxY := c.Y + c.H - inputHeight - 5.0
@@ -168,7 +168,7 @@ func (c *ChatWidget) Draw(screen *ebiten.Image) {
 
 	displayText := c.Text + cursor
 
-	drawText(screen, displayText, float64(inputX+8), float64(boxY+8), float64(c.TextSize), color.RGBA{R: 0, G: 255, B: 180, A: 255}, "Title")
+	DrawText(screen, displayText, float64(inputX+8), float64(boxY+8), float64(c.TextSize), color.RGBA{R: 0, G: 255, B: 180, A: 255})
 }
 
 func repeatingKeyPressed(key ebiten.Key) bool {

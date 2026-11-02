@@ -278,6 +278,13 @@ func (g *Game) serverResponse() error {
 
 				case "WHO_ALL":
 					if who, err := parseWho(response); err == nil {
+						g.PlayerInRoom = len(who.Room)
+						g.PlayerInGame = who.Server
+
+						if textWidget := g.top.GetTextWidget(); textWidget != nil {
+							newMsg := fmt.Sprintf("Players in Game: %d | Players in Room: %d", g.PlayerInGame, g.PlayerInRoom)
+							textWidget.SetText(newMsg)
+						}
 						if invitesPanel := g.centerLeft.GetSubPanel("INVITE PLAYER"); invitesPanel != nil {
 							invitesPanel.PlayerInvites = components.CreateList(
 								g.name,
@@ -294,7 +301,7 @@ func (g *Game) serverResponse() error {
 								}
 							}
 						}
-						chatAction.AddLine(fmt.Sprintf("WHO > Players in room: %v | Server: %d", who.Room, who.Server))
+						chatAction.AddLine(fmt.Sprintf("WHO > Players in game: %v | Server: %d", who.Room, who.Server))
 					}
 
 				case "STATUS":

@@ -65,6 +65,18 @@ func (p *Panel) GetSubPanel(name string) *Panel {
 	return nil
 }
 
+func (p *Panel) GetTextWidget() *TextWidget {
+	if p == nil {
+		return nil
+	}
+	for _, widget := range p.Content {
+		if textWidget, ok := widget.(*TextWidget); ok {
+			return textWidget
+		}
+	}
+	return nil
+}
+
 type Panel struct {
 	Name          string
 	DisplayName   bool
@@ -104,8 +116,7 @@ func (p *Panel) Update() {
 func printTitle(screen *ebiten.Image, x float32, y float32, w float32, h float32, name string, size float32, textColor color.Color) {
 	startX := x + (w / 2.0) - (float32(len(name)) * size * 0.5 / 2.0)
 	startY := y + size/2
-	fontType := "Title"
-	drawText(screen, name, float64(startX), float64(startY), float64(size), textColor, fontType)
+	DrawText(screen, name, float64(startX), float64(startY), float64(size), textColor)
 }
 
 func (p *Panel) Draw(screen *ebiten.Image) {

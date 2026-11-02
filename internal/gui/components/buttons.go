@@ -83,5 +83,5 @@ func (b *Button) Draw(screen *ebiten.Image) {
 
 	textX := int(b.X) + int(b.W)/2 - (len(b.Label)*10)/2
 	textY := int(b.Y) + int(b.H)/2 - 6
-	drawText(screen, b.Label, float64(textX), float64(textY), 20, textColor, "Title")
+	DrawText(screen, b.Label, float64(textX), float64(textY), 20, textColor)
 }
