@@ -32,7 +32,7 @@ type CombatRoundResult struct {
 
 type FleeResponse struct {
 	Direction string `json:"direction"`
-	Room      string `json: "room"`
+	Room      string `json:"room"`
 }
 
 func (p *Player) handleAttack(args string) {
