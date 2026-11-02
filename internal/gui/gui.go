@@ -33,8 +33,8 @@ type Game struct {
 	messagesChan chan string
 	curr_cmd     string
 	status       string
-	PlayerInGame	int
-	PlayerInRoom	int
+	PlayerInGame int
+	PlayerInRoom int
 }
 
 func newGame(winWidth int, winHeight int, conn net.Conn, name string) *Game {

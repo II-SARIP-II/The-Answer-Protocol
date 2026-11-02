@@ -14,7 +14,7 @@ import (
 var fontText []byte
 
 var (
-	TextSource  *text.GoTextFaceSource
+	TextSource *text.GoTextFaceSource
 )
 
 func init() {
@@ -27,12 +27,8 @@ func init() {
 }
 
 func DrawText(screen *ebiten.Image, msg string, x float64, y float64, size float64, clr color.Color) {
-	var source *text.GoTextFaceSource
-
-	source = TextSource
-
 	face := &text.GoTextFace{
-		Source: source,
+		Source: TextSource,
 		Size:   size,
 	}
 
@@ -44,15 +40,15 @@ func DrawText(screen *ebiten.Image, msg string, x float64, y float64, size float
 }
 
 type TextWidget struct {
-	X, Y        float32
-	Size        float32
-	Text        string
-	FontType    string
-	Color       color.Color
-	Visible     bool
+	X, Y     float32
+	Size     float32
+	Text     string
+	FontType string
+	Color    color.Color
+	Visible  bool
 
-	Blink       bool
-	blinkTicks  int
+	Blink      bool
+	blinkTicks int
 }
 
 func NewTextWidget(x, y, size float32, text string, clr color.Color) *TextWidget {
