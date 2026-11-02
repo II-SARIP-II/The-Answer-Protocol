@@ -31,6 +31,11 @@ type WhoResponse struct {
 	Server int      `json:"server"`
 }
 
+type FleeResponse struct {
+	Direction	string	`json:"direction"`
+	Room		string	`json:"room"`
+}
+
 type QuestResponse struct {
 	Giver        string   `json:"giver"`
 	Description  string   `json:"description"`
@@ -116,6 +121,9 @@ func parseJSON[T any](raw string) (T, error) {
 
 func parseAttack(strAttack string) (AttackResponse, error) {
 	return parseJSON[AttackResponse](strAttack)
+}
+func parseFlee(strFlee string) (FleeResponse, error) {
+	return parseJSON[FleeResponse](strFlee)
 }
 
 func parseDefence(strDefence string) (DefendResponse, error) {

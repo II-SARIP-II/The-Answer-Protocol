@@ -392,6 +392,23 @@ func (g *Game) serverResponse() error {
 					chatAction.AddLine("GROUP > You left the group.")
 					g.status = ""
 
+				case "FLEE":
+					fleeData, err := parseFlee(response)
+					if err == nil {
+						switch fleeData.Direction {
+						case "north":
+							g.location[1] -= 1
+						case "east":
+							fmt.Print("EASTTTTT")
+							g.location[0] += 1
+						case "south":
+							fmt.Print("SOOUTUHTOTHT")
+							g.location[1] += 1
+						case "west":
+							g.location[0] -= 1
+						}
+					}
+
 				case "QUIT":
 					return ErrQuit
 
