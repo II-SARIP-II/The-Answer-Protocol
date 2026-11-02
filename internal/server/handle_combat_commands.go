@@ -178,7 +178,7 @@ func (p *Player) handleFlee(args string) {
 
 	response := FleeResponse{
 		Direction: randomDirection,
-		Room: newRoom,
+		Room:      newRoom,
 	}
 
 	data, err := json.Marshal(response)
