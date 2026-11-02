@@ -107,6 +107,7 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 
 	p.broadcastRoom(p.CurrentRoom, protocol.EvtChatRoom, fmt.Sprintf("Server Player %s has eliminated %s!", p.Username, enemy.Name))
 	p.broadcastGroup(protocol.EvtChatGroup, fmt.Sprintf("Server Player %s has eliminated %s!", p.Username, enemy.Name))
+	p.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server You have defeated %s!", enemy.Name))
 
 	p.processDefeatQuest(enemyID)
 

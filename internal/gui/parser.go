@@ -27,18 +27,21 @@ type StatusResponse struct {
 }
 
 type WhoResponse struct {
-	Room   []string `json:"room"`
+	All    []string `json:"room"`
 	Server int      `json:"server"`
 }
 
+type FleeResponse struct {
+	Direction string `json:"direction"`
+	Room      string `json:"room"`
+}
+
 type QuestResponse struct {
-	Giver        string   `json:"giver"`
-	Description  string   `json:"description"`
-	Type         string   `json:"type"`
-	Targets      []string `json:"targets"`
-	Count        int      `json:"count"`
-	Reward       string   `json:"reward"`
-	Prerequisite string   `json:"prerequisite"`
+	QuestID     string `json:"quest_id"`
+	Status      string `json:"status"`
+	Progress    string `json:"progress,omitempty"`
+	Description string `json:"description,omitempty"`
+	Reward      string `json:"reward,omitempty"`
 }
 
 type QuestsItemResponse struct {
@@ -117,6 +120,9 @@ func parseJSON[T any](raw string) (T, error) {
 func parseAttack(strAttack string) (AttackResponse, error) {
 	return parseJSON[AttackResponse](strAttack)
 }
+func parseFlee(strFlee string) (FleeResponse, error) {
+	return parseJSON[FleeResponse](strFlee)
+}
 
 func parseDefence(strDefence string) (DefendResponse, error) {
 	return parseJSON[DefendResponse](strDefence)
@@ -132,7 +138,6 @@ func parseQuest(strQuest string) (QuestResponse, error) {
 
 func parseQuests(strQuests string) ([]QuestsItemResponse, error) {
 	var quests []QuestsItemResponse
-	fmt.Print(strQuests)
 	jsonStart := strings.Index(strQuests, "[")
 	if jsonStart == -1 {
 		return nil, fmt.Errorf("No array found: %q", strQuests)

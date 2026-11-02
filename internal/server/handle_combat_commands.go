@@ -150,6 +150,11 @@ func (p *Player) handleFlee(args string) {
 		return
 	}
 
+	if p.Status != "combat" {
+		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
+		return
+	}
+
 	if !p.applyOpportunityAttack() {
 		p.SendOK(fmt.Sprintf("room=%s", p.CurrentRoom))
 		return

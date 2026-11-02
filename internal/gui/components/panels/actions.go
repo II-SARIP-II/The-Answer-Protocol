@@ -12,9 +12,9 @@ func CreateActionsPanel(topH, centerH, colLeftW, colMidW, colRightW float32) *co
 		"TAKE", "EQUIP",
 		"DROP", "TALK",
 		"ATTACK", "DEFEND",
-		"STATUS", "QUEST",
-		"QUESTS", "WHO",
-		"QUIT",
+		"FLEE", "STATUS",
+		"QUEST", "QUESTS",
+		"WHO", "QUIT",
 	}
 
 	crX := colLeftW + colMidW
