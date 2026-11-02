@@ -321,13 +321,13 @@ func (g *Game) serverResponse() error {
 				case "QUEST":
 					if quest, err := parseQuest(response); err == nil {
 						if quest.Status == "completed" {
-    				    	g.curr_cmd = "INVENTORY"
-    				    	sendMessage(g.conn, "INVENTORY")
+							g.curr_cmd = "INVENTORY"
+							sendMessage(g.conn, "INVENTORY")
 							chatAction.AddLine("QUEST > You finished the quest")
 						} else {
 							chatAction.AddLine(fmt.Sprintf("QUEST > %s | Reward: %s", quest.Description, quest.Reward))
 						}
-    				}
+					}
 
 				case "QUESTS":
 					if quests, err := parseQuests(msg); err == nil {
