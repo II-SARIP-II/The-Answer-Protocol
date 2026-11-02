@@ -231,8 +231,7 @@ func (g *Game) serverResponse() error {
 						g.curr_cmd = "LOOK"
 						sendMessage(g.conn, "LOOK")
 						break
-					}
-					if attackJSON, err := parseAttack(response); err == nil {
+					} else if attackJSON, err := parseAttack(response); err == nil {
 						if attackJSON.Status == "victory" {
 							chatAction.AddLine("ATTACK > Enemy defeated!")
 							g.hp = attackJSON.AttackerHP
@@ -255,7 +254,15 @@ func (g *Game) serverResponse() error {
 					g.status = ""
 
 				case "DEFEND":
-					if defenceJSON, err := parseDefence(response); err == nil {
+					if strings.Contains(msg, "Defeat:") || strings.Contains(msg, "defeated") {
+						chatAction.AddLine("COMBAT > YOU DIED! Respawned in hotel_entrance.")
+						g.centerMid.RemoveRooms()
+						g.location = [2]int{1, 1}
+						g.status = ""
+						g.curr_cmd = "LOOK"
+						sendMessage(g.conn, "LOOK")
+						break
+					} else if defenceJSON, err := parseDefence(response); err == nil {
 						if defenceJSON.Status == "perfect_defense" {
 							chatAction.AddLine("DEFEND > Perfect defense! No damage taken.")
 						} else if defenceJSON.Status == "weakened_defense" || defenceJSON.Status == "broken_defense" {
