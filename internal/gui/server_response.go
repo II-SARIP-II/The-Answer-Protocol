@@ -43,6 +43,9 @@ func (g *Game) serverResponse() error {
 		select {
 		case msg := <-g.messagesChan:
 			fmt.Print(msg)
+			if msg == "SERVER_DISCONNECTED" {
+				return ErrQuit
+			}
 			if chatStruct, errChat := parseEventChat(msg); errChat == nil && chatStruct.Type == "EVT" {
 				if chatStruct.Sender == "Server" {
 					if chatAction := g.bottomRight.GetChat(); chatAction != nil {

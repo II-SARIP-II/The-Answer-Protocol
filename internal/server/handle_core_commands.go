@@ -137,8 +137,15 @@ func (p *Player) handleQuit(args string) {
 		return
 	}
 
-	p.SendOK(protocol.MsgBye)
+	if p.State == protocol.StateTerminated {
+		return
+	}
+
 	p.State = protocol.StateTerminated
+
+	_, _ = fmt.Fprintf(p.Conn, "OK bye\n")
+
+	p.Server.handleDisconnect(p)
 }
 
 func (p *Player) handleStatus(args string) {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"sync"
 	"tap/internal/protocol"
 	"time"
 )
@@ -26,6 +27,7 @@ type Player struct {
 	lastCmdWindow    time.Time
 	cmdCountInSec    int
 	sendChan         chan string
+	closeOnce        sync.Once
 }
 
 type Quest struct {
