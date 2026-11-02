@@ -32,7 +32,8 @@ func handleServerError(chat *components.ChatWidget, cmd, msg string) {
 		chat.AddLine(cmd + " > This NPC has no available quests.")
 	case strings.HasPrefix(msg, "ERR 407 UNKNOWN_GROUP"):
 		chat.AddLine(cmd + " > This group does not exist.")
-
+	case strings.HasPrefix(msg, "ERR 400 NO_MOVE_DURING_COMBAT"):
+		chat.AddLine("MOVE > Impossible to move to another room, try to Flee.")
 	default:
 		chat.AddLine("Server > " + msg)
 	}
