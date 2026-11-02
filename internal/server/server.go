@@ -286,11 +286,10 @@ func (s *Server) handleDisconnect(player *Player) {
             origRoom := s.world.Rooms[origRoomID]
             origRoom.Items = append(origRoom.Items, itemID)
             s.world.Rooms[origRoomID] = origRoom
-            s.resetPassiveEnemy(origRoomID, itemID)
-        }
-    }
+			slog.Info("World item restored to origin on disconnect", "item", itemID, "room", origRoomID)
+		}
+	}
 
-    player.Inventory = nil
     delete(s.players, player.Username)
 
     for _, otherPlayer := range s.players {
@@ -304,6 +303,7 @@ func (s *Server) handleDisconnect(player *Player) {
         otherPlayer.SendEvt(protocol.EvtPlayers, data)
     }
 
+	slog.Info("Client disconnected", "username", player.Username, "addr", player.Conn.RemoteAddr().String(), "state", player.State)
     s.mu.Unlock()
 
     player.closeOnce.Do(func() {
