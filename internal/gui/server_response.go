@@ -43,7 +43,6 @@ func (g *Game) serverResponse() error {
 	for {
 		select {
 		case msg := <-g.messagesChan:
-			fmt.Print(msg)
 			if msg == "SERVER_DISCONNECTED" {
 				return ErrQuit
 			}
@@ -214,8 +213,6 @@ func (g *Game) serverResponse() error {
 								)
 							}
 							chatAction.AddLine("TAKE > Item taken: " + itemName)
-							g.curr_cmd = "LOOK"
-							sendMessage(g.conn, "LOOK")
 						}
 					}
 
@@ -227,8 +224,6 @@ func (g *Game) serverResponse() error {
 						}
 					}
 					g.status = ""
-					g.curr_cmd = "LOOK"
-					sendMessage(g.conn, "LOOK")
 
 				case "ATTACK":
 					if strings.Contains(msg, "Defeat:") || strings.Contains(msg, "defeated") {
@@ -236,24 +231,18 @@ func (g *Game) serverResponse() error {
 						g.centerMid.RemoveRooms()
 						g.location = [2]int{1, 1}
 						g.status = ""
-						g.curr_cmd = "LOOK"
-						sendMessage(g.conn, "LOOK")
 						break
 					} else if attackJSON, err := parseAttack(response); err == nil {
 						if attackJSON.Status == "victory" {
 							chatAction.AddLine("ATTACK > Enemy defeated!")
 							g.hp = attackJSON.AttackerHP
 							g.status = ""
-							g.curr_cmd = "LOOK"
-							sendMessage(g.conn, "LOOK")
 						} else if attackJSON.Status == "defeated" {
 							chatAction.AddLine("ATTACK > YOU DIED")
 							g.centerMid.RemoveRooms()
 							g.location = [2]int{1, 1}
 							g.status = ""
-							g.curr_cmd = "LOOK"
 							g.hp = attackJSON.AttackerHP
-							sendMessage(g.conn, "LOOK")
 						} else {
 							chatAction.AddLine(fmt.Sprintf("ATTACK > Enemy -%d HP (%d HP remaining)", attackJSON.Damage, attackJSON.TargetHP))
 							g.hp = attackJSON.AttackerHP
@@ -267,8 +256,6 @@ func (g *Game) serverResponse() error {
 						g.centerMid.RemoveRooms()
 						g.location = [2]int{1, 1}
 						g.status = ""
-						g.curr_cmd = "LOOK"
-						sendMessage(g.conn, "LOOK")
 						break
 					} else if defenceJSON, err := parseDefence(response); err == nil {
 						if defenceJSON.Status == "perfect_defense" {
@@ -333,13 +320,13 @@ func (g *Game) serverResponse() error {
 				case "QUEST":
 					if quest, err := parseQuest(response); err == nil {
 						if quest.Status == "completed" {
-    				    	g.curr_cmd = "INVENTORY"
-    				    	sendMessage(g.conn, "INVENTORY")
+							g.curr_cmd = "INVENTORY"
+							sendMessage(g.conn, "INVENTORY")
 							chatAction.AddLine("QUEST > You finished the quest")
 						} else {
 							chatAction.AddLine(fmt.Sprintf("QUEST > %s | Reward: %s", quest.Description, quest.Reward))
 						}
-    				}
+					}
 
 				case "QUESTS":
 					if quests, err := parseQuests(msg); err == nil {
@@ -404,10 +391,8 @@ func (g *Game) serverResponse() error {
 						case "north":
 							g.location[1] -= 1
 						case "east":
-							fmt.Print("EASTTTTT")
 							g.location[0] += 1
 						case "south":
-							fmt.Print("SOOUTUHTOTHT")
 							g.location[1] += 1
 						case "west":
 							g.location[0] -= 1
