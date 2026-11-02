@@ -26,10 +26,13 @@ func handleServerError(chat *components.ChatWidget, cmd, msg string) {
 		chat.AddLine(cmd + " > Item not found in your inventory.")
 	case strings.HasPrefix(msg, "ERR 404 NPC_NOT_FOUND"):
 		chat.AddLine(cmd + " > NPC not found.")
-	case strings.HasPrefix(msg, "ERR 406 NPC_NOT_HOSTILE"):
+	case strings.HasPrefix(msg, "ERR 405 NPC_NOT_HOSTILE"):
 		chat.AddLine(cmd + " > This NPC is not hostile.")
 	case strings.HasPrefix(msg, "ERR 406 NO_QUEST_AVAILABLE"):
 		chat.AddLine(cmd + " > This NPC has no available quests.")
+	case strings.HasPrefix(msg, "ERR 407 UNKNOWN_GROUP"):
+		chat.AddLine(cmd + " > This group does not exist.")
+
 	default:
 		chat.AddLine("Server > " + msg)
 	}
@@ -273,7 +276,7 @@ func (g *Game) serverResponse() error {
 					}
 					g.status = ""
 
-				case "WHO":
+				case "WHO_ALL":
 					if who, err := parseWho(response); err == nil {
 						if invitesPanel := g.centerLeft.GetSubPanel("INVITE PLAYER"); invitesPanel != nil {
 							invitesPanel.PlayerInvites = components.CreateList(

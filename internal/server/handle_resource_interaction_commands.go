@@ -44,8 +44,6 @@ func (p *Player) handleTake(args string) {
 	room.Items = append(room.Items[:foundIndex], room.Items[foundIndex+1:]...)
 	p.Server.world.Rooms[p.CurrentRoom] = room
 
-	// p.processFetchQuest()
-
 	var provokedPassiveEnemy *world.NPC
 	var damage int
 	for _, npcID := range room.NPCs {
@@ -180,8 +178,8 @@ func (p *Player) handleEquip(args string) {
 	}
 
 	if foundWeapon == "" {
-		p.SendErr(protocol.CodeItemNotInInventory, protocol.MsgItemNotInInventory)
 		p.Server.mu.Unlock()
+		p.SendErr(protocol.CodeItemNotInInventory, protocol.MsgItemNotInInventory)
 		return
 	}
 	p.Server.mu.Unlock()
