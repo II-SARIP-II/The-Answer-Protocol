@@ -32,7 +32,7 @@ func (p *Player) handleChat(args string) {
 		p.Server.mu.Lock()
 		p.SendOK("")
 		for _, dest := range p.Server.players {
-			dest.SendEvt("GLOBAL CHAT", eventData)
+			dest.SendEvt(protocol.EvtChatGlobal, eventData)
 		}
 		p.Server.mu.Unlock()
 
@@ -48,7 +48,7 @@ func (p *Player) handleChat(args string) {
 
 		for _, dest := range p.Server.players {
 			if dest.GroupID == p.GroupID {
-				dest.SendEvt("GROUP CHAT", eventData)
+				dest.SendEvt(protocol.EvtChatGroup, eventData)
 			}
 		}
 		p.Server.mu.Unlock()
@@ -58,7 +58,7 @@ func (p *Player) handleChat(args string) {
 		p.SendOK("")
 		for _, dest := range p.Server.players {
 			if dest.CurrentRoom == p.CurrentRoom {
-				dest.SendEvt("ROOM CHAT", eventData)
+				dest.SendEvt(protocol.EvtChatRoom, eventData)
 			}
 		}
 		p.Server.mu.Unlock()

@@ -67,9 +67,29 @@ func ReadJson(filepath string) (*GameData, error) {
 		return nil, fmt.Errorf("JSON parsing error: %w", err)
 	}
 
-	if err := data.ValidateItem(); err != nil {
+	if err := data.CheckEmptyWorld(); err != nil {
 		return nil, fmt.Errorf("world validation error: %w", err)
 	}
+
+	if err := data.ValidateNoDuplicateItem(); err != nil {
+		return nil, fmt.Errorf("world validation error: %w", err)
+	}
+
+	if err := data.CheckItemExists(); err != nil {
+		return nil, fmt.Errorf("world validation error: %w", err)
+	}
+
+	if err := data.ValidateExit(); err != nil {
+		return nil, fmt.Errorf("world validation error: %w", err)
+	}
+
+	if err := data.CheckNPCExists(); err != nil {
+		return nil, fmt.Errorf("world validation error: %w", err)
+	}
+
+	// if err := data.ValidateQuests(); err != nil {
+	// 	return nil, fmt.Errorf("world validation error: %w", err)
+	// }
 
 	return &data, nil
 }

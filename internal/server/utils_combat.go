@@ -8,6 +8,83 @@ import (
 	"tap/internal/world"
 )
 
+const (
+	FistFightDamage = 2
+	NPCRespawnDelay = 50
+)
+
+func (p *Player) handleDamage(enemyID string, enemyData world.NPC) CombatRoundResult {
+	damageDealt := p.getAttackDamage(p.EquippedWeapon)
+
+	enemyData.Life -= damageDealt
+	if enemyData.Life < 0 {
+		enemyData.Life = 0
+	}
+	p.Server.world.NPCs[enemyID] = enemyData
+
+	damageTaken := FistFightDamage
+	if enemyData.Item != nil {
+		damageTaken = p.getAttackDamage(*enemyData.Item)
+	}
+
+	p.HP -= damageTaken
+	if p.HP < 0 {
+		p.HP = 0
+	}
+
+	combatStatus := protocol.StatusCombat
+	if enemyData.Life == 0 {
+		combatStatus = protocol.StatusVictory
+		p.Status = protocol.StatusVictory
+		p.handleEnemyDeath(enemyID)
+	} else if p.HP == 0 {
+		combatStatus = protocol.StatusDefeated
+		p.handlePlayerDeath(enemyData.Name)
+	}
+
+	combatRoundResult := CombatRoundResult{
+		DamageDealt: damageDealt,
+		DamageTaken: damageTaken,
+		TargetHP:    enemyData.Life,
+		Status:      combatStatus,
+	}
+
+	return combatRoundResult
+}
+
+func (p *Player) applyDefense(enemyData world.NPC) int {
+	theoricalDamageTaken := FistFightDamage
+	if enemyData.Item != nil {
+		theoricalDamageTaken = p.getAttackDamage(*enemyData.Item)
+	}
+
+	damageTaken := 0
+	switch p.DefendCount {
+	case 0:
+		damageTaken = 0
+		p.DefendCount++
+		p.Status = protocol.StatusPerfectDefense
+	case 1:
+		damageTaken = theoricalDamageTaken / 2
+		p.DefendCount++
+		p.Status = protocol.StatusWeakenedDefense
+	default:
+		damageTaken = theoricalDamageTaken
+		p.Status = protocol.StatusBrokenDefense
+	}
+
+	p.HP -= damageTaken
+	if p.HP < 0 {
+		p.HP = 0
+	}
+
+	if p.HP == 0 {
+		p.Status = "defeated"
+		p.handlePlayerDeath(enemyData.Name)
+	}
+	return damageTaken
+}
+
 func (p *Player) handleEnemyDeath(enemyID string) {
 	currentRoom := p.Server.world.Rooms[p.CurrentRoom]
 	enemy := p.Server.world.NPCs[enemyID]
@@ -28,8 +105,8 @@ func (p *Player) handleEnemyDeath(enemyID string) {
 
 	p.Server.world.Rooms[p.CurrentRoom] = currentRoom
 
-	p.broadcastRoom(p.CurrentRoom, "ROOM CHAT", fmt.Sprintf("Player %s has eliminated %s!", p.Username, enemy.Name))
-	p.broadcastGroup("GROUP CHAT", fmt.Sprintf("Player %s has eliminated %s!", p.Username, enemy.Name))
+	p.broadcastRoom(p.CurrentRoom, protocol.EvtChatRoom, fmt.Sprintf("Player %s has eliminated %s!", p.Username, enemy.Name))
+	p.broadcastGroup(protocol.EvtChatGroup, fmt.Sprintf("Player %s has eliminated %s!", p.Username, enemy.Name))
 
 	p.processDefeatQuest(enemyID)
 
@@ -44,7 +121,7 @@ func (p *Player) checkHostileAmbush(roomID string) {
 	for _, npcID := range room.NPCs {
 		npc := p.Server.world.NPCs[npcID]
 		if npc.Life > 0 && (npc.Role == "enemy" || npc.Role == "target") {
-			damage := protocol.FistFightDamage
+			damage := FistFightDamage
 			if npc.Item != nil {
 				damage = p.getAttackDamage(*npc.Item)
 			}
@@ -65,8 +142,8 @@ func (p *Player) checkHostileAmbush(roomID string) {
 				"player_hp", p.HP,
 			)
 
-			p.SendEvt("ROOM CHAT", fmt.Sprintf("%s ambushes you! You take %d damage!", npc.Name, damage))
-			p.broadcastRoom(roomID, "ROOM CHAT", fmt.Sprintf("%s ambushes %s for %d damage!", npc.Name, p.Username, damage))
+			p.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("%s ambushes you! You take %d damage!", npc.Name, damage))
+			p.broadcastRoom(roomID, protocol.EvtChatRoom, fmt.Sprintf("%s ambushes %s for %d damage!", npc.Name, p.Username, damage))
 
 			if p.HP == 0 {
 				p.handlePlayerDeath(npc.Name)
@@ -80,8 +157,8 @@ func (p *Player) handlePlayerDeath(target string) {
 	roomWhenDeath := p.CurrentRoom
 
 	p.broadcastRoom(roomWhenDeath, protocol.EvtRoomLeave, p.Username)
-	p.broadcastRoom(roomWhenDeath, "ROOM CHAT", fmt.Sprintf("Player %s has been defeated by %s!", p.Username, target))
-	p.broadcastGroup("GROUP CHAT", fmt.Sprintf("Player %s was defeated by %s!", p.Username, target))
+	p.broadcastRoom(roomWhenDeath, protocol.EvtChatRoom, fmt.Sprintf("Player %s has been defeated by %s!", p.Username, target))
+	p.broadcastGroup(protocol.EvtChatGroup, fmt.Sprintf("Player %s was defeated by %s!", p.Username, target))
 
 	p.CurrentRoom = "room0"
 	p.MaxHP /= 2
@@ -94,25 +171,23 @@ func (p *Player) handlePlayerDeath(target string) {
 	slog.Info(data)
 
 	p.broadcastRoom(p.CurrentRoom, protocol.EvtRoomEnter, p.Username)
-	p.SendEvt("ROOM CHAT", "Defeat: you were defeated and respawned in room0!")
+	p.SendEvt(protocol.EvtChatRoom, "Defeat: you were defeated and respawned in room0!")
 }
 
 func (p *Player) getAttackDamage(weaponNameOrID string) int {
 	if weaponNameOrID == "" {
-		return protocol.FistFightDamage
+		return FistFightDamage
 	}
 	for itemID, item := range p.Server.world.Items {
 		if p.matchNameOrID(itemID, weaponNameOrID) {
 			return item.Damage
 		}
 	}
-	return protocol.FistFightDamage
+	return FistFightDamage
 }
 
 func (p *Player) findAndValidateEnemy(target string) (string, world.NPC, bool) {
 	cleanTarget := strings.TrimSpace(target)
-
-	p.Server.mu.Lock()
 
 	var foundID string
 
@@ -136,14 +211,12 @@ func (p *Player) findAndValidateEnemy(target string) (string, world.NPC, bool) {
 	}
 
 	if foundID == "" {
-		p.Server.mu.Unlock()
 		p.SendErr(protocol.CodeNPCNotFound, protocol.MsgNPCNotFound)
 		return "", world.NPC{}, false
 	}
 
 	enemyData := p.Server.world.NPCs[foundID]
 	if enemyData.Life <= 0 || (enemyData.Role != "enemy" && enemyData.Role != "target" && enemyData.Role != "passive enemy") {
-		p.Server.mu.Unlock()
 		p.SendErr(protocol.CodeNPCNotHostile, protocol.MsgNPCNotHostile)
 		return "", world.NPC{}, false
 	}
@@ -177,14 +250,14 @@ func (p *Player) processDefeatQuest(enemyID string) {
 					"quest", questID,
 					"progress", fmt.Sprintf("%d/%d", questDataPlayer.CompletedSteps, questDataPlayer.Steps),
 				)
-				p.SendEvt("ROOM CHAT", fmt.Sprintf("Server [QUEST] %s progress: %d/%d",
+				p.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server [QUEST] %s progress: %d/%d",
 					questID, questDataPlayer.CompletedSteps, questDataPlayer.Steps))
 				if questDataPlayer.CompletedSteps >= questDataPlayer.Steps {
 					giverName := "the quest giver"
 					if giver, ok := p.Server.world.NPCs[worldQuest.Giver]; ok && giver.Name != "" {
 						giverName = giver.Name
 					}
-					p.SendEvt("ROOM CHAT", fmt.Sprintf("Server [QUEST] %s: Objectives completed! Return to %s to claim your reward, saying \"quest\".", questID, giverName))
+					p.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server [QUEST] %s: Objectives completed! Return to %s to claim your reward, saying \"quest\".", questID, giverName))
 				}
 				break
 			}

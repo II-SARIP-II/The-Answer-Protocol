@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"log/slog"
+	"tap/internal/protocol"
 )
 
 func (p *Player) processFetchQuest() {
@@ -28,7 +29,7 @@ func (p *Player) processFetchQuest() {
 				"progress", fmt.Sprintf("%d/%d", questDataPlayer.CompletedSteps, questDataPlayer.Steps),
 			)
 
-			p.SendEvt("ROOM CHAT", fmt.Sprintf("Server [QUEST] %s progress: %d/%d",
+			p.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server [QUEST] %s progress: %d/%d",
 				questID, questDataPlayer.CompletedSteps, questDataPlayer.Steps))
 
 			if questDataPlayer.CompletedSteps >= questDataPlayer.Steps {
@@ -36,7 +37,7 @@ func (p *Player) processFetchQuest() {
 				if giver, ok := p.Server.world.NPCs[worldQuest.Giver]; ok && giver.Name != "" {
 					giverName = giver.Name
 				}
-				p.SendEvt("ROOM CHAT", fmt.Sprintf("Server [QUEST] %s: Objectives completed! Return to %s to claim your reward, saying \"quest\".", questID, giverName))
+				p.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server [QUEST] %s: Objectives completed! Return to %s to claim your reward, saying \"quest\".", questID, giverName))
 			}
 			break
 		}

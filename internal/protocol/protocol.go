@@ -47,18 +47,15 @@ const (
 )
 
 const (
-	EvtGameEnter   = "CONNECTED TO GAME"   // ajout
-	EvtGameLeave   = "LEAVE GAME"          // ajout
-	EvtRoomEnter   = "ROOM PRESENCE ENTER" // ajout
-	EvtRoomLeave   = "ROOM PRESENCE LEAVE" // ajout
+	EvtRoomEnter   = "ROOM PRESENCE ENTER"
+	EvtRoomLeave   = "ROOM PRESENCE LEAVE"
 	EvtGroupInvite = "GROUP INVITE"
-	EvtGroupJoin   = "GROUP JOIN"  // ajout
-	EvtGroupLeave  = "GROUP LEAVE" // ajout
-)
-
-const (
-	FistFightDamage = 2  // ajout
-	NPCRespawnDelay = 50 // ajout
+	EvtGroupJoin   = "GROUP JOIN"
+	EvtGroupLeave  = "GROUP LEAVE"
+	EvtPlayers     = "STATS"
+	EvtChatGlobal  = "GLOBAL CHAT"
+	EvtChatRoom    = "ROOM CHAT"
+	EvtChatGroup   = "GROUP CHAT"
 )
 
 const (
@@ -114,6 +111,7 @@ const (
 	MsgGroupNotFound        = "GROUP_NOT_FOUND"       // ajout
 )
 
+// FormatCmd formats a client command with optional arguments into a newline-terminated string.
 func FormatCmd(commandName, arguments string) string {
 	if arguments == "" {
 		return fmt.Sprintf("%s\n", commandName)
@@ -121,6 +119,7 @@ func FormatCmd(commandName, arguments string) string {
 	return fmt.Sprintf("%s %s\n", commandName, arguments)
 }
 
+// FormatOK formats a success response, appending data if provided.
 func FormatOK(responseData string) string {
 	if responseData == "" {
 		return "OK\n"
@@ -128,10 +127,12 @@ func FormatOK(responseData string) string {
 	return fmt.Sprintf("OK %s\n", responseData)
 }
 
+// FormatErr formats an error response with a 3-digit error code and message.
 func FormatErr(errorCode int, errorMessage string) string {
 	return fmt.Sprintf("ERR %03d %s\n", errorCode, errorMessage)
 }
 
+// FormatEvt formats a server push event.
 func FormatEvt(eventType, eventData string) string {
 	return fmt.Sprintf("EVT %s %s\n", eventType, eventData)
 }
