@@ -32,8 +32,8 @@ type WhoResponse struct {
 }
 
 type FleeResponse struct {
-	Direction	string	`json:"direction"`
-	Room		string	`json:"room"`
+	Direction string `json:"direction"`
+	Room      string `json:"room"`
 }
 
 type QuestResponse struct {
