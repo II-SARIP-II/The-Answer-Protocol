@@ -28,7 +28,7 @@ type NPC struct {
 	Role        string   `json:"role"`
 	Name        string   `json:"name"`
 	Life        int      `json:"life"`
-	MaxLife     int      `json:"maxlife"`
+	MaxLife     int      `json:"max_life"`
 	Item        *string  `json:"item"`
 	Dialogue    []string `json:"dialogue"`
 	InitialRole string   `json:"-"`
