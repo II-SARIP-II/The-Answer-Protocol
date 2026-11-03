@@ -1,10 +1,6 @@
 *This project has been created as part of the 42 curriculum by pgougne, stmaire.*
 
-<div align="center">
-<br>
-  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQPzuYKu7n0cWUYa5Kbg0_LrlEQAIURWeo9A&s" alt="42 Logo" width="400" />
-  <br>
-</div>
+![42 banner](assets/42banner.png)
 
 # The Answer Protocol (TAP)
 ![Language](https://img.shields.io/badge/Language-Go-blue)
@@ -156,7 +152,39 @@ The CLI client establishes a TCP connection, completes the `OK hello proto=1` ha
 - **Background receiver goroutine**: continuously reads server responses (`OK`, `ERR`) and asynchronous events (`EVT`), printing them directly to the terminal without blocking user input.
 
 ### GUI Client Architecture
-> 🔵TODO🔵
+The architecture of the GUI is pretty the same as the CLI, it just interprets the server responses to change the visualisation.
+#### The visualisation architecture:
+1. **Top Panel**:
+    - Number of player in Game
+    - Number of player in Room
+    - Title of the project
+
+2. **Group Panel**
+    - Button to create group
+    - Button to leave group
+    - List of button of player in game to invite them
+    - List of invitation received
+
+3. **Hotel Map Panel**
+    - Button for all direction to move
+    - List of NPC
+    - List of items
+    - Map generating when look clicked
+
+4. **Directive Action Panel**
+    - List of other requiered buttons
+
+5. **Equipement Panel**
+    - List of Item, the player inventory
+
+6. **Event Chat Panel**
+    - Button to choose the chat type
+    - Text input to write text
+
+7. **Game Interaction Panel**
+    - Game context
+    - Input text to write command
+
 
 ---
 
@@ -365,7 +393,9 @@ Open two separate terminal windows and launch two CLI clients:
 ### References
 - [RFC 42TAP Specification]: The Answer Protocol formal specification.
 - [Go Documentation](https://golang.org/doc/): Official Go documentation for `net`, `sync`, `bufio`, and `log/slog`.
-- 🔵TODO🔵 [Ebitengine Documentation](https://ebitengine.org/): 2D game engine for Go.
+- [Ebitengine Documentation](https://ebitengine.org/): 2D game engine for Go.
+- [Go Example](https://gobyexample.com/): Example of go code to understand channel and others
+- [Debug](https://stackoverflow.com/): Debbugging and understanding edge cases
 - [MUD Programming & Design](https://en.wikipedia.org/wiki/MUD): Historical text-based multiplayer architectures.
 
 ### AI Usage Disclosure
