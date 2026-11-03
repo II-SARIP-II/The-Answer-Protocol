@@ -36,6 +36,8 @@ func handleServerError(chat *components.ChatWidget, cmd, msg string) {
 		chat.AddLine("MOVE > Impossible to move to another room, try to Flee.")
 	case strings.HasPrefix(msg, "ERR 400 ARGS_ERROR"):
 		chat.AddLine(cmd + " > Impossible to do this action here.")
+	case strings.HasPrefix(msg, "ERR 400 UNKNOWN_COMMAND"):
+		chat.AddLine(cmd + " > Unknown Command.")
 	default:
 		chat.AddLine("Server > " + msg)
 	}
@@ -45,7 +47,6 @@ func (g *Game) serverResponse() error {
 	for {
 		select {
 		case msg := <-g.messagesChan:
-			fmt.Print(msg + "\n")
 			if msg == "SERVER_DISCONNECTED" {
 				return ErrQuit
 			}
@@ -200,39 +201,43 @@ func (g *Game) serverResponse() error {
 					}
 
 				case "TAKE":
-					if strings.Contains(msg, "taken=") {
-						parts := strings.Split(msg, "taken=")
-						if len(parts) > 1 {
-							itemName := strings.TrimSpace(parts[1])
-							if stuff != nil {
-								stuff.AddItem(
-									itemName,
-									func(itemName string) {
-										if g.status == "AWAITING_DROP_ITEM" {
-											g.curr_cmd = "DROP"
-											stuff.RemoveItem(itemName)
-											sendMessage(g.conn, "DROP "+itemName)
-											g.status = ""
-										} else if g.status == "AWAITING_EQUIP_ITEM" {
-											g.curr_cmd = "EQUIP"
-											stuff.MoveToTop(itemName)
-											sendMessage(g.conn, "EQUIP "+itemName)
-											g.status = ""
-										}
-									},
-								)
-							}
-							chatAction.AddLine("TAKE > Item taken: " + itemName)
-							g.curr_cmd = "LOOK"
-							sendMessage(g.conn, "LOOK")
-						}
-					}
+    				if strings.Contains(msg, "taken=") {
+    				    parts := strings.Split(msg, "taken=")
+    				    if len(parts) > 1 {
+    				        itemID := strings.TrimSpace(parts[1])
+    				        displayName := GetName(itemID)
+
+    				        if stuff != nil {
+    				            stuff.AddItem(
+    				                displayName,
+    				                func(selectedDisplayName string) {
+
+    				                    if g.status == "AWAITING_DROP_ITEM" {
+    				                        g.curr_cmd = "DROP"
+    				                        stuff.RemoveItem(selectedDisplayName)
+    				                        sendMessage(g.conn, "DROP "+ displayName)
+    				                        g.status = ""
+    				                    } else if g.status == "AWAITING_EQUIP_ITEM" {
+    				                        g.curr_cmd = "EQUIP"
+    				                        stuff.MoveToTop(selectedDisplayName)
+    				                        sendMessage(g.conn, "EQUIP "+ displayName)
+    				                        g.status = ""
+    				                    }
+    				                },
+    				            )
+    				        }
+    				        chatAction.AddLine("TAKE > Item taken: " + displayName)
+    				        g.curr_cmd = "LOOK"
+    				        sendMessage(g.conn, "LOOK")
+    				    }
+    				}
 
 				case "DROP":
 					if strings.Contains(msg, "dropped=") {
 						parts := strings.Split(msg, "dropped=")
 						if len(parts) > 1 {
-							chatAction.AddLine("DROP > Item dropped: " + strings.TrimSpace(parts[1]))
+							displayName := GetName(strings.TrimSpace(parts[1]))
+							chatAction.AddLine("DROP > Item dropped: " + displayName)
 						}
 					}
 					g.status = ""
