@@ -47,6 +47,7 @@ func (g *Game) serverResponse() error {
 	for {
 		select {
 		case msg := <-g.messagesChan:
+			fmt.Print(msg)
 			if msg == "SERVER_DISCONNECTED" {
 				return ErrQuit
 			}
@@ -397,10 +398,6 @@ func (g *Game) serverResponse() error {
 					if group, err := parseCreateGroup(msg); err == nil {
 						if chat := g.bottomCenter.GetChat(); chat != nil {
 							chat.AddLine("[INVITATION] > You are now in: " + group.Group)
-						}
-					} else {
-						if chat := g.bottomCenter.GetChat(); chat != nil {
-							chat.AddLine("[INVITATION] > " + msg)
 						}
 					}
 					g.status = ""
