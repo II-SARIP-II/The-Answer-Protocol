@@ -108,6 +108,7 @@ const (
 	MsgNotAuthenticated     = "NOT_AUTHENTICATED"
 	MsgAlreadyAuthenticated = "ALREADY_AUTHENTICATED"
 	MsgNoInvitation         = "NO_INVITATION"
+	MsgAlreadyInvited       = "ALREADY_INVITED"
 	MsgGroupNotFound        = "GROUP_NOT_FOUND"
 	MsgMoveError            = "NO_MOVE_DURING_COMBAT"
 )

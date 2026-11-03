@@ -97,16 +97,15 @@ func (p *Player) handleGroupInvite(args string) {
 		return
 	}
 
-	alreadyInvited := false
 	for _, leader := range targetPlayer.GroupInvitations {
 		if strings.EqualFold(leader, p.Username) {
-			alreadyInvited = true
-			break
+			p.Server.mu.Unlock()
+			p.SendErr(protocol.CodeBadRequest, protocol.MsgAlreadyInvited)
+			return
 		}
 	}
-	if !alreadyInvited {
-		targetPlayer.GroupInvitations = append(targetPlayer.GroupInvitations, p.Username)
-	}
+
+	targetPlayer.GroupInvitations = append(targetPlayer.GroupInvitations, p.Username)
 
 	leader := strings.TrimPrefix(p.GroupID, "group_")
 	targetPlayer.SendEvt(protocol.EvtGroupInvite, leader)

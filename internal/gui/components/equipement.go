@@ -2,6 +2,7 @@ package components
 
 import (
 	"image/color"
+	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -91,8 +92,9 @@ func (s *Stuff) AddItem(item string, onItemClick func(string)) {
 }
 
 func (s *Stuff) RemoveItem(item string) {
+	cleanItem := strings.TrimSpace(item)
 	for i, slot := range s.Slots {
-		if slot.Item == item {
+		if strings.EqualFold(slot.Item, cleanItem) {
 			s.Slots = append(s.Slots[:i], s.Slots[i+1:]...)
 			break
 		}
