@@ -37,26 +37,52 @@ type Game struct {
 	PlayerInRoom int
 }
 
-func newGame(winWidth int, winHeight int, conn net.Conn, name string) *Game {
-	t, cl, cm, cr, bl, bc, br := initPanels(winWidth, winHeight)
+func newGame(winWidth int, winHeight int, conn net.Conn, name string, nbPlayer string) *Game {
+	players, err := parseEventStats(nbPlayer)
 	messagesChan := make(chan string, 100)
-
-	g := &Game{
-		top:          t,
-		centerLeft:   cl,
-		centerMid:    cm,
-		centerRight:  cr,
-		bottomLeft:   bl,
-		bottomCenter: bc,
-		bottomRight:  br,
-		name:         name,
-		hp:           100,
-		location:     [2]int{1, 1},
-		conn:         conn,
-		messagesChan: messagesChan,
-		curr_cmd:     "",
-		PlayerInGame: 1,
-		PlayerInRoom: 1,
+	var t, cl, cm, cr, bl, bc, br *components.Panel
+	if err == nil {
+		t, cl, cm, cr, bl, bc, br = initPanels(winWidth, winHeight, players.Players)
+	} else {
+		t, cl, cm, cr, bl, bc, br = initPanels(winWidth, winHeight, 1)
+	}
+	var g *Game
+	if err == nil {
+		g = &Game{
+			top:          t,
+			centerLeft:   cl,
+			centerMid:    cm,
+			centerRight:  cr,
+			bottomLeft:   bl,
+			bottomCenter: bc,
+			bottomRight:  br,
+			name:         name,
+			hp:           100,
+			location:     [2]int{1, 1},
+			conn:         conn,
+			messagesChan: messagesChan,
+			curr_cmd:     "",
+			PlayerInGame: players.Players,
+			PlayerInRoom: 1,
+		}
+	} else {
+		g = &Game{
+			top:          t,
+			centerLeft:   cl,
+			centerMid:    cm,
+			centerRight:  cr,
+			bottomLeft:   bl,
+			bottomCenter: bc,
+			bottomRight:  br,
+			name:         name,
+			hp:           100,
+			location:     [2]int{1, 1},
+			conn:         conn,
+			messagesChan: messagesChan,
+			curr_cmd:     "",
+			PlayerInGame: 1,
+			PlayerInRoom: 1,
+		}
 	}
 
 	go listenServer(conn, messagesChan)
@@ -194,7 +220,12 @@ func Run(addr string) error {
 	ebiten.SetWindowTitle("The Answer Protocol")
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 
-	newGame := newGame(windowWidth, windowHeight, conn, username)
+	nbPlayer := ""
+	if serverScanner.Scan() {
+		nbPlayer = serverScanner.Text()
+	}
+	newGame := newGame(windowWidth, windowHeight, conn, username, nbPlayer)
+
 	if err := ebiten.RunGame(newGame); err != nil {
 		return fmt.Errorf("game error: %w", err)
 	}
