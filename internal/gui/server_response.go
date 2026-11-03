@@ -158,7 +158,6 @@ func (g *Game) serverResponse() error {
 								g.status = ""
 							},
 						)
-						chatAction.AddLine("LOOK > " + lookResp.Room.Name + ": " + lookResp.Room.Description)
 					}
 
 				case "MOVE":
@@ -224,6 +223,8 @@ func (g *Game) serverResponse() error {
 								)
 							}
 							chatAction.AddLine("TAKE > Item taken: " + itemName)
+							g.curr_cmd = "LOOK"
+							sendMessage(g.conn, "LOOK")
 						}
 					}
 
@@ -235,6 +236,8 @@ func (g *Game) serverResponse() error {
 						}
 					}
 					g.status = ""
+					g.curr_cmd = "LOOK"
+					sendMessage(g.conn, "LOOK")
 
 				case "ATTACK":
 					if strings.Contains(msg, "Defeat:") || strings.Contains(msg, "defeated") {
@@ -260,6 +263,8 @@ func (g *Game) serverResponse() error {
 						}
 					}
 					g.status = ""
+					g.curr_cmd = "LOOK"
+					sendMessage(g.conn, "LOOK")
 
 				case "DEFEND":
 					if strings.Contains(msg, "Defeat:") || strings.Contains(msg, "defeated") {
@@ -267,6 +272,8 @@ func (g *Game) serverResponse() error {
 						g.centerMid.RemoveRooms()
 						g.location = [2]int{1, 1}
 						g.status = ""
+						g.curr_cmd = "LOOK"
+						sendMessage(g.conn, "LOOK")
 						break
 					} else if defenceJSON, err := parseDefence(response); err == nil {
 						if defenceJSON.Status == "perfect_defense" {
@@ -277,6 +284,8 @@ func (g *Game) serverResponse() error {
 						g.hp = defenceJSON.DefenderHP
 					}
 					g.status = ""
+					g.curr_cmd = "LOOK"
+					sendMessage(g.conn, "LOOK")
 
 				case "TALK":
 					talkResponse := response
