@@ -47,7 +47,6 @@ func (g *Game) serverResponse() error {
 	for {
 		select {
 		case msg := <-g.messagesChan:
-			fmt.Print(msg)
 			if msg == "SERVER_DISCONNECTED" {
 				return ErrQuit
 			}
