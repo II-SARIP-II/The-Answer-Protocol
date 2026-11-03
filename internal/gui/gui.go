@@ -194,6 +194,7 @@ func getUsername(serverScanner *bufio.Scanner, conn net.Conn) (string, error) {
 	}
 }
 
+// Entry point function to run the GUI
 func Run(addr string) error {
 	windowWidth := 1480
 	windowHeight := 1090

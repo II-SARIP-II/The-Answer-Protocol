@@ -26,6 +26,7 @@ func init() {
 	}
 }
 
+// Function to print text with the screen to draw, the text, the positions, size and the color
 func DrawText(screen *ebiten.Image, msg string, x float64, y float64, size float64, clr color.Color) {
 	face := &text.GoTextFace{
 		Source: TextSource,
@@ -51,6 +52,7 @@ type TextWidget struct {
 	blinkTicks int
 }
 
+// Initialize the text to draw
 func NewTextWidget(x, y, size float32, text string, clr color.Color) *TextWidget {
 	return &TextWidget{
 		X:        x,
@@ -63,6 +65,7 @@ func NewTextWidget(x, y, size float32, text string, clr color.Color) *TextWidget
 	}
 }
 
+// Set the text to change the content if needed
 func (tw *TextWidget) SetText(newText string) {
 	tw.Text = newText
 }

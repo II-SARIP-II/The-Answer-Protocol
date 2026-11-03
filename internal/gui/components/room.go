@@ -42,6 +42,7 @@ func unpack2(arr [2]int) (int, int) {
 	return arr[0], arr[1]
 }
 
+// Delete all room in the map when the player died of other
 func (p *Panel) RemoveRooms() {
 	if p == nil {
 		return
@@ -64,6 +65,7 @@ func (p *Panel) RemoveRooms() {
 	p.Content = cleanContent
 }
 
+// Add room in the map in the visualisation
 func (p *Panel) AddRoom(name string, location [2]int, exits map[string]world.Exit, items []string, onItemClick func(string), npcs []string, onNPCClick func(string)) {
 	if p == nil {
 		return

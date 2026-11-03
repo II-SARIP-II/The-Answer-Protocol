@@ -27,6 +27,7 @@ type ChatWidget struct {
 	Mode       string
 }
 
+// create chat in a panel
 func NewChatWidget(x, y, w, h, textSize float32, col color.Color, inputTitle string, hasBtn bool) *ChatWidget {
 	chat := &ChatWidget{
 		X:          x,
@@ -66,6 +67,7 @@ func NewChatWidget(x, y, w, h, textSize float32, col color.Color, inputTitle str
 	return chat
 }
 
+// add a line in the chat
 func (c *ChatWidget) AddLine(newLine string) {
 	if len(newLine) > MaxCharacterPerLine {
 		c.AddLine(newLine[:MaxCharacterPerLine])

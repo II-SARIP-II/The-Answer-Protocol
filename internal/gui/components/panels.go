@@ -16,6 +16,7 @@ type Hole struct {
 	Pos  float32
 }
 
+// get the stuff in the panel
 func (p *Panel) GetStuff() *Stuff {
 	if p == nil {
 		return nil
@@ -28,6 +29,7 @@ func (p *Panel) GetStuff() *Stuff {
 	return nil
 }
 
+// get the chat in the panel
 func (p *Panel) GetChat() *ChatWidget {
 	if p == nil {
 		return nil
@@ -40,6 +42,7 @@ func (p *Panel) GetChat() *ChatWidget {
 	return nil
 }
 
+// get the buttons in the panel
 func (p *Panel) GetButtons() []*Button {
 	if p == nil {
 		return nil
@@ -53,6 +56,7 @@ func (p *Panel) GetButtons() []*Button {
 	return buttons
 }
 
+// get sub panel in the panel
 func (p *Panel) GetSubPanel(name string) *Panel {
 	if p == nil {
 		return nil
@@ -65,6 +69,7 @@ func (p *Panel) GetSubPanel(name string) *Panel {
 	return nil
 }
 
+// get the first text in the panel (top panel)
 func (p *Panel) GetFirstTextWidget() *TextWidget {
 	if p == nil {
 		return nil
@@ -77,6 +82,7 @@ func (p *Panel) GetFirstTextWidget() *TextWidget {
 	return nil
 }
 
+// get the text in the panel (top panel)
 func (p *Panel) GetTextWidgets() []*TextWidget {
 	if p == nil {
 		return nil
@@ -158,12 +164,14 @@ func (p *Panel) Draw(screen *ebiten.Image) {
 	}
 }
 
+// Call all panel update function
 func UpdatePanels(panels ...*Panel) {
 	for _, p := range panels {
 		p.Update()
 	}
 }
 
+// Draw all panels
 func DrawPanels(screen *ebiten.Image, panels ...*Panel) {
 	for _, p := range panels {
 		p.Draw(screen)

@@ -9,6 +9,7 @@ type PlayerInvite struct {
 	Btn  *Button
 }
 
+// Create PlayerInvite to create a button
 func NewPlayerInvite(name string, index int, panelX, panelY, panelW float32) *PlayerInvite {
 	paddingX := float32(10.0)
 	paddingY := float32(35.0)
@@ -27,6 +28,7 @@ func NewPlayerInvite(name string, index int, panelX, panelY, panelW float32) *Pl
 	}
 }
 
+// Function that create a list of player to invite
 func CreateList(name string, playerList []string, panelX, panelY, panelW float32) []*PlayerInvite {
 	listPlayerInvite := make([]*PlayerInvite, 0, len(playerList))
 	idx := 0

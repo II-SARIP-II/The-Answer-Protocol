@@ -205,7 +205,7 @@ func (g *Game) serverResponse() error {
 						parts := strings.Split(msg, "taken=")
 						if len(parts) > 1 {
 							itemID := strings.TrimSpace(parts[1])
-							displayName := GetName(itemID)
+							displayName := getName(itemID)
 
 							if stuff != nil {
 								stuff.AddItem(
@@ -402,10 +402,6 @@ func (g *Game) serverResponse() error {
 					if group, err := parseCreateGroup(msg); err == nil {
 						if chat := g.bottomCenter.GetChat(); chat != nil {
 							chat.AddLine("[INVITATION] > You are now in: " + group.Group)
-						}
-					} else {
-						if chat := g.bottomCenter.GetChat(); chat != nil {
-							chat.AddLine("[INVITATION] > " + msg)
 						}
 					}
 					g.status = ""

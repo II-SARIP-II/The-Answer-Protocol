@@ -24,6 +24,7 @@ type Stuff struct {
 	Slots      []ItemSlot
 }
 
+// Create stuff struct
 func NewStuff(x, y, w, h float32) *Stuff {
 	return &Stuff{
 		X:     x,
@@ -44,6 +45,7 @@ func (s *Stuff) recalculatePositions() {
 	}
 }
 
+// reorganise the inventory when an item is equipped
 func (s *Stuff) MoveToTop(itemName string) {
 	targetIdx := -1
 	for i, slot := range s.Slots {
@@ -72,6 +74,7 @@ func (s *Stuff) MoveToTop(itemName string) {
 	}
 }
 
+// Add an item in the inventory
 func (s *Stuff) AddItem(item string, onItemClick func(string)) {
 	btn := NewButton(item, 0, 0, 0, 0)
 
@@ -91,6 +94,7 @@ func (s *Stuff) AddItem(item string, onItemClick func(string)) {
 	s.recalculatePositions()
 }
 
+// Remove an item in the inventory
 func (s *Stuff) RemoveItem(item string) {
 	cleanItem := strings.TrimSpace(item)
 	for i, slot := range s.Slots {
@@ -103,6 +107,7 @@ func (s *Stuff) RemoveItem(item string) {
 	s.recalculatePositions()
 }
 
+// Delete all item from the inventory list
 func (s *Stuff) Clear() {
 	s.Slots = []ItemSlot{}
 }
