@@ -398,10 +398,6 @@ func (g *Game) serverResponse() error {
 						if chat := g.bottomCenter.GetChat(); chat != nil {
 							chat.AddLine("[INVITATION] > You are now in: " + group.Group)
 						}
-					} else {
-						if chat := g.bottomCenter.GetChat(); chat != nil {
-							chat.AddLine("[INVITATION] > " + msg)
-						}
 					}
 					g.status = ""
 
