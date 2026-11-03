@@ -29,6 +29,7 @@ type Server struct {
 	port              string
 	world             *world.GameData
 	spawnsQuestsItems map[string]string
+	rewardToQuest     map[string]string
 	connTracker       map[string]connNumber
 }
 
@@ -54,10 +55,18 @@ func NewServer(worldPath string) (*Server, error) {
 		}
 	}
 
+	rewardToQuest := make(map[string]string)
+	for questID, quest := range w.Quests {
+		if quest.Reward != "" {
+			rewardToQuest[quest.Reward] = questID
+		}
+	}
+
 	return &Server{
 		players:           make(map[string]*Player),
 		world:             w,
 		spawnsQuestsItems: spawnsQuestsItems,
+		rewardToQuest:     rewardToQuest,
 		connTracker:       make(map[string]connNumber),
 	}, nil
 }
@@ -285,14 +294,35 @@ func (s *Server) handleDisconnect(player *Player) {
 	player.leaveGroupGetModif()
 
 	for _, itemID := range player.Inventory {
-		if origRoomID, exists := s.spawnsQuestsItems[itemID]; exists {
+		if questID, isReward := s.rewardToQuest[itemID]; isReward {
+			quest := s.world.Quests[questID]
+			quest.Reward = itemID
+			s.world.Quests[questID] = quest
+			slog.Info("Quest reward restored to quest on disconnect", "quest", questID, "reward", itemID)
+		} else if origRoomID, exists := s.spawnsQuestsItems[itemID]; exists {
 			origRoom := s.world.Rooms[origRoomID]
-			origRoom.Items = append(origRoom.Items, itemID)
-			s.world.Rooms[origRoomID] = origRoom
+			alreadyInRoom := false
+			for _, it := range origRoom.Items {
+				if it == itemID {
+					alreadyInRoom = true
+					break
+				}
+			}
+			if !alreadyInRoom {
+				origRoom.Items = append(origRoom.Items, itemID)
+				s.world.Rooms[origRoomID] = origRoom
+			}
 			s.resetPassiveEnemy(origRoomID, itemID)
 			slog.Info("World item restored to origin on disconnect", "item", itemID, "room", origRoomID)
+		} else {
+			room := s.world.Rooms[player.CurrentRoom]
+			room.Items = append(room.Items, itemID)
+			s.world.Rooms[player.CurrentRoom] = room
+			slog.Info("Item dropped in room on disconnect", "item", itemID, "room", player.CurrentRoom)
 		}
 	}
+	player.Inventory = nil
+	player.EquippedWeapon = ""
 
 	delete(s.players, player.Username)
 
