@@ -27,7 +27,7 @@ type StatusResponse struct {
 }
 
 type WhoResponse struct {
-	All    []string `json:"room"`
+	All    []string `json:"all"`
 	Server int      `json:"server"`
 }
 

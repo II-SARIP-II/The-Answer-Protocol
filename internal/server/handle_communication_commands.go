@@ -94,7 +94,7 @@ func (p *Player) handleWhoAll(args string) {
 	p.Server.mu.Unlock()
 
 	response := struct {
-		Room   []string `json:"room"`
+		All   []string `json:"all"`
 		Server int      `json:"server"`
 	}{
 		Room:   usernamesList,
