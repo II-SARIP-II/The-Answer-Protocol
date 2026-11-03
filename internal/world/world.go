@@ -8,17 +8,11 @@ import (
 
 type Exit struct {
 	Target  string `json:"target"`
-	DoorPos int    `json:"door_pos"`
-	Wall    int    `json:"wall"`
 }
 
 type Room struct {
 	Name        string          `json:"name"`
 	Description string          `json:"description,omitempty"`
-	X           int             `json:"x"`
-	Y           int             `json:"y"`
-	W           int             `json:"w"`
-	H           int             `json:"h"`
 	Exits       map[string]Exit `json:"exits"`
 	Items       []string        `json:"items"`
 	NPCs        []string        `json:"npcs"`

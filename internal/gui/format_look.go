@@ -10,10 +10,6 @@ import (
 
 type ServerRoom struct {
 	ID          string            `json:"id"`
-	X           int               `json:"X"`
-	Y           int               `json:"Y"`
-	W           int               `json:"W"`
-	H           int               `json:"H"`
 	Name        string            `json:"name"`
 	Description string            `json:"description"`
 	Exits       map[string]string `json:"exits"`
@@ -31,17 +27,11 @@ func (resp ServerLookResponse) toWorldRoom() world.Room {
 	for dir, target := range resp.Room.Exits {
 		exits[dir] = world.Exit{
 			Target:  target,
-			DoorPos: 1,
-			Wall:    0,
 		}
 	}
 
 	return world.Room{
 		Name:  resp.Room.Name,
-		X:     resp.Room.X,
-		Y:     resp.Room.Y,
-		W:     resp.Room.H,
-		H:     resp.Room.H,
 		Exits: exits,
 		Items: resp.Items,
 		NPCs:  resp.NPCs,
