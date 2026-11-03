@@ -86,5 +86,9 @@ func ReadJson(filepath string) (*GameData, error) {
 		return nil, fmt.Errorf("world validation error: %w", err)
 	}
 
+	if err := data.ValidateValues(); err != nil {
+		return nil, fmt.Errorf("world validation error: %w", err)
+	}
+
 	return &data, nil
 }
