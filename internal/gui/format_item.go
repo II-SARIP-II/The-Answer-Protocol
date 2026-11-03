@@ -28,7 +28,7 @@ func loadGameData() (GameData, error) {
 	return data, err
 }
 
-func GetName(itemID string) string {
+func getName(itemID string) string {
 	itemID = strings.TrimSpace(itemID)
 	gameData, err := loadGameData()
 	if err != nil {
@@ -39,19 +39,4 @@ func GetName(itemID string) string {
 		return item.Name
 	}
 	return itemID
-}
-
-func GetIDByDisplayName(displayName string) string {
-	displayName = strings.TrimSpace(displayName)
-	gameData, err := loadGameData()
-	if err != nil {
-		return displayName
-	}
-
-	for id, item := range gameData.Items {
-		if strings.EqualFold(item.Name, displayName) {
-			return id
-		}
-	}
-	return displayName
 }
