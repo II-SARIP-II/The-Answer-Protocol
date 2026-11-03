@@ -93,7 +93,6 @@ func (g *Game) serverResponse() error {
 				}
 			}
 
-			//HEREREREEEEE ===========================================================
 			if chatStruct, errChat := parseEventStats(msg); errChat == nil && chatStruct.Type == "EVT" && chatStruct.Command == "STATS" {
 				g.PlayerInGame = chatStruct.Players
 				texts := g.top.GetTextWidgets()
