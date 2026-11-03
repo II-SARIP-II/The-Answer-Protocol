@@ -7,7 +7,7 @@ import (
 )
 
 type Exit struct {
-	Target  string `json:"target"`
+	Target string `json:"target"`
 }
 
 type Room struct {

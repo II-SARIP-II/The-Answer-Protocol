@@ -26,7 +26,7 @@ func (resp ServerLookResponse) toWorldRoom() world.Room {
 	exits := make(map[string]world.Exit)
 	for dir, target := range resp.Room.Exits {
 		exits[dir] = world.Exit{
-			Target:  target,
+			Target: target,
 		}
 	}
 
