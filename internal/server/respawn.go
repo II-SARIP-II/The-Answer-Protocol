@@ -50,7 +50,7 @@ func (s *Server) scheduleNPCRespawn(enemyID string, roomID string) {
 
 		for _, player := range s.players {
 			if strings.EqualFold(player.CurrentRoom, roomID) {
-				if npc.Role == "enemy" {
+				if npc.InitialRole == "enemy" {
 					player.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server %s has reappeared and is enraged!", npc.Name))
 					player.checkHostileAmbush(roomID)
 				} else {
@@ -102,14 +102,14 @@ func (s *Server) resetPassiveEnemy(roomID, itemID string) {
 	}
 	for _, npcID := range room.NPCs {
 		npc := s.world.NPCs[npcID]
-		if npc.Item != nil && *npc.Item == itemID {
+		if npc.InitialRole == "passive enemy" && npc.Item != nil && *npc.Item == itemID {
 			wasHostile := (npc.Role == "enemy")
 			npc.Role = "passive enemy"
 			npc.Life = npc.MaxLife
 			s.world.NPCs[npcID] = npc
-			slog.Info("Passive enemy calmed and reset", "npc", npcID, "item", itemID, "room", roomID)
 
 			if wasHostile {
+				slog.Info("Passive enemy calmed and reset", "npc", npcID, "item", itemID, "room", roomID)
 				for _, player := range s.players {
 					if strings.EqualFold(player.CurrentRoom, roomID) {
 						player.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server %s has calmed down.", npc.Name))

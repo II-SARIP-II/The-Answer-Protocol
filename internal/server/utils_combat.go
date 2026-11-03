@@ -37,7 +37,8 @@ func (p *Player) handleDamage(enemyID string, enemyData world.NPC) CombatRoundRe
 		combatStatus = protocol.StatusVictory
 		p.Status = protocol.StatusVictory
 		p.handleEnemyDeath(enemyID)
-	} else if p.HP == 0 {
+	}
+	if p.HP == 0 {
 		combatStatus = protocol.StatusDefeated
 		p.handlePlayerDeath(enemyData.Name)
 	}
