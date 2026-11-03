@@ -128,8 +128,6 @@ func (p *Player) handleMove(args string) {
 
 	p.Server.mu.Unlock()
 
-
-
 }
 
 func (p *Player) handleQuit(args string) {
