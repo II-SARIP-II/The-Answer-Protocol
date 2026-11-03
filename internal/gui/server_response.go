@@ -417,6 +417,7 @@ func (g *Game) serverResponse() error {
 						case "west":
 							g.location[0] -= 1
 						}
+						chatAction.AddLine(fmt.Sprintf("FLEE > You are now in %s", fleeData.Room))
 					}
 
 				case "QUIT":
