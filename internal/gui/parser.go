@@ -55,18 +55,24 @@ type CreateGroupResponse struct {
 }
 
 type EventChatMessage struct {
-	Type    string // "EVT"
-	Scope   string // "GLOBAL" ou "GROUP"
-	Channel string // "CHAT"
-	Sender  string // "Pâris"
-	Message string // "ECho ECHO"
+	Type    string
+	Scope   string
+	Channel string
+	Sender  string
+	Message string
+}
+
+type EventStatMessage struct {
+	Type    string
+	Command string
+	Players int
 }
 
 type EventInvite struct {
-	Type   string // "EVT"
-	Cmd    string // "GROUP"
-	Action string // "INVITE"
-	Group  string // "group_name"
+	Type    string
+	Command string
+	Action  string
+	Group   string
 }
 
 func parseInvite(raw string) (EventInvite, error) {
@@ -78,10 +84,10 @@ func parseInvite(raw string) (EventInvite, error) {
 	}
 
 	return EventInvite{
-		Type:   parts[0],
-		Cmd:    parts[1],
-		Action: parts[2],
-		Group:  parts[3],
+		Type:    parts[0],
+		Command: parts[1],
+		Action:  parts[2],
+		Group:   parts[3],
 	}, nil
 }
 
@@ -100,6 +106,37 @@ func parseEventChat(raw string) (EventChatMessage, error) {
 		Sender:  parts[3],
 		Message: parts[4],
 	}, nil
+}
+
+func parseEventStats(raw string) (EventStatMessage, error) {
+	raw = strings.TrimSpace(raw)
+
+	parts := strings.SplitN(raw, " ", 3)
+	if len(parts) < 3 {
+		return EventStatMessage{}, fmt.Errorf("invalid event stats format: %q", raw)
+	}
+
+	if parts[0] != "EVT" || parts[1] != "STATS" {
+		return EventStatMessage{}, fmt.Errorf("not an event stats command: %q", raw)
+	}
+
+	evt := EventStatMessage{
+		Type:    parts[0],
+		Command: parts[1],
+	}
+
+	if strings.HasPrefix(parts[2], "players=") {
+		valStr := strings.TrimPrefix(parts[2], "players=")
+		var count int
+		_, err := fmt.Sscanf(valStr, "%d", &count)
+		if err == nil {
+			evt.Players = count
+		} else {
+			return EventStatMessage{}, fmt.Errorf("failed to parse players count from: %q", parts[2])
+		}
+	}
+
+	return evt, nil
 }
 
 func parseJSON[T any](raw string) (T, error) {

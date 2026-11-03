@@ -55,8 +55,8 @@ func newGame(winWidth int, winHeight int, conn net.Conn, name string) *Game {
 		conn:         conn,
 		messagesChan: messagesChan,
 		curr_cmd:     "",
-		PlayerInGame: 0,
-		PlayerInRoom: 0,
+		PlayerInGame: 1,
+		PlayerInRoom: 1,
 	}
 
 	go listenServer(conn, messagesChan)

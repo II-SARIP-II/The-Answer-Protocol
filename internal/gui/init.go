@@ -17,7 +17,7 @@ func initPanels(winWidth int, winHeight int) (*components.Panel, *components.Pan
 	colMidW := w * 0.40
 	colRightW := w - colLeftW - colMidW
 
-	t_panel := panels.CreateTopPanel(w, topH, 0, 0)
+	t_panel := panels.CreateTopPanel(w, topH, 1, 1)
 	cl_panel := panels.CreatePlayerPanel(topH, centerH, colLeftW)
 	cm_panel := panels.CreateMapPanel(topH, centerH, colLeftW, colMidW)
 	cr_panel := panels.CreateActionsPanel(topH, centerH, colLeftW, colMidW, colRightW)
