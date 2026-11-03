@@ -34,6 +34,8 @@ func handleServerError(chat *components.ChatWidget, cmd, msg string) {
 		chat.AddLine(cmd + " > This group does not exist.")
 	case strings.HasPrefix(msg, "ERR 400 NO_MOVE_DURING_COMBAT"):
 		chat.AddLine("MOVE > Impossible to move to another room, try to Flee.")
+	case strings.HasPrefix(msg, "ERR 400 ARGS_ERROR"):
+		chat.AddLine(cmd + " > Impossible to do this action here.")
 	default:
 		chat.AddLine("Server > " + msg)
 	}
@@ -43,6 +45,7 @@ func (g *Game) serverResponse() error {
 	for {
 		select {
 		case msg := <-g.messagesChan:
+			fmt.Print(msg + "\n")
 			if msg == "SERVER_DISCONNECTED" {
 				return ErrQuit
 			}
@@ -87,6 +90,14 @@ func (g *Game) serverResponse() error {
 						chat.AddLine("[INVITATION] > '" + inviteStruct.Group + "' joined the group")
 					}
 					continue
+				}
+			}
+
+			if chatStruct, errChat := parseEventStats(msg); errChat == nil && chatStruct.Type == "EVT" && chatStruct.Command == "STATS" {
+				g.PlayerInGame = chatStruct.Players
+				texts := g.top.GetTextWidgets()
+				if len(texts) > 0 && texts[0] != nil {
+					texts[0].SetText(fmt.Sprintf("Players in Game: %d", g.PlayerInGame))
 				}
 			}
 
