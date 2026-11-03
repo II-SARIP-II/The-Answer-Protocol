@@ -201,36 +201,36 @@ func (g *Game) serverResponse() error {
 					}
 
 				case "TAKE":
-    				if strings.Contains(msg, "taken=") {
-    				    parts := strings.Split(msg, "taken=")
-    				    if len(parts) > 1 {
-    				        itemID := strings.TrimSpace(parts[1])
-    				        displayName := GetName(itemID)
+					if strings.Contains(msg, "taken=") {
+						parts := strings.Split(msg, "taken=")
+						if len(parts) > 1 {
+							itemID := strings.TrimSpace(parts[1])
+							displayName := GetName(itemID)
 
-    				        if stuff != nil {
-    				            stuff.AddItem(
-    				                displayName,
-    				                func(selectedDisplayName string) {
+							if stuff != nil {
+								stuff.AddItem(
+									displayName,
+									func(selectedDisplayName string) {
 
-    				                    if g.status == "AWAITING_DROP_ITEM" {
-    				                        g.curr_cmd = "DROP"
-    				                        stuff.RemoveItem(selectedDisplayName)
-    				                        sendMessage(g.conn, "DROP "+ displayName)
-    				                        g.status = ""
-    				                    } else if g.status == "AWAITING_EQUIP_ITEM" {
-    				                        g.curr_cmd = "EQUIP"
-    				                        stuff.MoveToTop(selectedDisplayName)
-    				                        sendMessage(g.conn, "EQUIP "+ displayName)
-    				                        g.status = ""
-    				                    }
-    				                },
-    				            )
-    				        }
-    				        chatAction.AddLine("TAKE > Item taken: " + displayName)
-    				        g.curr_cmd = "LOOK"
-    				        sendMessage(g.conn, "LOOK")
-    				    }
-    				}
+										if g.status == "AWAITING_DROP_ITEM" {
+											g.curr_cmd = "DROP"
+											stuff.RemoveItem(selectedDisplayName)
+											sendMessage(g.conn, "DROP "+displayName)
+											g.status = ""
+										} else if g.status == "AWAITING_EQUIP_ITEM" {
+											g.curr_cmd = "EQUIP"
+											stuff.MoveToTop(selectedDisplayName)
+											sendMessage(g.conn, "EQUIP "+displayName)
+											g.status = ""
+										}
+									},
+								)
+							}
+							chatAction.AddLine("TAKE > Item taken: " + displayName)
+							g.curr_cmd = "LOOK"
+							sendMessage(g.conn, "LOOK")
+						}
+					}
 
 				case "DROP":
 					if strings.Contains(msg, "dropped=") {
