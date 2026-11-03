@@ -186,3 +186,30 @@ func (world *GameData) ValidateQuests() error {
 	}
 	return nil
 }
+
+func (world *GameData) ValidateValues() error {
+	for itemID, item := range world.Items {
+		if item.Damage < 0 {
+			return fmt.Errorf("item '%s' cannot have negative damage (%d)", itemID, item.Damage)
+		}
+	}
+
+	for npcID, npc := range world.NPCs {
+		if npc.Role == "enemy" || npc.Role == "passive enemy" || npc.Role == "target" {
+			if npc.Life <= 0 {
+				return fmt.Errorf("combat NPC '%s' must have life > 0 (found %d)", npcID, npc.Life)
+			}
+			if npc.MaxLife < 0 {
+				return fmt.Errorf("combat NPC '%s' cannot have negative max_life (%d)", npcID, npc.MaxLife)
+			}
+		}
+	}
+
+	for questID, quest := range world.Quests {
+		if quest.Count <= 0 {
+			return fmt.Errorf("quest '%s' count must be greater than 0 (found %d)", questID, quest.Count)
+		}
+	}
+
+	return nil
+}

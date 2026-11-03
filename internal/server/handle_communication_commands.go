@@ -94,10 +94,10 @@ func (p *Player) handleWhoAll(args string) {
 	p.Server.mu.Unlock()
 
 	response := struct {
-		All   []string `json:"all"`
+		All    []string `json:"all"`
 		Server int      `json:"server"`
 	}{
-		Room:   usernamesList,
+		All:    usernamesList,
 		Server: playersNumber,
 	}
 
