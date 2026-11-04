@@ -456,7 +456,7 @@ func (g *Game) serverResponse() error {
 						}
 					} else {
 						if chat := g.bottomCenter.GetChat(); chat != nil {
-							chat.AddLine("[INVITATION] > " + msg)
+							chat.AddLine("[GROUP] > " + msg)
 						}
 					}
 					g.status = ""
