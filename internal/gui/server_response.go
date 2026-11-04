@@ -38,6 +38,8 @@ func handleServerError(chat *components.ChatWidget, cmd, msg string) {
 		chat.AddLine(cmd + " > Impossible to do this action here.")
 	case strings.HasPrefix(msg, "ERR 400 UNKNOWN_COMMAND"):
 		chat.AddLine(cmd + " > Unknown Command.")
+	case strings.HasPrefix(msg, "ERR 400 NO_INVITATION"):
+		chat.AddLine(cmd + " > This invitation expired.")
 	default:
 		chat.AddLine("Server > " + msg)
 	}
@@ -52,7 +54,16 @@ func (g *Game) serverResponse() error {
 			}
 			if chatStruct, errChat := parseEventChat(msg); errChat == nil && chatStruct.Type == "EVT" {
 				if chatStruct.Sender == "Server" {
-					if chatAction := g.bottomRight.GetChat(); chatAction != nil {
+					if strings.Split(chatStruct.Message, ":")[0] == "Defeat" {
+						g.centerMid.RemoveRooms()
+						g.centerMid.BasicColorRooms()
+						g.location = [2]int{1, 1}
+						if chatAction := g.bottomRight.GetChat(); chatAction != nil {
+							chatAction.AddLine(chatStruct.Message)
+						}
+						g.status = ""
+						break
+					} else if chatAction := g.bottomRight.GetChat(); chatAction != nil {
 						chatAction.AddLine(chatStruct.Message)
 					}
 				} else if chat := g.bottomCenter.GetChat(); chat != nil {
@@ -195,7 +206,7 @@ func (g *Game) serverResponse() error {
 									g.location[0] -= 1
 								}
 							}
-
+							g.centerMid.BasicColorRooms()
 							chatAction.AddLine("MOVE > Moved into " + room)
 						}
 					}
@@ -251,14 +262,12 @@ func (g *Game) serverResponse() error {
 
 				case "ATTACK":
 					if strings.Contains(msg, "Defeat:") || strings.Contains(msg, "defeated") {
-						chatAction.AddLine("COMBAT > YOU DIED! Respawned in hotel_entrance.")
 						g.centerMid.RemoveRooms()
 						g.location = [2]int{1, 1}
 						g.status = ""
 						break
 					} else if attackJSON, err := parseAttack(response); err == nil {
 						if attackJSON.Status == "victory" {
-							chatAction.AddLine("ATTACK > Enemy defeated!")
 							g.hp = attackJSON.AttackerHP
 							g.status = ""
 						} else if attackJSON.Status == "defeated" {
@@ -278,7 +287,6 @@ func (g *Game) serverResponse() error {
 
 				case "DEFEND":
 					if strings.Contains(msg, "Defeat:") || strings.Contains(msg, "defeated") {
-						chatAction.AddLine("COMBAT > YOU DIED! Respawned in hotel_entrance.")
 						g.centerMid.RemoveRooms()
 						g.location = [2]int{1, 1}
 						g.status = ""
@@ -288,7 +296,9 @@ func (g *Game) serverResponse() error {
 					} else if defenceJSON, err := parseDefence(response); err == nil {
 						if defenceJSON.Status == "perfect_defense" {
 							chatAction.AddLine("DEFEND > Perfect defense! No damage taken.")
-						} else if defenceJSON.Status == "weakened_defense" || defenceJSON.Status == "broken_defense" {
+						} else if defenceJSON.Status == "weakened_defense" {
+							chatAction.AddLine(fmt.Sprintf("DEFEND > Defense Weakened! %d damage taken.", defenceJSON.Damage))
+						} else if defenceJSON.Status == "broken_defense" {
 							chatAction.AddLine(fmt.Sprintf("DEFEND > Defense broken! %d damage taken.", defenceJSON.Damage))
 						}
 						g.hp = defenceJSON.DefenderHP

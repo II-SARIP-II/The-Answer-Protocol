@@ -106,6 +106,7 @@ type Panel struct {
 	Content       []Widget
 	BgColor       color.Color
 	BorderColor   color.Color
+	MemoryColor   color.Color
 	TextSize      float32
 	PlayerInvites []*PlayerInvite
 	AcceptInvites []*PlayerInvite
