@@ -113,13 +113,13 @@ func (s *Stuff) Clear() {
 }
 
 func (s *Stuff) Update() {
-	for i := range s.Slots {
+	for i := 0; i < len(s.Slots); i++ {
 		s.Slots[i].Button.Update()
 	}
 }
 
 func (s *Stuff) Draw(screen *ebiten.Image) {
-	for i := range s.Slots {
+	for i := 0; i < len(s.Slots); i++ {
 		s.Slots[i].Button.Draw(screen)
 	}
 }
