@@ -65,6 +65,18 @@ func (p *Panel) RemoveRooms() {
 	p.Content = cleanContent
 }
 
+func (p *Panel) BasicColorRooms() {
+	if p == nil {
+		return
+	}
+	for _, widget := range p.Content {
+		if panel, isPanel := widget.(*Panel); isPanel {
+			panel.BgColor = panel.MemoryColor
+		}
+	}
+}
+
+
 // Add room in the map in the visualisation
 func (p *Panel) AddRoom(name string, location [2]int, exits map[string]world.Exit, items []string, onItemClick func(string), npcs []string, onNPCClick func(string)) {
 	if p == nil {
@@ -101,7 +113,8 @@ func (p *Panel) AddRoom(name string, location [2]int, exits map[string]world.Exi
 			W:           rw,
 			H:           rh,
 			BorderHoles: holes,
-			BgColor:     color.RGBA{R: 15, G: 35, B: 45, A: 200},
+			BgColor:     color.RGBA{R: 0, G: 180, B: 216, A: 180},
+			MemoryColor: color.RGBA{R: 15, G: 35, B: 45, A: 200},
 			BorderColor: color.RGBA{R: 0, G: 255, B: 180, A: 255},
 			TextSize:    float32(10.0),
 		}
@@ -113,6 +126,7 @@ func (p *Panel) AddRoom(name string, location [2]int, exits map[string]world.Exi
 		roomPanel.H = rh
 		roomPanel.BorderHoles = holes
 		roomPanel.ToDraw = true
+		roomPanel.BgColor = color.RGBA{R: 0, G: 180, B: 216, A: 180}
 	}
 
 	var cleanContent []Widget

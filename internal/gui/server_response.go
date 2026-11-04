@@ -38,6 +38,8 @@ func handleServerError(chat *components.ChatWidget, cmd, msg string) {
 		chat.AddLine(cmd + " > Impossible to do this action here.")
 	case strings.HasPrefix(msg, "ERR 400 UNKNOWN_COMMAND"):
 		chat.AddLine(cmd + " > Unknown Command.")
+	case strings.HasPrefix(msg, "ERR 400 NO_INVITATION"):
+		chat.AddLine(cmd + " > This invitation expired.")
 	default:
 		chat.AddLine("Server > " + msg)
 	}
@@ -47,12 +49,19 @@ func (g *Game) serverResponse() error {
 	for {
 		select {
 		case msg := <-g.messagesChan:
+			fmt.Print(msg + "\n")
 			if msg == "SERVER_DISCONNECTED" {
 				return ErrQuit
 			}
 			if chatStruct, errChat := parseEventChat(msg); errChat == nil && chatStruct.Type == "EVT" {
 				if chatStruct.Sender == "Server" {
-					if chatAction := g.bottomRight.GetChat(); chatAction != nil {
+					if strings.Split(chatStruct.Message, ":")[0] == "Defeat"{
+						g.centerMid.RemoveRooms()
+						g.centerMid.BasicColorRooms()
+						g.location = [2]int{1, 1}
+						g.status = ""
+						break
+					} else if chatAction := g.bottomRight.GetChat(); chatAction != nil {
 						chatAction.AddLine(chatStruct.Message)
 					}
 				} else if chat := g.bottomCenter.GetChat(); chat != nil {
@@ -195,7 +204,7 @@ func (g *Game) serverResponse() error {
 									g.location[0] -= 1
 								}
 							}
-
+							g.centerMid.BasicColorRooms()
 							chatAction.AddLine("MOVE > Moved into " + room)
 						}
 					}
@@ -246,14 +255,12 @@ func (g *Game) serverResponse() error {
 
 				case "ATTACK":
 					if strings.Contains(msg, "Defeat:") || strings.Contains(msg, "defeated") {
-						chatAction.AddLine("COMBAT > YOU DIED! Respawned in hotel_entrance.")
 						g.centerMid.RemoveRooms()
 						g.location = [2]int{1, 1}
 						g.status = ""
 						break
 					} else if attackJSON, err := parseAttack(response); err == nil {
 						if attackJSON.Status == "victory" {
-							chatAction.AddLine("ATTACK > Enemy defeated!")
 							g.hp = attackJSON.AttackerHP
 							g.status = ""
 						} else if attackJSON.Status == "defeated" {
@@ -273,7 +280,6 @@ func (g *Game) serverResponse() error {
 
 				case "DEFEND":
 					if strings.Contains(msg, "Defeat:") || strings.Contains(msg, "defeated") {
-						chatAction.AddLine("COMBAT > YOU DIED! Respawned in hotel_entrance.")
 						g.centerMid.RemoveRooms()
 						g.location = [2]int{1, 1}
 						g.status = ""
