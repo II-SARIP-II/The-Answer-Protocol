@@ -49,7 +49,6 @@ func (g *Game) serverResponse() error {
 	for {
 		select {
 		case msg := <-g.messagesChan:
-			fmt.Print(msg + "\n")
 			if msg == "SERVER_DISCONNECTED" {
 				return ErrQuit
 			}
@@ -59,6 +58,9 @@ func (g *Game) serverResponse() error {
 						g.centerMid.RemoveRooms()
 						g.centerMid.BasicColorRooms()
 						g.location = [2]int{1, 1}
+						if chatAction := g.bottomRight.GetChat(); chatAction != nil {
+							chatAction.AddLine(chatStruct.Message)
+						}
 						g.status = ""
 						break
 					} else if chatAction := g.bottomRight.GetChat(); chatAction != nil {
