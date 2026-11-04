@@ -10,7 +10,7 @@ import (
 
 const (
 	FistFightDamage = 2
-	NPCRespawnDelay = 50
+	NPCRespawnDelay = 60
 )
 
 func (p *Player) handleDamage(enemyID string, enemyData world.NPC) CombatRoundResult {
