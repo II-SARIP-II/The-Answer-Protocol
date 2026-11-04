@@ -49,7 +49,6 @@ func (g *Game) serverResponse() error {
 	for {
 		select {
 		case msg := <-g.messagesChan:
-			fmt.Print(msg + "\n")
 			if msg == "SERVER_DISCONNECTED" {
 				return ErrQuit
 			}
@@ -410,31 +409,31 @@ func (g *Game) serverResponse() error {
 					g.status = ""
 
 				case "CREATE", "GROUP":
-				    if group, err := parseCreateGroup(msg); err == nil {
-				        if chat := g.bottomCenter.GetChat(); chat != nil {
-				            chat.AddLine("[INVITATION] > You are now in: " + group.Group)
-				        }
+					if group, err := parseCreateGroup(msg); err == nil {
+						if chat := g.bottomCenter.GetChat(); chat != nil {
+							chat.AddLine("[INVITATION] > You are now in: " + group.Group)
+						}
 
-				        if invitationPanel := g.centerLeft.GetSubPanel("INVITATION"); invitationPanel != nil {
-				            parts := strings.Split(group.Group, "_")
-				            if len(parts) > 1 && parts[1] != "" {
-				                targetPlayer := parts[1]
+						if invitationPanel := g.centerLeft.GetSubPanel("INVITATION"); invitationPanel != nil {
+							parts := strings.Split(group.Group, "_")
+							if len(parts) > 1 && parts[1] != "" {
+								targetPlayer := parts[1]
 
-				                invitationPanel.AcceptInvites = components.RemoveInviteByName(
-				                    targetPlayer,
-				                    invitationPanel.AcceptInvites,
-				                    invitationPanel.X,
-				                    invitationPanel.Y,
-				                    invitationPanel.W,
-				                )
-				            }
-				        }
-				    } else {
-				        if chat := g.bottomCenter.GetChat(); chat != nil {
-				            chat.AddLine("[INVITATION] > " + msg)
-				        }
-				    }
-				    g.status = ""
+								invitationPanel.AcceptInvites = components.RemoveInviteByName(
+									targetPlayer,
+									invitationPanel.AcceptInvites,
+									invitationPanel.X,
+									invitationPanel.Y,
+									invitationPanel.W,
+								)
+							}
+						}
+					} else {
+						if chat := g.bottomCenter.GetChat(); chat != nil {
+							chat.AddLine("[INVITATION] > " + msg)
+						}
+					}
+					g.status = ""
 
 				case "LEAVE":
 					chatAction.AddLine("GROUP > You left the group.")
