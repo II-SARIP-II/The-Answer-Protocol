@@ -76,7 +76,6 @@ func (p *Panel) BasicColorRooms() {
 	}
 }
 
-
 // Add room in the map in the visualisation
 func (p *Panel) AddRoom(name string, location [2]int, exits map[string]world.Exit, items []string, onItemClick func(string), npcs []string, onNPCClick func(string)) {
 	if p == nil {

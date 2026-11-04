@@ -54,7 +54,7 @@ func (g *Game) serverResponse() error {
 			}
 			if chatStruct, errChat := parseEventChat(msg); errChat == nil && chatStruct.Type == "EVT" {
 				if chatStruct.Sender == "Server" {
-					if strings.Split(chatStruct.Message, ":")[0] == "Defeat"{
+					if strings.Split(chatStruct.Message, ":")[0] == "Defeat" {
 						g.centerMid.RemoveRooms()
 						g.centerMid.BasicColorRooms()
 						g.location = [2]int{1, 1}
