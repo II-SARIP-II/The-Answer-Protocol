@@ -413,6 +413,25 @@ func (g *Game) serverResponse() error {
 						if chat := g.bottomCenter.GetChat(); chat != nil {
 							chat.AddLine("[INVITATION] > You are now in: " + group.Group)
 						}
+
+						if invitationPanel := g.centerLeft.GetSubPanel("INVITATION"); invitationPanel != nil {
+							parts := strings.Split(group.Group, "_")
+							if len(parts) > 1 && parts[1] != "" {
+								targetPlayer := parts[1]
+
+								invitationPanel.AcceptInvites = components.RemoveInviteByName(
+									targetPlayer,
+									invitationPanel.AcceptInvites,
+									invitationPanel.X,
+									invitationPanel.Y,
+									invitationPanel.W,
+								)
+							}
+						}
+					} else {
+						if chat := g.bottomCenter.GetChat(); chat != nil {
+							chat.AddLine("[INVITATION] > " + msg)
+						}
 					}
 					g.status = ""
 
@@ -433,6 +452,7 @@ func (g *Game) serverResponse() error {
 						case "west":
 							g.location[0] -= 1
 						}
+						g.centerMid.BasicColorRooms()
 						chatAction.AddLine(fmt.Sprintf("FLEE > You are now in %s", fleeData.Room))
 					}
 
