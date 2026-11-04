@@ -381,32 +381,58 @@ func (g *Game) serverResponse() error {
 					g.status = ""
 
 				case "INVENTORY":
-					if inventory, err := parseInventory(msg); err == nil {
-						if stuff := g.bottomLeft.GetStuff(); stuff != nil {
-							stuff.Clear()
+    				if inventory, err := parseInventory(msg); err == nil {
+    				    if stuff := g.bottomLeft.GetStuff(); stuff != nil {
+    				        for i := len(stuff.Slots) - 1; i >= 0; i-- {
+    				            slotItemName := stuff.Slots[i].Item
+    				            stillExists := false
 
-							for _, item := range inventory {
-								itemName := item
-								stuff.AddItem(
-									itemName,
-									func(selectedItem string) {
-										if g.status == "AWAITING_DROP_ITEM" {
-											g.curr_cmd = "DROP"
-											stuff.RemoveItem(selectedItem)
-											sendMessage(g.conn, "DROP "+selectedItem)
-											g.status = ""
-										} else if g.status == "AWAITING_EQUIP_ITEM" {
-											g.curr_cmd = "EQUIP"
-											stuff.MoveToTop(selectedItem)
-											sendMessage(g.conn, "EQUIP "+selectedItem)
-											g.status = ""
-										}
-									},
-								)
-							}
-						}
-					}
-					g.status = ""
+    				            for _, itemID := range inventory {
+    				                if getName(itemID) == slotItemName || itemID == slotItemName {
+    				                    stillExists = true
+    				                    break
+    				                }
+    				            }
+
+    				            if !stillExists {
+    				                stuff.RemoveItem(slotItemName)
+    				            }
+    				        }
+
+    				        for _, itemID := range inventory {
+    				            displayName := getName(itemID)
+    				            isAlreadyPresent := false
+
+    				            for _, slot := range stuff.Slots {
+    				                if slot.Item == displayName {
+    				                    isAlreadyPresent = true
+    				                    break
+    				                }
+    				            }
+
+    				            if !isAlreadyPresent {
+    				                stuff.AddItem(
+    				                    displayName,
+    				                    func(selectedDisplayName string) {
+
+    				                        if g.status == "AWAITING_DROP_ITEM" {
+    				                            g.curr_cmd = "DROP"
+    				                            stuff.RemoveItem(selectedDisplayName)
+    				                            sendMessage(g.conn, "DROP "+itemID)
+    				                            g.status = ""
+    				                        } else if g.status == "AWAITING_EQUIP_ITEM" {
+    				                            g.curr_cmd = "EQUIP"
+    				                            stuff.MoveToTop(selectedDisplayName)
+    				                            sendMessage(g.conn, "EQUIP "+itemID)
+    				                            g.status = ""
+    				                        }
+    				                    },
+    				                )
+    				            }
+    				        }
+    				    }
+    				}
+    				g.status = ""
 
 				case "CREATE", "GROUP":
 					if group, err := parseCreateGroup(msg); err == nil {
