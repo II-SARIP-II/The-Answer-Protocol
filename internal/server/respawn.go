@@ -113,6 +113,7 @@ func (s *Server) resetPassiveEnemy(roomID, itemID string) {
 				for _, player := range s.players {
 					if strings.EqualFold(player.CurrentRoom, roomID) {
 						player.SendEvt(protocol.EvtChatRoom, fmt.Sprintf("Server %s has calmed down.", npc.Name))
+						player.Status = protocol.StatusHealthy
 					}
 				}
 			}

@@ -247,7 +247,12 @@ func (g *Game) serverResponse() error {
 					if strings.Contains(msg, "dropped=") {
 						parts := strings.Split(msg, "dropped=")
 						if len(parts) > 1 {
-							displayName := getName(strings.TrimSpace(parts[1]))
+							droppedID := strings.TrimSpace(parts[1])
+							displayName := getName(droppedID)
+							if stuff != nil {
+								stuff.RemoveItem(displayName)
+								stuff.RemoveItem(droppedID)
+							}
 							chatAction.AddLine("DROP > Item dropped: " + displayName)
 						}
 					}
