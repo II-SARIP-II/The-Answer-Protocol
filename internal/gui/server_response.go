@@ -296,7 +296,9 @@ func (g *Game) serverResponse() error {
 					} else if defenceJSON, err := parseDefence(response); err == nil {
 						if defenceJSON.Status == "perfect_defense" {
 							chatAction.AddLine("DEFEND > Perfect defense! No damage taken.")
-						} else if defenceJSON.Status == "weakened_defense" || defenceJSON.Status == "broken_defense" {
+						} else if defenceJSON.Status == "weakened_defense" {
+							chatAction.AddLine(fmt.Sprintf("DEFEND > Defense Weakened! %d damage taken.", defenceJSON.Damage))
+						} else if defenceJSON.Status == "broken_defense" {
 							chatAction.AddLine(fmt.Sprintf("DEFEND > Defense broken! %d damage taken.", defenceJSON.Damage))
 						}
 						g.hp = defenceJSON.DefenderHP
