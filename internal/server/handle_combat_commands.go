@@ -150,7 +150,10 @@ func (p *Player) handleFlee(args string) {
 		return
 	}
 
-	if p.Status != "combat" {
+	if p.Status != protocol.StatusCombat &&
+		p.Status != protocol.StatusPerfectDefense &&
+		p.Status != protocol.StatusWeakenedDefense &&
+		p.Status != protocol.StatusBrokenDefense {
 		p.SendErr(protocol.CodeBadRequest, protocol.MsgArgsError)
 		return
 	}
